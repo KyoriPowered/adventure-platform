@@ -1,0 +1,13 @@
+repositories {
+  maven {
+    url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots'
+  }
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
+
+dependencies {
+  compile 'net.kyori:text:1.12-1.6.4'
+  compileOnly 'org.spigotmc:spigot-api:1.13.1-R0.1-SNAPSHOT'
+}

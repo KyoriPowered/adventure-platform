@@ -1,0 +1,6 @@
+/.gradle/
+/.idea/
+/adapter-bukkit/build/
+/adapter-bukkit/out/
+/run/
+/*.iml
