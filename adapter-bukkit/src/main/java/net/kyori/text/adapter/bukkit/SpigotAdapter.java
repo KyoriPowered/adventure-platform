@@ -44,9 +44,10 @@ import java.util.Iterator;
 import java.util.List;
 
 final class SpigotAdapter implements Adapter {
-  private static final boolean SETUP;
-  static {
-    boolean setup = false;
+  private static final boolean BOUND = bind();
+
+  @SuppressWarnings("unchecked")
+  private static boolean bind() {
     try {
       final Field gsonField = ComponentSerializer.class.getDeclaredField("gson");
       gsonField.setAccessible(true);
@@ -54,32 +55,30 @@ final class SpigotAdapter implements Adapter {
       final Field factoriesField = Gson.class.getDeclaredField("factories");
       factoriesField.setAccessible(true);
 
-      //noinspection unchecked
       final List<TypeAdapterFactory> factories = (List) factoriesField.get(gson);
       final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(factories);
       modifiedFactories.add(0, TreeTypeAdapter.newTypeHierarchyFactory(Component.class, new GsonComponentSerializer()));
       modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
       factoriesField.set(gson, modifiedFactories);
-      setup = true;
+      return true;
     } catch(final Exception e) {
-      // ignore
+      return false;
     }
-    SETUP = setup;
   }
 
   @Override
-  public void sendComponent(final List<? extends CommandSender> senders, final Component component) {
-    if(!SETUP) {
+  public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
+    if(!BOUND) {
       return;
     }
-    final BaseComponent[] baseComponents = {new AdapterComponent(component)};
-    for(final Iterator<? extends CommandSender> iterator = senders.iterator(); iterator.hasNext(); ) {
-      final CommandSender sender = iterator.next();
-      if(sender instanceof Player) {
+    final BaseComponent[] components = {new AdapterComponent(component)};
+    for(final Iterator<? extends CommandSender> it = viewers.iterator(); it.hasNext(); ) {
+      final CommandSender viewer = it.next();
+      if(viewer instanceof Player) {
         try {
-          final Player player = (Player) sender;
-          player.spigot().sendMessage(baseComponents);
-          iterator.remove();
+          final Player player = (Player) viewer;
+          player.spigot().sendMessage(components);
+          it.remove();
         } catch(final Throwable e) {
           e.printStackTrace();
         }
@@ -102,8 +101,8 @@ final class SpigotAdapter implements Adapter {
 
   public static class Serializer implements JsonSerializer<AdapterComponent> {
     @Override
-    public JsonElement serialize(final AdapterComponent adapter, final Type type, final JsonSerializationContext context) {
-      return context.serialize(adapter.component);
+    public JsonElement serialize(final AdapterComponent src, final Type typeOfSrc, final JsonSerializationContext context) {
+      return context.serialize(src.component);
     }
   }
 }

@@ -40,36 +40,37 @@ import java.util.List;
  */
 public interface TextAdapter {
   /**
-   * Sends {@code component} to the given {@code sender}.
+   * Sends {@code component} to the given {@code viewer}.
    *
-   * @param sender the sender to send the component to
+   * @param viewer the viewer to send the component to
    * @param component the component
    */
-  static void sendComponent(final @NonNull CommandSender sender, final @NonNull Component component) {
-    sendComponent(Collections.singleton(sender), component);
+  static void sendComponent(final @NonNull CommandSender viewer, final @NonNull Component component) {
+    sendComponent(Collections.singleton(viewer), component);
   }
 
   /**
-   * Sends {@code component} to the given {@code senders}.
+   * Sends {@code component} to the given {@code viewers}.
    *
-   * @param senders the senders to send the component to
+   * @param viewers the viewers to send the component to
    * @param component the component
    */
-  static void sendComponent(final @NonNull Iterable<? extends CommandSender> senders, final @NonNull Component component) {
-    TextAdapter0.sendComponent(senders, component);
+  static void sendComponent(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
+    TextAdapter0.sendComponent(viewers, component);
   }
 }
 
 final class TextAdapter0 {
-  private static final List<Adapter> ADAPTERS;
-  static {
+  private static final List<Adapter> ADAPTERS = pickAdapters();
+
+  private static List<Adapter> pickAdapters() {
     final ImmutableList.Builder<Adapter> adapters = ImmutableList.builder();
     if(isSpigotAdapterSupported()) {
       adapters.add(new SpigotAdapter());
     }
     adapters.add(new CraftBukkitAdapter());
     adapters.add(new LegacyAdapter());
-    ADAPTERS = adapters.build();
+    return adapters.build();
   }
 
   private static boolean isSpigotAdapterSupported() {
@@ -81,11 +82,11 @@ final class TextAdapter0 {
     }
   }
 
-  static void sendComponent(final Iterable<? extends CommandSender> senders, final Component component) {
+  static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component) {
     final List<CommandSender> list = new ArrayList<>();
-    Iterables.addAll(list, senders);
-    for(final Iterator<Adapter> iterator = ADAPTERS.iterator(); iterator.hasNext() && !list.isEmpty(); ) {
-      final Adapter adapter = iterator.next();
+    Iterables.addAll(list, viewers);
+    for(final Iterator<Adapter> it = ADAPTERS.iterator(); it.hasNext() && !list.isEmpty(); ) {
+      final Adapter adapter = it.next();
       adapter.sendComponent(list, component);
     }
   }
