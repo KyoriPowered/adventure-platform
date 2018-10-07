@@ -130,17 +130,17 @@ final class CraftBukkitAdapter implements Adapter {
 
   private static final class DeadBinding extends Binding {
     @Override
-    public boolean valid() {
+    boolean valid() {
       return false;
     }
 
     @Override
-    public Object createPacket(final Component component) {
+    Object createPacket(final Component component) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public void sendPacket(final Object packet, final Player player) {
+    void sendPacket(final Object packet, final Player player) {
       throw new UnsupportedOperationException();
     }
   }
