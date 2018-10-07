@@ -1,5 +1,5 @@
 /*
- * This file is part of text-adapters, licensed under the MIT License.
+ * This file is part of text-extras, licensed under the MIT License.
  *
  * Copyright (c) 2018 KyoriPowered
  *

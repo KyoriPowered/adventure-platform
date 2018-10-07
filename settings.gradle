@@ -1,4 +1,4 @@
-rootProject.name = 'text-adapters-parent'
+rootProject.name = 'text-extras-parent'
 
 include 'adapter-bukkit'
 findProject(':adapter-bukkit')?.name = 'text-adapter-bukkit'
