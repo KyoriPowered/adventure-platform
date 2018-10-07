@@ -40,27 +40,25 @@ import java.util.Iterator;
 import java.util.List;
 
 final class CraftBukkitAdapter implements Adapter {
-  private static final ReflectionBindings REFLECTION_BINDINGS;
-  static {
-    ReflectionBindings reflectionBindings;
+  private static final Binding REFLECTION_BINDINGS = load();
+
+  private static Binding load() {
     try {
       // check we're dealing with a "CraftServer" and that the server isn't non-versioned.
       final Class<?> server = Bukkit.getServer().getClass();
-      if(!server.getSimpleName().equals("CraftServer") ||
-        server.getName().equals("org.bukkit.craftbukkit.CraftServer") ||
-        !server.getPackage().getName().startsWith("org.bukkit.craftbukkit.")) {
+      if(!isCompatibleServer(server)) {
         throw new UnsupportedOperationException("Incompatible server version");
       }
       final String serverVersion = server.getPackage().getName().substring("org.bukkit.craftbukkit.".length());
-      final Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + serverVersion + ".entity.CraftPlayer");
+      final Class<?> craftPlayerClass = craftBukkitClass(serverVersion, "entity.CraftPlayer");
       final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
       final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
       final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
       final Class<?> playerConnectionClass = playerConnectionField.getType();
-      final Class<?> packetClass = Class.forName("net.minecraft.server." + serverVersion + ".Packet");
+      final Class<?> packetClass = minecraftClass(serverVersion, "Packet");
       final Method sendPacketMethod = playerConnectionClass.getMethod("sendPacket", packetClass);
-      final Class<?> baseComponentClass = Class.forName("net.minecraft.server." + serverVersion + ".IChatBaseComponent");
-      final Class<?> chatPacketClass = Class.forName("net.minecraft.server." + serverVersion + ".PacketPlayOutChat");
+      final Class<?> baseComponentClass = minecraftClass(serverVersion, "IChatBaseComponent");
+      final Class<?> chatPacketClass = minecraftClass(serverVersion, "PacketPlayOutChat");
       final Constructor<?> chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass);
       final Class<?> chatSerializerClass = Arrays.stream(baseComponentClass.getClasses())
         .filter(JsonDeserializer.class::isAssignableFrom)
@@ -68,7 +66,7 @@ final class CraftBukkitAdapter implements Adapter {
         // fallback to the 1.7 class?
         .orElseGet(() -> {
           try {
-            return Class.forName("net.minecraft.server." + serverVersion + ".ChatSerializer");
+            return minecraftClass(serverVersion, "ChatSerializer");
           } catch(final ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
@@ -79,20 +77,33 @@ final class CraftBukkitAdapter implements Adapter {
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
-      reflectionBindings = new ReflectionBindings(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, serializeMethod);
+      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, serializeMethod);
     } catch(final Exception e) {
-      reflectionBindings = new ReflectionBindings(e);
+      return new DeadBinding();
     }
-    REFLECTION_BINDINGS = reflectionBindings;
+  }
+
+  private static boolean isCompatibleServer(final Class<?> serverClass) {
+    return serverClass.getPackage().getName().startsWith("org.bukkit.craftbukkit.")
+      && serverClass.getSimpleName().equals("CraftServer")
+      && !serverClass.getName().equals("org.bukkit.craftbukkit.CraftServer");
+  }
+
+  private static Class<?> craftBukkitClass(final String version, final String name) throws ClassNotFoundException {
+    return Class.forName("org.bukkit.craftbukkit." + version + '.' + name);
+  }
+
+  private static Class<?> minecraftClass(final String version, final String name) throws ClassNotFoundException {
+    return Class.forName("net.minecraft.server." + version + '.' + name);
   }
 
   @Override
-  public void sendComponent(final List<? extends CommandSender> senders, final Component component) {
-    if(REFLECTION_BINDINGS.error != null) {
+  public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
+    if(!REFLECTION_BINDINGS.valid()) {
       return;
     }
     Object packet = null;
-    for(final Iterator<? extends CommandSender> iterator = senders.iterator(); iterator.hasNext(); ) {
+    for(final Iterator<? extends CommandSender> iterator = viewers.iterator(); iterator.hasNext(); ) {
       final CommandSender sender = iterator.next();
       if(sender instanceof Player) {
         try {
@@ -109,16 +120,39 @@ final class CraftBukkitAdapter implements Adapter {
     }
   }
 
-  private static final class ReflectionBindings {
-    private final Exception error;
+  private static abstract class Binding {
+    abstract boolean valid();
+
+    abstract Object createPacket(final Component component);
+
+    abstract void sendPacket(final Object packet, final Player player);
+  }
+
+  private static final class DeadBinding extends Binding {
+    @Override
+    boolean valid() {
+      return false;
+    }
+
+    @Override
+    Object createPacket(final Component component) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    void sendPacket(final Object packet, final Player player) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  private static final class AliveBinding extends Binding {
     private final Method getHandleMethod;
     private final Field playerConnectionField;
     private final Method sendPacketMethod;
     private final Constructor<?> chatPacketConstructor;
     private final Method serializeMethod;
 
-    ReflectionBindings(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Method serializeMethod) {
-      this.error = null;
+    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Method serializeMethod) {
       this.getHandleMethod = getHandleMethod;
       this.playerConnectionField = playerConnectionField;
       this.sendPacketMethod = sendPacketMethod;
@@ -126,30 +160,28 @@ final class CraftBukkitAdapter implements Adapter {
       this.serializeMethod = serializeMethod;
     }
 
-    ReflectionBindings(final Exception error) {
-      this.error = error;
-      this.getHandleMethod = null;
-      this.playerConnectionField = null;
-      this.sendPacketMethod = null;
-      this.chatPacketConstructor = null;
-      this.serializeMethod = null;
+    @Override
+    boolean valid() {
+      return true;
     }
 
+    @Override
     Object createPacket(final Component component) {
       final String json = ComponentSerializers.JSON.serialize(component);
       try {
         return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
       } catch(final Exception e) {
-        throw new UnsupportedOperationException("Unable to send component messages. Error occurred during packet creation.", e);
+        throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
       }
     }
 
+    @Override
     void sendPacket(final Object packet, final Player player) {
       try {
         final Object connection = this.playerConnectionField.get(this.getHandleMethod.invoke(player));
         this.sendPacketMethod.invoke(connection, packet);
       } catch(final Exception e) {
-        throw new UnsupportedOperationException("Unable to send component messages. Error occurred during packet sending.", e);
+        throw new UnsupportedOperationException("An exception was encountered while sending a packet for a component", e);
       }
     }
   }

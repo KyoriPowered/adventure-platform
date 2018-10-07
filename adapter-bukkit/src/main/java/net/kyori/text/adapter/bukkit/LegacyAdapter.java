@@ -30,13 +30,13 @@ import org.bukkit.command.CommandSender;
 import java.util.List;
 
 final class LegacyAdapter implements Adapter {
-  @SuppressWarnings("deprecation")
   @Override
-  public void sendComponent(final List<? extends CommandSender> senders, final Component component) {
+  @SuppressWarnings("deprecation")
+  public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
     final String legacy = ComponentSerializers.LEGACY.serialize(component);
-    for(final CommandSender sender : senders) {
-      sender.sendMessage(legacy);
+    for(final CommandSender viewer : viewers) {
+      viewer.sendMessage(legacy);
     }
-    senders.clear();
+    viewers.clear();
   }
 }

@@ -31,10 +31,10 @@ import java.util.List;
 interface Adapter {
   /**
    * Attempts to send the {@code component} to each sender in the given list, removing
-   * senders from the list if the adapter was able to successfully send the component.
+   * viewers from the list if the adapter was able to successfully send the component.
    *
-   * @param senders the senders
+   * @param viewers the viewers
    * @param component the component
    */
-  void sendComponent(final List<? extends CommandSender> senders, final Component component);
+  void sendComponent(final List<? extends CommandSender> viewers, final Component component);
 }
