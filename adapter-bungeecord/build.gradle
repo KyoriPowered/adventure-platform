@@ -1,0 +1,10 @@
+repositories {
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
+
+dependencies {
+  compile 'net.kyori:text:1.12-1.6.4'
+  compileOnly 'net.md-5:bungeecord-api:1.13-SNAPSHOT'
+}
