@@ -2,3 +2,6 @@ rootProject.name = 'text-extras-parent'
 
 include 'adapter-bukkit'
 findProject(':adapter-bukkit')?.name = 'text-adapter-bukkit'
+
+include 'adapter-bungeecord'
+findProject(':adapter-bungeecord')?.name = 'text-adapter-bungeecord'
