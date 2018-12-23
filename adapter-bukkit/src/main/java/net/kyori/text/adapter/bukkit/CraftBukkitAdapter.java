@@ -78,7 +78,7 @@ final class CraftBukkitAdapter implements Adapter {
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
       return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, serializeMethod);
-    } catch(final Exception e) {
+    } catch(final Throwable e) {
       return new DeadBinding();
     }
   }

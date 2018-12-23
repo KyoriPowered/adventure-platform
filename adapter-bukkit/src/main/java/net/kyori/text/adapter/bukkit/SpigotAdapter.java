@@ -28,7 +28,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
-import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import net.kyori.text.Component;
 import net.kyori.text.serializer.GsonComponentSerializer;
@@ -38,6 +37,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -57,11 +57,27 @@ final class SpigotAdapter implements Adapter {
 
       final List<TypeAdapterFactory> factories = (List) factoriesField.get(gson);
       final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(factories);
-      modifiedFactories.add(0, TreeTypeAdapter.newTypeHierarchyFactory(Component.class, new GsonComponentSerializer()));
-      modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
+
+      Class<?> treeTypeAdapterClass;
+      try {
+        // newer gson releases
+        treeTypeAdapterClass = Class.forName("com.google.gson.internal.bind.TreeTypeAdapter");
+      } catch (ClassNotFoundException e) {
+        // old gson releases
+        treeTypeAdapterClass = Class.forName("com.google.gson.TreeTypeAdapter");
+      }
+
+      Method newTypeHierarchyFactoryMethod = treeTypeAdapterClass.getMethod("newTypeHierarchyFactory", Class.class, Object.class);
+      TypeAdapterFactory factory1 = (TypeAdapterFactory) newTypeHierarchyFactoryMethod.invoke(null, Component.class, new GsonComponentSerializer());
+      modifiedFactories.add(0, factory1);
+
+      Method newFactoryWithMatchRawTypeMethod = treeTypeAdapterClass.getMethod("newFactoryWithMatchRawType", TypeToken.class, Object.class);
+      TypeAdapterFactory factory2 = (TypeAdapterFactory) newFactoryWithMatchRawTypeMethod.invoke(null, TypeToken.get(AdapterComponent.class), new Serializer());
+      modifiedFactories.add(0, factory2);
+
       factoriesField.set(gson, modifiedFactories);
       return true;
-    } catch(final Exception e) {
+    } catch(final Throwable e) {
       return false;
     }
   }
