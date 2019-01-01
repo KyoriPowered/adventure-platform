@@ -113,8 +113,8 @@ final class TextAdapter0 {
       this.component = component;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
+    @SuppressWarnings("deprecation")
     public String toLegacyText() {
       return ComponentSerializers.LEGACY.serialize(this.component);
     }
