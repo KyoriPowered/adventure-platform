@@ -114,6 +114,12 @@ final class TextAdapter0 {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
+    public String toLegacyText() {
+      return ComponentSerializers.LEGACY.serialize(this.component);
+    }
+
+    @Override
     public BaseComponent duplicate() {
       return this;
     }
