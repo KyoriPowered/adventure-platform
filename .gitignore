@@ -2,5 +2,7 @@
 /.idea/
 /adapter-bukkit/build/
 /adapter-bukkit/out/
+/adapter-bungeecord/build/
+/adapter-bungeecord/out/
 /run/
 /*.iml
