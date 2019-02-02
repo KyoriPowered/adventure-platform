@@ -27,7 +27,9 @@ import net.kyori.text.Component;
 import net.kyori.text.serializer.ComponentSerializers;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
+import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.Collections;
@@ -56,6 +58,30 @@ public interface TextAdapter {
     final Text text = TextSerializers.JSON.deserialize(ComponentSerializers.JSON.serialize(component));
     for(final MessageReceiver viewer : viewers) {
       viewer.sendMessage(text);
+    }
+  }
+  /**
+   * Sends {@code component} to the given {@code viewer}.
+   *
+   * @param viewer the viewer to send the component to
+   * @param component the component
+   * @param type the type
+   */
+  static void sendComponent(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Component component, final @NonNull ChatType type) {
+    sendComponent(Collections.singleton(viewer), component, type);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewers}.
+   *
+   * @param viewers the viewers to send the component to
+   * @param component the component
+   * @param type the type
+   */
+  static void sendComponent(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
+    final Text text = TextSerializers.JSON.deserialize(ComponentSerializers.JSON.serialize(component));
+    for(final ChatTypeMessageReceiver viewer : viewers) {
+      viewer.sendMessage(type, text);
     }
   }
 }
