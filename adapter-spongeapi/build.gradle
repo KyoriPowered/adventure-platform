@@ -1,0 +1,10 @@
+repositories {
+  maven {
+    url 'https://repo.spongepowered.org/maven/'
+  }
+}
+
+dependencies {
+  compile 'net.kyori:text:1.12-1.6.4'
+  compileOnly 'org.spongepowered:spongeapi:7.1.0'
+}

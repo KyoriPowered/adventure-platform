@@ -5,3 +5,6 @@ findProject(':adapter-bukkit')?.name = 'text-adapter-bukkit'
 
 include 'adapter-bungeecord'
 findProject(':adapter-bungeecord')?.name = 'text-adapter-bungeecord'
+
+include 'adapter-spongeapi'
+findProject(':adapter-spongeapi')?.name = 'text-adapter-spongeapi'

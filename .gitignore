@@ -4,5 +4,7 @@
 /adapter-bukkit/out/
 /adapter-bungeecord/build/
 /adapter-bungeecord/out/
+/adapter-spongeapi/build/
+/adapter-spongeapi/out/
 /run/
 /*.iml
