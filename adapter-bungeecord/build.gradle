@@ -5,6 +5,8 @@ repositories {
 }
 
 dependencies {
-  compile 'net.kyori:text:1.12-1.6.4'
+  compile 'net.kyori:text-api:2.0.0'
+  compile 'net.kyori:text-serializer-gson:2.0.0'
+  compile 'net.kyori:text-serializer-legacy:2.0.0'
   compileOnly 'net.md-5:bungeecord-api:1.13-SNAPSHOT'
 }

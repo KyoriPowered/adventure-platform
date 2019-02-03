@@ -24,7 +24,7 @@
 package net.kyori.text.adapter.spongeapi;
 
 import net.kyori.text.Component;
-import net.kyori.text.serializer.ComponentSerializers;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
@@ -55,7 +55,7 @@ public interface TextAdapter {
    * @param component the component
    */
   static void sendComponent(final @NonNull Iterable<? extends MessageReceiver> viewers, final @NonNull Component component) {
-    final Text text = TextSerializers.JSON.deserialize(ComponentSerializers.JSON.serialize(component));
+    final Text text = TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
     for(final MessageReceiver viewer : viewers) {
       viewer.sendMessage(text);
     }
@@ -79,7 +79,7 @@ public interface TextAdapter {
    * @param type the type
    */
   static void sendComponent(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
-    final Text text = TextSerializers.JSON.deserialize(ComponentSerializers.JSON.serialize(component));
+    final Text text = TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
     for(final ChatTypeMessageReceiver viewer : viewers) {
       viewer.sendMessage(type, text);
     }

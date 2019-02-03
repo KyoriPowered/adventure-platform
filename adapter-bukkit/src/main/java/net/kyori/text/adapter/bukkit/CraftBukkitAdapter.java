@@ -25,7 +25,7 @@ package net.kyori.text.adapter.bukkit;
 
 import com.google.gson.JsonDeserializer;
 import net.kyori.text.Component;
-import net.kyori.text.serializer.ComponentSerializers;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -167,7 +167,7 @@ final class CraftBukkitAdapter implements Adapter {
 
     @Override
     Object createPacket(final Component component) {
-      final String json = ComponentSerializers.JSON.serialize(component);
+      final String json = GsonComponentSerializer.INSTANCE.serialize(component);
       try {
         return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
       } catch(final Exception e) {

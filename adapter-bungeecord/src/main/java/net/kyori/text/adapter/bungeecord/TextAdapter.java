@@ -32,8 +32,8 @@ import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
 
 import net.kyori.text.Component;
-import net.kyori.text.serializer.ComponentSerializers;
-import net.kyori.text.serializer.GsonComponentSerializer;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -85,7 +85,7 @@ final class TextAdapter0 {
 
       final List<TypeAdapterFactory> factories = (List) factoriesField.get(gson);
       final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(factories);
-      modifiedFactories.add(0, TreeTypeAdapter.newTypeHierarchyFactory(Component.class, new GsonComponentSerializer()));
+      modifiedFactories.add(0, TreeTypeAdapter.newTypeHierarchyFactory(Component.class, GsonComponentSerializer.INSTANCE));
       modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
       factoriesField.set(gson, modifiedFactories);
       return true;
@@ -99,7 +99,7 @@ final class TextAdapter0 {
     if(BOUND) {
       components = new BaseComponent[]{new AdapterComponent(component)};
     } else {
-      components = ComponentSerializer.parse(ComponentSerializers.JSON.serialize(component));
+      components = ComponentSerializer.parse(GsonComponentSerializer.INSTANCE.serialize(component));
     }
     for(final CommandSender viewer : viewers) {
       viewer.sendMessage(components);
@@ -114,9 +114,8 @@ final class TextAdapter0 {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public String toLegacyText() {
-      return ComponentSerializers.LEGACY.serialize(this.component);
+      return LegacyComponentSerializer.INSTANCE.serialize(this.component);
     }
 
     @Override

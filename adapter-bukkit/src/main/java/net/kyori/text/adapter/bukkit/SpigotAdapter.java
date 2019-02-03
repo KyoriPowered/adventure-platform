@@ -30,7 +30,7 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import net.kyori.text.Component;
-import net.kyori.text.serializer.GsonComponentSerializer;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.command.CommandSender;
@@ -68,7 +68,7 @@ final class SpigotAdapter implements Adapter {
       }
 
       Method newTypeHierarchyFactoryMethod = treeTypeAdapterClass.getMethod("newTypeHierarchyFactory", Class.class, Object.class);
-      TypeAdapterFactory factory1 = (TypeAdapterFactory) newTypeHierarchyFactoryMethod.invoke(null, Component.class, new GsonComponentSerializer());
+      TypeAdapterFactory factory1 = (TypeAdapterFactory) newTypeHierarchyFactoryMethod.invoke(null, Component.class, GsonComponentSerializer.INSTANCE);
       modifiedFactories.add(0, factory1);
 
       Method newFactoryWithMatchRawTypeMethod = treeTypeAdapterClass.getMethod("newFactoryWithMatchRawType", TypeToken.class, Object.class);

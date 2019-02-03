@@ -24,16 +24,15 @@
 package net.kyori.text.adapter.bukkit;
 
 import net.kyori.text.Component;
-import net.kyori.text.serializer.ComponentSerializers;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
 final class LegacyAdapter implements Adapter {
   @Override
-  @SuppressWarnings("deprecation")
   public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
-    final String legacy = ComponentSerializers.LEGACY.serialize(component);
+    final String legacy = LegacyComponentSerializer.INSTANCE.serialize(component);
     for(final CommandSender viewer : viewers) {
       viewer.sendMessage(legacy);
     }
