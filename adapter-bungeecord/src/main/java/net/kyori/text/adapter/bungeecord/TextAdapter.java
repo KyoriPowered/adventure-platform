@@ -32,7 +32,12 @@ import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
 
 import net.kyori.text.Component;
+import net.kyori.text.event.ClickEvent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
+import net.kyori.text.format.TextDecoration;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.text.serializer.gson.NameMapSerializer;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -87,6 +92,11 @@ final class TextAdapter0 {
       final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(factories);
       modifiedFactories.add(0, TreeTypeAdapter.newTypeHierarchyFactory(Component.class, GsonComponentSerializer.INSTANCE));
       modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
+      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(ClickEvent.Action.class), new NameMapSerializer<>("click action", ClickEvent.Action.NAMES)));
+      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(HoverEvent.Action.class), new NameMapSerializer<>("hover action", HoverEvent.Action.NAMES)));
+      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(TextColor.class), new NameMapSerializer<>("text color", TextColor.NAMES)));
+      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(TextDecoration.class), new NameMapSerializer<>("text decoration", TextDecoration.NAMES)));
+
       factoriesField.set(gson, modifiedFactories);
       return true;
     } catch(final Exception e) {

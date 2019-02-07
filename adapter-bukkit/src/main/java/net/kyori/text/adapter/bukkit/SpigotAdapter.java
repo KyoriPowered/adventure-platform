@@ -30,7 +30,12 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import net.kyori.text.Component;
+import net.kyori.text.event.ClickEvent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
+import net.kyori.text.format.TextDecoration;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.text.serializer.gson.NameMapSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.command.CommandSender;
@@ -62,18 +67,24 @@ final class SpigotAdapter implements Adapter {
       try {
         // newer gson releases
         treeTypeAdapterClass = Class.forName("com.google.gson.internal.bind.TreeTypeAdapter");
-      } catch (ClassNotFoundException e) {
+      } catch (final ClassNotFoundException e) {
         // old gson releases
         treeTypeAdapterClass = Class.forName("com.google.gson.TreeTypeAdapter");
       }
 
-      Method newTypeHierarchyFactoryMethod = treeTypeAdapterClass.getMethod("newTypeHierarchyFactory", Class.class, Object.class);
-      TypeAdapterFactory factory1 = (TypeAdapterFactory) newTypeHierarchyFactoryMethod.invoke(null, Component.class, GsonComponentSerializer.INSTANCE);
+      final Method newTypeHierarchyFactoryMethod = treeTypeAdapterClass.getMethod("newTypeHierarchyFactory", Class.class, Object.class);
+      final TypeAdapterFactory factory1 = (TypeAdapterFactory) newTypeHierarchyFactoryMethod.invoke(null, Component.class, GsonComponentSerializer.INSTANCE);
       modifiedFactories.add(0, factory1);
 
-      Method newFactoryWithMatchRawTypeMethod = treeTypeAdapterClass.getMethod("newFactoryWithMatchRawType", TypeToken.class, Object.class);
-      TypeAdapterFactory factory2 = (TypeAdapterFactory) newFactoryWithMatchRawTypeMethod.invoke(null, TypeToken.get(AdapterComponent.class), new Serializer());
+      final Method newFactoryWithMatchRawTypeMethod = treeTypeAdapterClass.getMethod("newFactoryWithMatchRawType", TypeToken.class, Object.class);
+      final TypeAdapterFactory factory2 = (TypeAdapterFactory) newFactoryWithMatchRawTypeMethod.invoke(null, TypeToken.get(AdapterComponent.class), new Serializer());
       modifiedFactories.add(0, factory2);
+
+      final Method newFactoryMethod = treeTypeAdapterClass.getMethod("newFactory", TypeToken.class, Object.class);
+      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(ClickEvent.Action.class), new NameMapSerializer<>("click action", ClickEvent.Action.NAMES)));
+      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(HoverEvent.Action.class), new NameMapSerializer<>("hover action", HoverEvent.Action.NAMES)));
+      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(TextColor.class), new NameMapSerializer<>("text color", TextColor.NAMES)));
+      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(TextDecoration.class), new NameMapSerializer<>("text decoration", TextDecoration.NAMES)));
 
       factoriesField.set(gson, modifiedFactories);
       return true;
