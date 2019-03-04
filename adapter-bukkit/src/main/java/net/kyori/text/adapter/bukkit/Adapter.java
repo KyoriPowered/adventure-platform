@@ -35,6 +35,7 @@ interface Adapter {
    *
    * @param viewers the viewers
    * @param component the component
+   * @param actionBar if action bar
    */
-  void sendComponent(final List<? extends CommandSender> viewers, final Component component);
+  void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar);
 }

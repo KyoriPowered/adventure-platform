@@ -36,6 +36,7 @@ import net.kyori.text.format.TextColor;
 import net.kyori.text.format.TextDecoration;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.text.serializer.gson.NameMapSerializer;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.command.CommandSender;
@@ -94,7 +95,7 @@ final class SpigotAdapter implements Adapter {
   }
 
   @Override
-  public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
+  public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
     if(!BOUND) {
       return;
     }
@@ -104,7 +105,11 @@ final class SpigotAdapter implements Adapter {
       if(viewer instanceof Player) {
         try {
           final Player player = (Player) viewer;
-          player.spigot().sendMessage(components);
+          if(actionBar) {
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, components);
+          } else {
+            player.spigot().sendMessage(components);
+          }
           it.remove();
         } catch(final Throwable e) {
           e.printStackTrace();

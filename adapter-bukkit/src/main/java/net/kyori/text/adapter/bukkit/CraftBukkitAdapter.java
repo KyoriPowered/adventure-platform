@@ -60,6 +60,16 @@ final class CraftBukkitAdapter implements Adapter {
       final Class<?> baseComponentClass = minecraftClass(serverVersion, "IChatBaseComponent");
       final Class<?> chatPacketClass = minecraftClass(serverVersion, "PacketPlayOutChat");
       final Constructor<?> chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass);
+      final Class<?> titlePacketClass = optionalMinecraftClass(serverVersion, "PacketPlayOutTitle");
+      final Class<? extends Enum> titlePacketClassAction;
+      final Constructor<?> titlePacketConstructor;
+      if(titlePacketClass != null) {
+        titlePacketClassAction = (Class<? extends Enum>) minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
+        titlePacketConstructor = titlePacketClass.getConstructor(titlePacketClassAction, baseComponentClass);
+      } else {
+        titlePacketClassAction = null;
+        titlePacketConstructor = null;
+      }
       final Class<?> chatSerializerClass = Arrays.stream(baseComponentClass.getClasses())
         .filter(JsonDeserializer.class::isAssignableFrom)
         .findAny()
@@ -77,7 +87,7 @@ final class CraftBukkitAdapter implements Adapter {
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
-      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, serializeMethod);
+      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, serializeMethod);
     } catch(final Throwable e) {
       return new DeadBinding();
     }
@@ -97,8 +107,16 @@ final class CraftBukkitAdapter implements Adapter {
     return Class.forName("net.minecraft.server." + version + '.' + name);
   }
 
+  private static Class<?> optionalMinecraftClass(final String version, final String name) {
+    try {
+      return minecraftClass(version, name);
+    } catch(final ClassNotFoundException e) {
+      return null;
+    }
+  }
+
   @Override
-  public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
+  public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
     if(!REFLECTION_BINDINGS.valid()) {
       return;
     }
@@ -109,7 +127,7 @@ final class CraftBukkitAdapter implements Adapter {
         try {
           final Player player = (Player) sender;
           if(packet == null) {
-            packet = REFLECTION_BINDINGS.createPacket(component);
+            packet = REFLECTION_BINDINGS.createPacket(component, actionBar);
           }
           REFLECTION_BINDINGS.sendPacket(packet, player);
           iterator.remove();
@@ -123,7 +141,7 @@ final class CraftBukkitAdapter implements Adapter {
   private static abstract class Binding {
     abstract boolean valid();
 
-    abstract Object createPacket(final Component component);
+    abstract Object createPacket(final Component component, final boolean actionBar);
 
     abstract void sendPacket(final Object packet, final Player player);
   }
@@ -135,7 +153,7 @@ final class CraftBukkitAdapter implements Adapter {
     }
 
     @Override
-    Object createPacket(final Component component) {
+    Object createPacket(final Component component, final boolean actionBar) {
       throw new UnsupportedOperationException();
     }
 
@@ -150,13 +168,19 @@ final class CraftBukkitAdapter implements Adapter {
     private final Field playerConnectionField;
     private final Method sendPacketMethod;
     private final Constructor<?> chatPacketConstructor;
+    private final Class<? extends Enum> titlePacketClassAction;
+    private final Constructor<?> titlePacketConstructor;
+    private final boolean canMakeTitle;
     private final Method serializeMethod;
 
-    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Method serializeMethod) {
+    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Class<? extends Enum> titlePacketClassAction, final Constructor<?> titlePacketConstructor, final Method serializeMethod) {
       this.getHandleMethod = getHandleMethod;
       this.playerConnectionField = playerConnectionField;
       this.sendPacketMethod = sendPacketMethod;
       this.chatPacketConstructor = chatPacketConstructor;
+      this.titlePacketClassAction = titlePacketClassAction;
+      this.titlePacketConstructor = titlePacketConstructor;
+      this.canMakeTitle = this.titlePacketClassAction != null && this.titlePacketConstructor != null;
       this.serializeMethod = serializeMethod;
     }
 
@@ -166,10 +190,20 @@ final class CraftBukkitAdapter implements Adapter {
     }
 
     @Override
-    Object createPacket(final Component component) {
+    Object createPacket(final Component component, final boolean actionBar) {
       final String json = GsonComponentSerializer.INSTANCE.serialize(component);
       try {
-        return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
+        if(actionBar && this.canMakeTitle) {
+          Enum constant;
+          try {
+            constant = Enum.valueOf(this.titlePacketClassAction, "ACTIONBAR");
+          } catch(final IllegalArgumentException e) {
+            constant = this.titlePacketClassAction.getEnumConstants()[2];
+          }
+          return this.titlePacketConstructor.newInstance(constant, this.serializeMethod.invoke(null, json));
+        } else {
+          return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
+        }
       } catch(final Exception e) {
         throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
       }

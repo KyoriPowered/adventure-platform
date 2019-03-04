@@ -56,7 +56,27 @@ public interface TextAdapter {
    * @param component the component
    */
   static void sendComponent(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
-    TextAdapter0.sendComponent(viewers, component);
+    TextAdapter0.sendComponent(viewers, component, false);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewer}'s action bar.
+   *
+   * @param viewer the viewer to send the component to
+   * @param component the component
+   */
+  static void sendActionBar(final @NonNull CommandSender viewer, final @NonNull Component component) {
+    sendActionBar(Collections.singleton(viewer), component);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewers}'s action bar.
+   *
+   * @param viewers the viewers to send the component to
+   * @param component the component
+   */
+  static void sendActionBar(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
+    TextAdapter0.sendComponent(viewers, component, true);
   }
 }
 
@@ -82,12 +102,12 @@ final class TextAdapter0 {
     }
   }
 
-  static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component) {
+  static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
     final List<CommandSender> list = new ArrayList<>();
     Iterables.addAll(list, viewers);
     for(final Iterator<Adapter> it = ADAPTERS.iterator(); it.hasNext() && !list.isEmpty(); ) {
       final Adapter adapter = it.next();
-      adapter.sendComponent(list, component);
+      adapter.sendComponent(list, component, actionBar);
     }
   }
 }

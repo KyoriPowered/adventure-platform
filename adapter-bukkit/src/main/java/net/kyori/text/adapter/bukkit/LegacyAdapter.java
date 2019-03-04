@@ -31,7 +31,7 @@ import java.util.List;
 
 final class LegacyAdapter implements Adapter {
   @Override
-  public void sendComponent(final List<? extends CommandSender> viewers, final Component component) {
+  public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
     final String legacy = LegacyComponentSerializer.INSTANCE.serialize(component);
     for(final CommandSender viewer : viewers) {
       viewer.sendMessage(legacy);
