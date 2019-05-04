@@ -5,7 +5,7 @@ repositories {
 }
 
 dependencies {
-  compile 'net.kyori:text-api:2.0.0'
-  compile 'net.kyori:text-serializer-gson:2.0.0'
+  compile 'net.kyori:text-api:3.0.0'
+  compile 'net.kyori:text-serializer-gson:3.0.0'
   compileOnly 'org.spongepowered:spongeapi:7.1.0'
 }

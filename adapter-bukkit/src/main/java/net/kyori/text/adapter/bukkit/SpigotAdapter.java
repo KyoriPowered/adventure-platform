@@ -23,19 +23,16 @@
  */
 package net.kyori.text.adapter.bukkit;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import net.kyori.text.Component;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.text.serializer.gson.NameMapSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -45,8 +42,8 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 final class SpigotAdapter implements Adapter {
@@ -57,12 +54,19 @@ final class SpigotAdapter implements Adapter {
     try {
       final Field gsonField = ComponentSerializer.class.getDeclaredField("gson");
       gsonField.setAccessible(true);
-      final Gson gson = (Gson) gsonField.get(null);
       final Field factoriesField = Gson.class.getDeclaredField("factories");
       factoriesField.setAccessible(true);
 
-      final List<TypeAdapterFactory> factories = (List) factoriesField.get(gson);
-      final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(factories);
+      final Gson componentSerializerGson = (Gson) gsonField.get(null);
+      final Gson textGson = GsonComponentSerializer.populate(new GsonBuilder()).create();
+
+      final List<TypeAdapterFactory> existingFactories = (List) factoriesField.get(componentSerializerGson);
+      final List<TypeAdapterFactory> newFactories = (List) factoriesField.get(textGson);
+
+      final List<TypeAdapterFactory> modifiedFactories = new LinkedList<>(existingFactories);
+      for(final TypeAdapterFactory newFactory : Lists.reverse(newFactories)) {
+          modifiedFactories.add(0, newFactory);
+      }
 
       Class<?> treeTypeAdapterClass;
       try {
@@ -73,21 +77,11 @@ final class SpigotAdapter implements Adapter {
         treeTypeAdapterClass = Class.forName("com.google.gson.TreeTypeAdapter");
       }
 
-      final Method newTypeHierarchyFactoryMethod = treeTypeAdapterClass.getMethod("newTypeHierarchyFactory", Class.class, Object.class);
-      final TypeAdapterFactory factory1 = (TypeAdapterFactory) newTypeHierarchyFactoryMethod.invoke(null, Component.class, GsonComponentSerializer.INSTANCE);
-      modifiedFactories.add(0, factory1);
-
       final Method newFactoryWithMatchRawTypeMethod = treeTypeAdapterClass.getMethod("newFactoryWithMatchRawType", TypeToken.class, Object.class);
-      final TypeAdapterFactory factory2 = (TypeAdapterFactory) newFactoryWithMatchRawTypeMethod.invoke(null, TypeToken.get(AdapterComponent.class), new Serializer());
-      modifiedFactories.add(0, factory2);
+      final TypeAdapterFactory adapterComponentFactory = (TypeAdapterFactory) newFactoryWithMatchRawTypeMethod.invoke(null, TypeToken.get(AdapterComponent.class), new Serializer());
+      modifiedFactories.add(0, adapterComponentFactory);
 
-      final Method newFactoryMethod = treeTypeAdapterClass.getMethod("newFactory", TypeToken.class, Object.class);
-      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(ClickEvent.Action.class), new NameMapSerializer<>("click action", ClickEvent.Action.NAMES)));
-      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(HoverEvent.Action.class), new NameMapSerializer<>("hover action", HoverEvent.Action.NAMES)));
-      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(TextColor.class), new NameMapSerializer<>("text color", TextColor.NAMES)));
-      modifiedFactories.add(1, (TypeAdapterFactory) newFactoryMethod.invoke(null, TypeToken.get(TextDecoration.class), new NameMapSerializer<>("text decoration", TextDecoration.NAMES)));
-
-      factoriesField.set(gson, modifiedFactories);
+      factoriesField.set(componentSerializerGson, modifiedFactories);
       return true;
     } catch(final Throwable e) {
       return false;
