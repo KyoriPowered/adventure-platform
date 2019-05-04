@@ -11,7 +11,7 @@ buildscript {
 }
 
 subprojects {
-  apply plugin: 'java'
+  apply plugin: 'java-library'
   apply plugin: 'maven'
   apply plugin: 'signing'
   apply plugin: 'net.minecrell.licenser'
@@ -35,13 +35,13 @@ subprojects {
   }
 
   repositories {
-    mavenLocal() // TODO remove this when 3.0.0 is released
+    mavenLocal()
     mavenCentral()
   }
 
   dependencies {
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
   }
 
   task javadocJar(type: Jar) {
