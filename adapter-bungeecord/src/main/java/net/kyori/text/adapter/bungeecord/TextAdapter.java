@@ -23,32 +23,27 @@
  */
 package net.kyori.text.adapter.bungeecord;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
-
 import net.kyori.text.Component;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.text.serializer.gson.NameMapSerializer;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -84,20 +79,23 @@ final class TextAdapter0 {
     try {
       final Field gsonField = ComponentSerializer.class.getDeclaredField("gson");
       gsonField.setAccessible(true);
-      final Gson gson = (Gson) gsonField.get(null);
       final Field factoriesField = Gson.class.getDeclaredField("factories");
       factoriesField.setAccessible(true);
 
-      final List<TypeAdapterFactory> factories = (List) factoriesField.get(gson);
-      final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(factories);
-      modifiedFactories.add(0, TreeTypeAdapter.newTypeHierarchyFactory(Component.class, GsonComponentSerializer.INSTANCE));
-      modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
-      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(ClickEvent.Action.class), new NameMapSerializer<>("click action", ClickEvent.Action.NAMES)));
-      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(HoverEvent.Action.class), new NameMapSerializer<>("hover action", HoverEvent.Action.NAMES)));
-      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(TextColor.class), new NameMapSerializer<>("text color", TextColor.NAMES)));
-      modifiedFactories.add(1, TreeTypeAdapter.newFactory(TypeToken.get(TextDecoration.class), new NameMapSerializer<>("text decoration", TextDecoration.NAMES)));
+      final Gson componentSerializerGson = (Gson) gsonField.get(null);
+      final Gson textGson = GsonComponentSerializer.populate(new GsonBuilder()).create();
 
-      factoriesField.set(gson, modifiedFactories);
+      final List<TypeAdapterFactory> existingFactories = (List) factoriesField.get(componentSerializerGson);
+      final List<TypeAdapterFactory> newFactories = (List) factoriesField.get(textGson);
+
+      final List<TypeAdapterFactory> modifiedFactories = new LinkedList<>(existingFactories);
+      for(final TypeAdapterFactory newFactory : Lists.reverse(newFactories)) {
+        modifiedFactories.add(0, newFactory);
+      }
+
+      modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
+
+      factoriesField.set(componentSerializerGson, modifiedFactories);
       return true;
     } catch(final Exception e) {
       return false;

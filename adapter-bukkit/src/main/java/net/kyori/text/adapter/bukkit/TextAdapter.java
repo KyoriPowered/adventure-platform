@@ -30,9 +30,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -103,7 +103,7 @@ final class TextAdapter0 {
   }
 
   static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
-    final List<CommandSender> list = new ArrayList<>();
+    final List<CommandSender> list = new LinkedList<>();
     Iterables.addAll(list, viewers);
     for(final Iterator<Adapter> it = ADAPTERS.iterator(); it.hasNext() && !list.isEmpty(); ) {
       final Adapter adapter = it.next();

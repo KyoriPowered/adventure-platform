@@ -11,13 +11,13 @@ buildscript {
 }
 
 subprojects {
-  apply plugin: 'java'
+  apply plugin: 'java-library'
   apply plugin: 'maven'
   apply plugin: 'signing'
   apply plugin: 'net.minecrell.licenser'
 
   group 'net.kyori'
-  version '2.0.0-SNAPSHOT'
+  version '3.0.0-SNAPSHOT'
 
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
@@ -40,8 +40,8 @@ subprojects {
   }
 
   dependencies {
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
   }
 
   task javadocJar(type: Jar) {
@@ -81,9 +81,9 @@ subprojects {
           }
 
           pom.project {
-            description 'Adapters for text.'
+            description 'Extras for text.'
             name project.name
-            url 'https://github.com/KyoriPowered/text-adapters/'
+            url 'https://github.com/KyoriPowered/text-extras/'
 
             developers {
               developer {
@@ -93,7 +93,7 @@ subprojects {
 
             issueManagement {
               system 'GitHub Issues'
-              url 'https://github.com/KyoriPowered/text-adapters/issues'
+              url 'https://github.com/KyoriPowered/text-extras/issues'
             }
 
             licenses {
@@ -104,9 +104,9 @@ subprojects {
             }
 
             scm {
-              connection 'scm:git@github.com:KyoriPowered/text-adapters.git'
-              developerConnection 'scm:git@github.com:KyoriPowered/text-adapters.git'
-              url 'https://github.com/KyoriPowered/text-adapters/'
+              connection 'scm:git@github.com:KyoriPowered/text-extras.git'
+              developerConnection 'scm:git@github.com:KyoriPowered/text-extras.git'
+              url 'https://github.com/KyoriPowered/text-extras/'
             }
           }
         }
