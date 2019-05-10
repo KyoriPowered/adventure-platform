@@ -30,6 +30,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
+import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import net.kyori.text.Component;
@@ -42,8 +43,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -72,34 +73,57 @@ public interface TextAdapter {
 }
 
 final class TextAdapter0 {
-  private static final boolean BOUND = bind();
+  static final boolean BOUND = bind();
 
   @SuppressWarnings("unchecked")
   private static boolean bind() {
     try {
-      final Field gsonField = ComponentSerializer.class.getDeclaredField("gson");
-      gsonField.setAccessible(true);
-      final Field factoriesField = Gson.class.getDeclaredField("factories");
-      factoriesField.setAccessible(true);
+      final Field gsonField = field(ComponentSerializer.class, "gson");
+      final Field factoriesField = field(Gson.class, "factories");
+      final Field builderFactoriesField = field(GsonBuilder.class, "factories");
+      final Field builderHierarchyFactoriesField = field(GsonBuilder.class, "hierarchyFactories");
 
-      final Gson componentSerializerGson = (Gson) gsonField.get(null);
-      final Gson textGson = GsonComponentSerializer.populate(new GsonBuilder()).create();
+      final Gson gson = (Gson) gsonField.get(null);
+      final GsonBuilder builder = GsonComponentSerializer.populate(new GsonBuilder());
 
-      final List<TypeAdapterFactory> existingFactories = (List) factoriesField.get(componentSerializerGson);
-      final List<TypeAdapterFactory> newFactories = (List) factoriesField.get(textGson);
+      final List<TypeAdapterFactory> existingFactories = (List<TypeAdapterFactory>) factoriesField.get(gson);
+      final List<TypeAdapterFactory> newFactories = new ArrayList<>();
+      newFactories.addAll((List<TypeAdapterFactory>) builderFactoriesField.get(builder));
+      Collections.reverse(newFactories);
+      newFactories.addAll((List<TypeAdapterFactory>) builderHierarchyFactoriesField.get(builder));
 
-      final List<TypeAdapterFactory> modifiedFactories = new LinkedList<>(existingFactories);
+      final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(existingFactories);
+
+      // the excluder must precede all adapters that handle user-defined types
+      final int index = findExcluderIndex(modifiedFactories);
+
       for(final TypeAdapterFactory newFactory : Lists.reverse(newFactories)) {
-        modifiedFactories.add(0, newFactory);
+        modifiedFactories.add(index, newFactory);
       }
 
-      modifiedFactories.add(0, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
+      modifiedFactories.add(index, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
 
-      factoriesField.set(componentSerializerGson, modifiedFactories);
+      factoriesField.set(gson, modifiedFactories);
       return true;
     } catch(final Exception e) {
       return false;
     }
+  }
+
+  private static Field field(final Class<?> klass, final String name) throws NoSuchFieldException {
+    final Field field = klass.getDeclaredField(name);
+    field.setAccessible(true);
+    return field;
+  }
+
+  private static int findExcluderIndex(final List<TypeAdapterFactory> factories) {
+    for(int i = 0, size = factories.size(); i < size; i++) {
+      final TypeAdapterFactory factory = factories.get(i);
+      if(factory instanceof Excluder) {
+        return i + 1;
+      }
+    }
+    return 0;
   }
 
   static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component) {
