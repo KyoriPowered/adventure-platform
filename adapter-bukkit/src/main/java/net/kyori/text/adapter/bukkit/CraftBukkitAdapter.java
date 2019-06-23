@@ -44,12 +44,11 @@ final class CraftBukkitAdapter implements Adapter {
 
   private static Binding load() {
     try {
-      // check we're dealing with a "CraftServer" and that the server isn't non-versioned.
       final Class<?> server = Bukkit.getServer().getClass();
       if(!isCompatibleServer(server)) {
         throw new UnsupportedOperationException("Incompatible server version");
       }
-      final String serverVersion = server.getPackage().getName().substring("org.bukkit.craftbukkit.".length());
+      final String serverVersion = maybeVersion(server.getPackage().getName().substring("org.bukkit.craftbukkit".length()));
       final Class<?> craftPlayerClass = craftBukkitClass(serverVersion, "entity.CraftPlayer");
       final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
       final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
@@ -94,17 +93,25 @@ final class CraftBukkitAdapter implements Adapter {
   }
 
   private static boolean isCompatibleServer(final Class<?> serverClass) {
-    return serverClass.getPackage().getName().startsWith("org.bukkit.craftbukkit.")
-      && serverClass.getSimpleName().equals("CraftServer")
-      && !serverClass.getName().equals("org.bukkit.craftbukkit.CraftServer");
+    return serverClass.getPackage().getName().startsWith("org.bukkit.craftbukkit")
+      && serverClass.getSimpleName().equals("CraftServer");
   }
 
   private static Class<?> craftBukkitClass(final String version, final String name) throws ClassNotFoundException {
-    return Class.forName("org.bukkit.craftbukkit." + version + '.' + name);
+    return Class.forName("org.bukkit.craftbukkit." + version + name);
   }
 
   private static Class<?> minecraftClass(final String version, final String name) throws ClassNotFoundException {
-    return Class.forName("net.minecraft.server." + version + '.' + name);
+    return Class.forName("net.minecraft.server." + version + name);
+  }
+
+  private static String maybeVersion(final String version) {
+    if(version.isEmpty()) {
+      return "";
+    } else if(version.charAt(0) == '.') {
+      return version.substring(1) + '.';
+    }
+    throw new IllegalArgumentException("Unknown version " + version);
   }
 
   private static Class<?> optionalMinecraftClass(final String version, final String name) {
