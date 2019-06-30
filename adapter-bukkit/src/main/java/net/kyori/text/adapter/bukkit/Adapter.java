@@ -24,6 +24,7 @@
 package net.kyori.text.adapter.bukkit;
 
 import net.kyori.text.Component;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -38,4 +39,8 @@ interface Adapter {
    * @param actionBar if action bar
    */
   void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar);
+
+  static String asJson(final Component component) {
+    return GsonComponentSerializer.INSTANCE.serialize(component);
+  }
 }

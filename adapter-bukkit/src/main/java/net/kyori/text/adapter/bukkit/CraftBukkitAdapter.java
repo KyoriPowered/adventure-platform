@@ -26,7 +26,6 @@ package net.kyori.text.adapter.bukkit;
 import com.google.gson.JsonDeserializer;
 import net.kyori.text.Component;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -40,30 +39,28 @@ import java.util.Iterator;
 import java.util.List;
 
 final class CraftBukkitAdapter implements Adapter {
-  private static final Binding REFLECTION_BINDINGS = load();
+  static final Binding BINDING = load();
 
   private static Binding load() {
     try {
-      final Class<?> server = Bukkit.getServer().getClass();
-      if(!isCompatibleServer(server)) {
+      if(!Shiny.isCompatibleServer()) {
         throw new UnsupportedOperationException("Incompatible server version");
       }
-      final String serverVersion = maybeVersion(server.getPackage().getName().substring("org.bukkit.craftbukkit".length()));
-      final Class<?> craftPlayerClass = craftBukkitClass(serverVersion, "entity.CraftPlayer");
+      final Class<?> craftPlayerClass = Shiny.craftClass("entity.CraftPlayer");
       final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
       final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
       final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
       final Class<?> playerConnectionClass = playerConnectionField.getType();
-      final Class<?> packetClass = minecraftClass(serverVersion, "Packet");
+      final Class<?> packetClass = Shiny.vanillaClass("Packet");
       final Method sendPacketMethod = playerConnectionClass.getMethod("sendPacket", packetClass);
-      final Class<?> baseComponentClass = minecraftClass(serverVersion, "IChatBaseComponent");
-      final Class<?> chatPacketClass = minecraftClass(serverVersion, "PacketPlayOutChat");
+      final Class<?> baseComponentClass = Shiny.vanillaClass("IChatBaseComponent");
+      final Class<?> chatPacketClass = Shiny.vanillaClass("PacketPlayOutChat");
       final Constructor<?> chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass);
-      final Class<?> titlePacketClass = optionalMinecraftClass(serverVersion, "PacketPlayOutTitle");
+      final Class<?> titlePacketClass = Shiny.maybeVanillaClass("PacketPlayOutTitle");
       final Class<? extends Enum> titlePacketClassAction;
       final Constructor<?> titlePacketConstructor;
       if(titlePacketClass != null) {
-        titlePacketClassAction = (Class<? extends Enum>) minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
+        titlePacketClassAction = (Class<? extends Enum>) Shiny.vanillaClass("PacketPlayOutTitle$EnumTitleAction");
         titlePacketConstructor = titlePacketClass.getConstructor(titlePacketClassAction, baseComponentClass);
       } else {
         titlePacketClassAction = null;
@@ -75,56 +72,32 @@ final class CraftBukkitAdapter implements Adapter {
         // fallback to the 1.7 class?
         .orElseGet(() -> {
           try {
-            return minecraftClass(serverVersion, "ChatSerializer");
+            return Shiny.vanillaClass("ChatSerializer");
           } catch(final ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
         });
-      final Method serializeMethod = Arrays.stream(chatSerializerClass.getMethods())
+      final Method deserializeMethod = Arrays.stream(chatSerializerClass.getMethods())
         .filter(m -> Modifier.isStatic(m.getModifiers()))
         .filter(m -> m.getReturnType().equals(baseComponentClass))
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
+        .orElseThrow(() -> new RuntimeException("Unable to find deserialize method"));
+      final Method serializeMethod = Arrays.stream(chatSerializerClass.getMethods())
+        .filter(m -> Modifier.isStatic(m.getModifiers()))
+        .filter(m -> m.getReturnType().equals(String.class))
+        .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(baseComponentClass))
+        .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
-      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, serializeMethod);
+      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, deserializeMethod, serializeMethod);
     } catch(final Throwable e) {
       return new DeadBinding();
     }
   }
 
-  private static boolean isCompatibleServer(final Class<?> serverClass) {
-    return serverClass.getPackage().getName().startsWith("org.bukkit.craftbukkit")
-      && serverClass.getSimpleName().equals("CraftServer");
-  }
-
-  private static Class<?> craftBukkitClass(final String version, final String name) throws ClassNotFoundException {
-    return Class.forName("org.bukkit.craftbukkit." + version + name);
-  }
-
-  private static Class<?> minecraftClass(final String version, final String name) throws ClassNotFoundException {
-    return Class.forName("net.minecraft.server." + version + name);
-  }
-
-  private static String maybeVersion(final String version) {
-    if(version.isEmpty()) {
-      return "";
-    } else if(version.charAt(0) == '.') {
-      return version.substring(1) + '.';
-    }
-    throw new IllegalArgumentException("Unknown version " + version);
-  }
-
-  private static Class<?> optionalMinecraftClass(final String version, final String name) {
-    try {
-      return minecraftClass(version, name);
-    } catch(final ClassNotFoundException e) {
-      return null;
-    }
-  }
-
   @Override
   public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
-    if(!REFLECTION_BINDINGS.valid()) {
+    if(!BINDING.valid()) {
       return;
     }
     Object packet = null;
@@ -134,9 +107,9 @@ final class CraftBukkitAdapter implements Adapter {
         try {
           final Player player = (Player) sender;
           if(packet == null) {
-            packet = REFLECTION_BINDINGS.createPacket(component, actionBar);
+            packet = BINDING.createPacket(component, actionBar);
           }
-          REFLECTION_BINDINGS.sendPacket(packet, player);
+          BINDING.sendPacket(packet, player);
           iterator.remove();
         } catch(final Exception e) {
           e.printStackTrace();
@@ -145,12 +118,16 @@ final class CraftBukkitAdapter implements Adapter {
     }
   }
 
-  private static abstract class Binding {
+  static abstract class Binding {
     abstract boolean valid();
 
     abstract Object createPacket(final Component component, final boolean actionBar);
 
     abstract void sendPacket(final Object packet, final Player player);
+
+    abstract Component asKyori(final Object object);
+
+    abstract Object asVanilla(final Component component);
   }
 
   private static final class DeadBinding extends Binding {
@@ -168,6 +145,16 @@ final class CraftBukkitAdapter implements Adapter {
     void sendPacket(final Object packet, final Player player) {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    Component asKyori(final Object object) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    Object asVanilla(final Component component) {
+      throw new UnsupportedOperationException();
+    }
   }
 
   private static final class AliveBinding extends Binding {
@@ -178,9 +165,10 @@ final class CraftBukkitAdapter implements Adapter {
     private final Class<? extends Enum> titlePacketClassAction;
     private final Constructor<?> titlePacketConstructor;
     private final boolean canMakeTitle;
+    private final Method deserializeMethod;
     private final Method serializeMethod;
 
-    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Class<? extends Enum> titlePacketClassAction, final Constructor<?> titlePacketConstructor, final Method serializeMethod) {
+    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Class<? extends Enum> titlePacketClassAction, final Constructor<?> titlePacketConstructor, final Method deserializeMethod, final Method serializeMethod) {
       this.getHandleMethod = getHandleMethod;
       this.playerConnectionField = playerConnectionField;
       this.sendPacketMethod = sendPacketMethod;
@@ -188,6 +176,7 @@ final class CraftBukkitAdapter implements Adapter {
       this.titlePacketClassAction = titlePacketClassAction;
       this.titlePacketConstructor = titlePacketConstructor;
       this.canMakeTitle = this.titlePacketClassAction != null && this.titlePacketConstructor != null;
+      this.deserializeMethod = deserializeMethod;
       this.serializeMethod = serializeMethod;
     }
 
@@ -198,7 +187,7 @@ final class CraftBukkitAdapter implements Adapter {
 
     @Override
     Object createPacket(final Component component, final boolean actionBar) {
-      final String json = GsonComponentSerializer.INSTANCE.serialize(component);
+      final String json = Adapter.asJson(component);
       try {
         if(actionBar && this.canMakeTitle) {
           Enum constant;
@@ -207,9 +196,9 @@ final class CraftBukkitAdapter implements Adapter {
           } catch(final IllegalArgumentException e) {
             constant = this.titlePacketClassAction.getEnumConstants()[2];
           }
-          return this.titlePacketConstructor.newInstance(constant, this.serializeMethod.invoke(null, json));
+          return this.titlePacketConstructor.newInstance(constant, this.deserializeMethod.invoke(null, json));
         } else {
-          return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
+          return this.chatPacketConstructor.newInstance(this.deserializeMethod.invoke(null, json));
         }
       } catch(final Exception e) {
         throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
@@ -223,6 +212,24 @@ final class CraftBukkitAdapter implements Adapter {
         this.sendPacketMethod.invoke(connection, packet);
       } catch(final Exception e) {
         throw new UnsupportedOperationException("An exception was encountered while sending a packet for a component", e);
+      }
+    }
+
+    @Override
+    Component asKyori(final Object object) {
+      try {
+        return GsonComponentSerializer.INSTANCE.deserialize((String) this.serializeMethod.invoke(null, object));
+      } catch(final Throwable t) {
+        throw new UnsupportedOperationException("An exception was encountered while converting from vanilla Component", t);
+      }
+    }
+
+    @Override
+    Object asVanilla(final Component component) {
+      try {
+        return this.deserializeMethod.invoke(null, Adapter.asJson(component));
+      } catch(final Throwable t) {
+        throw new UnsupportedOperationException("An exception was encountered while converting to vanilla Component", t);
       }
     }
   }
