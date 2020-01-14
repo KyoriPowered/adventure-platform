@@ -6,5 +6,7 @@
 /adapter-bungeecord/out/
 /adapter-spongeapi/build/
 /adapter-spongeapi/out/
+/adapter-fabric/build/
+/adapter-fabric/out/
 /run/
 /*.iml
