@@ -1,14 +1,3 @@
-// This is required for adapter-fabric
-pluginManagement {
-    repositories {
-        jcenter()
-        maven {
-            url = 'https://maven.fabricmc.net/'
-        }
-        gradlePluginPortal()
-    }
-}
-
 rootProject.name = 'text-extras-parent'
 
 include 'adapter-bukkit'
