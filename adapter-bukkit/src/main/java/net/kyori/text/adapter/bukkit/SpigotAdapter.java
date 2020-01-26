@@ -32,14 +32,6 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.Excluder;
 import com.google.gson.reflect.TypeToken;
-import net.kyori.text.Component;
-import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -47,6 +39,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiConsumer;
+import net.kyori.text.Component;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 final class SpigotAdapter implements Adapter {
   private static final boolean BOUND = bind();
@@ -114,7 +114,22 @@ final class SpigotAdapter implements Adapter {
   }
 
   @Override
-  public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
+  public void sendMessage(final List<? extends CommandSender> viewers, final Component component) {
+    if(!BOUND) {
+      return;
+    }
+    send(viewers, component, (viewer, components) -> viewer.spigot().sendMessage(components));
+  }
+
+  @Override
+  public void sendActionBar(final List<? extends CommandSender> viewers, final Component component) {
+    if(!BOUND) {
+      return;
+    }
+    send(viewers, component, (viewer, components) -> viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, components));
+  }
+
+  private static void send(final List<? extends CommandSender> viewers, final Component component, final BiConsumer<Player, BaseComponent[]> consumer) {
     if(!BOUND) {
       return;
     }
@@ -123,12 +138,7 @@ final class SpigotAdapter implements Adapter {
       final CommandSender viewer = it.next();
       if(viewer instanceof Player) {
         try {
-          final Player player = (Player) viewer;
-          if(actionBar) {
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, components);
-          } else {
-            player.spigot().sendMessage(components);
-          }
+          consumer.accept((Player) viewer, components);
           it.remove();
         } catch(final Throwable e) {
           e.printStackTrace();

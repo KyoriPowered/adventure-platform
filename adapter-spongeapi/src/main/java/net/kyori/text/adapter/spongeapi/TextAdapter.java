@@ -32,8 +32,6 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
-import java.util.Collections;
-
 /**
  * An adapter for sending and converting text {@link Component}s to Sponge objects.
  */
@@ -44,8 +42,8 @@ public interface TextAdapter {
    * @param viewer the viewer to send the component to
    * @param component the component
    */
-  static void sendComponent(final @NonNull MessageReceiver viewer, final @NonNull Component component) {
-    sendComponent(Collections.singleton(viewer), component);
+  static void sendMessage(final @NonNull MessageReceiver viewer, final @NonNull Component component) {
+    viewer.sendMessage(toSponge(component));
   }
 
   /**
@@ -54,7 +52,7 @@ public interface TextAdapter {
    * @param viewers the viewers to send the component to
    * @param component the component
    */
-  static void sendComponent(final @NonNull Iterable<? extends MessageReceiver> viewers, final @NonNull Component component) {
+  static void sendMessage(final @NonNull Iterable<? extends MessageReceiver> viewers, final @NonNull Component component) {
     final Text text = toSponge(component);
     for(final MessageReceiver viewer : viewers) {
       viewer.sendMessage(text);
@@ -67,8 +65,8 @@ public interface TextAdapter {
    * @param component the component
    * @param type the type
    */
-  static void sendComponent(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Component component, final @NonNull ChatType type) {
-    sendComponent(Collections.singleton(viewer), component, type);
+  static void sendMessage(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Component component, final @NonNull ChatType type) {
+    viewer.sendMessage(type, toSponge(component));
   }
 
   /**
@@ -78,11 +76,60 @@ public interface TextAdapter {
    * @param component the component
    * @param type the type
    */
-  static void sendComponent(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
+  static void sendMessage(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
     final Text text = toSponge(component);
     for(final ChatTypeMessageReceiver viewer : viewers) {
       viewer.sendMessage(type, text);
     }
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewer}.
+   *
+   * @param viewer the viewer to send the component to
+   * @param component the component
+   * @deprecated use {@link #sendMessage(MessageReceiver, Component)}
+   */
+  @Deprecated
+  static void sendComponent(final @NonNull MessageReceiver viewer, final @NonNull Component component) {
+    sendMessage(viewer, component);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewers}.
+   *
+   * @param viewers the viewers to send the component to
+   * @param component the component
+   * @deprecated use {@link #sendMessage(Iterable, Component)}
+   */
+  @Deprecated
+  static void sendComponent(final @NonNull Iterable<? extends MessageReceiver> viewers, final @NonNull Component component) {
+    sendMessage(viewers, component);
+  }
+  /**
+   * Sends {@code component} to the given {@code viewer}.
+   *
+   * @param viewer the viewer to send the component to
+   * @param component the component
+   * @param type the type
+   * @deprecated use {@link #sendMessage(ChatTypeMessageReceiver, Component, ChatType)}
+   */
+  @Deprecated
+  static void sendComponent(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Component component, final @NonNull ChatType type) {
+    sendMessage(viewer, component, type);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewers}.
+   *
+   * @param viewers the viewers to send the component to
+   * @param component the component
+   * @param type the type
+   * @deprecated use {@link #sendMessage(Iterable, Component, ChatType)}
+   */
+  @Deprecated
+  static void sendComponent(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
+    sendMessage(viewers, component, type);
   }
 
   /**

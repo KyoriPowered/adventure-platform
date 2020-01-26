@@ -33,6 +33,11 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.kyori.text.Component;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
@@ -40,12 +45,6 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * An adapter for sending and converting text {@link Component}s to BungeeCord objects.
@@ -57,8 +56,8 @@ public interface TextAdapter {
    * @param viewer the viewer to send the component to
    * @param component the component
    */
-  static void sendComponent(final @NonNull CommandSender viewer, final @NonNull Component component) {
-    sendComponent(Collections.singleton(viewer), component);
+  static void sendMessage(final @NonNull CommandSender viewer, final @NonNull Component component) {
+    viewer.sendMessage(toBungeeCord(component));
   }
 
   /**
@@ -67,8 +66,35 @@ public interface TextAdapter {
    * @param viewers the viewers to send the component to
    * @param component the component
    */
+  static void sendMessage(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
+    final BaseComponent[] components = toBungeeCord(component);
+    for(final CommandSender viewer : viewers) {
+      viewer.sendMessage(components);
+    }
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewer}.
+   *
+   * @param viewer the viewer to send the component to
+   * @param component the component
+   * @deprecated use {@link #sendMessage(CommandSender, Component)}
+   */
+  @Deprecated
+  static void sendComponent(final @NonNull CommandSender viewer, final @NonNull Component component) {
+    sendMessage(viewer, component);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewers}.
+   *
+   * @param viewers the viewers to send the component to
+   * @param component the component
+   * @deprecated use {@link #sendMessage(Iterable, Component)}
+   */
+  @Deprecated
   static void sendComponent(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
-    TextAdapter0.sendComponent(viewers, component);
+    sendMessage(viewers, component);
   }
 
   /**
@@ -140,13 +166,6 @@ final class TextAdapter0 {
       }
     }
     return 0;
-  }
-
-  static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component) {
-    final BaseComponent[] components = toBungeeCord(component);
-    for(final CommandSender viewer : viewers) {
-      viewer.sendMessage(components);
-    }
   }
 
   static BaseComponent[] toBungeeCord(final Component component) {

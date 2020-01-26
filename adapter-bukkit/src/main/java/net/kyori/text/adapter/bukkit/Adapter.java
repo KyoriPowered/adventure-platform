@@ -23,10 +23,9 @@
  */
 package net.kyori.text.adapter.bukkit;
 
+import java.util.List;
 import net.kyori.text.Component;
 import org.bukkit.command.CommandSender;
-
-import java.util.List;
 
 interface Adapter {
   /**
@@ -35,7 +34,15 @@ interface Adapter {
    *
    * @param viewers the viewers
    * @param component the component
-   * @param actionBar if action bar
    */
-  void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar);
+  void sendMessage(final List<? extends CommandSender> viewers, final Component component);
+
+  /**
+   * Attempts to send the {@code component} to each sender in the given list, removing
+   * viewers from the list if the adapter was able to successfully send the component.
+   *
+   * @param viewers the viewers
+   * @param component the component
+   */
+  void sendActionBar(final List<? extends CommandSender> viewers, final Component component);
 }
