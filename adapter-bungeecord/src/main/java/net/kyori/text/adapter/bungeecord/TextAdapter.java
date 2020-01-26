@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * An adapter for sending text {@link Component}s to BungeeCord objects.
+ * An adapter for sending and converting text {@link Component}s to BungeeCord objects.
  */
 public interface TextAdapter {
   /**
@@ -69,6 +69,22 @@ public interface TextAdapter {
    */
   static void sendComponent(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
     TextAdapter0.sendComponent(viewers, component);
+  }
+
+  /**
+   * Converts {@code component} to the {@link BaseComponent} format used by BungeeCord.
+   *
+   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
+   * i.e. is it not guaranteed that a {@link net.kyori.text.TextComponent} will map to a
+   * {@link net.md_5.bungee.api.chat.TextComponent}.</p>
+   *
+   * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>
+   *
+   * @param component the component
+   * @return the Text representation of the component
+   */
+  static @NonNull BaseComponent[] toBungeeCord(final @NonNull Component component) {
+    return TextAdapter0.toBungeeCord(component);
   }
 }
 
@@ -127,14 +143,17 @@ final class TextAdapter0 {
   }
 
   static void sendComponent(final Iterable<? extends CommandSender> viewers, final Component component) {
-    final BaseComponent[] components;
-    if(BOUND) {
-      components = new BaseComponent[]{new AdapterComponent(component)};
-    } else {
-      components = ComponentSerializer.parse(GsonComponentSerializer.INSTANCE.serialize(component));
-    }
+    final BaseComponent[] components = toBungeeCord(component);
     for(final CommandSender viewer : viewers) {
       viewer.sendMessage(components);
+    }
+  }
+
+  static BaseComponent[] toBungeeCord(final Component component) {
+    if(BOUND) {
+      return new BaseComponent[]{new AdapterComponent(component)};
+    } else {
+      return ComponentSerializer.parse(GsonComponentSerializer.INSTANCE.serialize(component));
     }
   }
 

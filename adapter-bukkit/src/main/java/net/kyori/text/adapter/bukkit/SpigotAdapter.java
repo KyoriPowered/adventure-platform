@@ -137,6 +137,14 @@ final class SpigotAdapter implements Adapter {
     }
   }
 
+  static BaseComponent[] toBungeeCord(final Component component) {
+    if(BOUND) {
+      return new BaseComponent[]{new AdapterComponent(component)};
+    } else {
+      return ComponentSerializer.parse(GsonComponentSerializer.INSTANCE.serialize(component));
+    }
+  }
+
   public static final class AdapterComponent extends BaseComponent {
     private final Component component;
 

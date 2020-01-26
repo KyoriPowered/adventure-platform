@@ -35,7 +35,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import java.util.Collections;
 
 /**
- * An adapter for sending text {@link Component}s to Bukkit objects.
+ * An adapter for sending and converting text {@link Component}s to Sponge objects.
  */
 public interface TextAdapter {
   /**
@@ -55,7 +55,7 @@ public interface TextAdapter {
    * @param component the component
    */
   static void sendComponent(final @NonNull Iterable<? extends MessageReceiver> viewers, final @NonNull Component component) {
-    final Text text = TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
+    final Text text = toSponge(component);
     for(final MessageReceiver viewer : viewers) {
       viewer.sendMessage(text);
     }
@@ -79,9 +79,25 @@ public interface TextAdapter {
    * @param type the type
    */
   static void sendComponent(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
-    final Text text = TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
+    final Text text = toSponge(component);
     for(final ChatTypeMessageReceiver viewer : viewers) {
       viewer.sendMessage(type, text);
     }
+  }
+
+  /**
+   * Converts {@code component} to the {@link Text} format used by Sponge.
+   *
+   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
+   * i.e. is it not guaranteed that a {@link net.kyori.text.TextComponent} will map to a
+   * {@link org.spongepowered.api.text.LiteralText}.</p>
+   *
+   * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>
+   *
+   * @param component the component
+   * @return the Text representation of the component
+   */
+  static @NonNull Text toSponge(final @NonNull Component component) {
+    return TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
   }
 }
