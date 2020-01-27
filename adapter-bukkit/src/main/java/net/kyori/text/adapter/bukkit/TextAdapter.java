@@ -25,15 +25,14 @@ package net.kyori.text.adapter.bukkit;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import net.kyori.text.Component;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import net.kyori.text.Component;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * An adapter for sending text {@link Component}s to Bukkit objects.
@@ -45,7 +44,7 @@ public interface TextAdapter {
    * @param viewer the viewer to send the component to
    * @param component the component
    */
-  static void sendComponent(final @NonNull CommandSender viewer, final @NonNull Component component) {
+  static void sendMessage(final @NonNull CommandSender viewer, final @NonNull Component component) {
     sendComponent(Collections.singleton(viewer), component);
   }
 
@@ -55,6 +54,30 @@ public interface TextAdapter {
    * @param viewers the viewers to send the component to
    * @param component the component
    */
+  static void sendMessage(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
+    TextAdapter0.sendComponent(viewers, component, false);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewer}.
+   *
+   * @param viewer the viewer to send the component to
+   * @param component the component
+   * @deprecated use {@link #sendMessage(CommandSender, Component)}
+   */
+  @Deprecated
+  static void sendComponent(final @NonNull CommandSender viewer, final @NonNull Component component) {
+    sendComponent(Collections.singleton(viewer), component);
+  }
+
+  /**
+   * Sends {@code component} to the given {@code viewers}.
+   *
+   * @param viewers the viewers to send the component to
+   * @param component the component
+   * @deprecated use {@link #sendMessage(Iterable, Component)}
+   */
+  @Deprecated
   static void sendComponent(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
     TextAdapter0.sendComponent(viewers, component, false);
   }
@@ -107,7 +130,11 @@ final class TextAdapter0 {
     Iterables.addAll(list, viewers);
     for(final Iterator<Adapter> it = ADAPTERS.iterator(); it.hasNext() && !list.isEmpty(); ) {
       final Adapter adapter = it.next();
-      adapter.sendComponent(list, component, actionBar);
+      if(actionBar) {
+        adapter.sendActionBar(list, component);
+      } else {
+        adapter.sendMessage(list, component);
+      }
     }
   }
 }

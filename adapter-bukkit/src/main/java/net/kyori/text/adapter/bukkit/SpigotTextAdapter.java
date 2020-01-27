@@ -23,26 +23,30 @@
  */
 package net.kyori.text.adapter.bukkit;
 
-import java.util.List;
 import net.kyori.text.Component;
-import org.bukkit.command.CommandSender;
+import net.md_5.bungee.api.chat.BaseComponent;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-interface Adapter {
+/**
+ * An adapter for converting text {@link Component}s to Spigot (BungeeCord) objects.
+ *
+ * <p>This class is an extension of {@link TextAdapter}, since the plain Bukkit API does not include
+ * the BungeeCord Chat API.</p>
+ */
+public interface SpigotTextAdapter {
   /**
-   * Attempts to send the {@code component} to each sender in the given list, removing
-   * viewers from the list if the adapter was able to successfully send the component.
+   * Converts {@code component} to the {@link BaseComponent} format used by Spigot (BungeeCord).
    *
-   * @param viewers the viewers
-   * @param component the component
-   */
-  void sendMessage(final List<? extends CommandSender> viewers, final Component component);
-
-  /**
-   * Attempts to send the {@code component} to each sender in the given list, removing
-   * viewers from the list if the adapter was able to successfully send the component.
+   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
+   * i.e. is it not guaranteed that a {@link net.kyori.text.TextComponent} will map to a
+   * {@link net.md_5.bungee.api.chat.TextComponent}.</p>
    *
-   * @param viewers the viewers
+   * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>
+   *
    * @param component the component
+   * @return the Text representation of the component
    */
-  void sendActionBar(final List<? extends CommandSender> viewers, final Component component);
+  static @NonNull BaseComponent[] toBungeeCord(final @NonNull Component component) {
+    return SpigotAdapter.toBungeeCord(component);
+  }
 }

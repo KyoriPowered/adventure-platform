@@ -23,19 +23,23 @@
  */
 package net.kyori.text.adapter.bukkit;
 
+import java.util.List;
 import net.kyori.text.Component;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 
-import java.util.List;
-
 final class LegacyAdapter implements Adapter {
   @Override
-  public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
+  public void sendMessage(final List<? extends CommandSender> viewers, final Component component) {
     final String legacy = LegacyComponentSerializer.INSTANCE.serialize(component);
     for(final CommandSender viewer : viewers) {
       viewer.sendMessage(legacy);
     }
     viewers.clear();
+  }
+
+  @Override
+  public void sendActionBar(final List<? extends CommandSender> viewers, final Component component) {
+    // not supported
   }
 }

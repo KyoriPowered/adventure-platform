@@ -24,12 +24,6 @@
 package net.kyori.text.adapter.bukkit;
 
 import com.google.gson.JsonDeserializer;
-import net.kyori.text.Component;
-import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -38,9 +32,16 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import net.kyori.text.Component;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 final class CraftBukkitAdapter implements Adapter {
   private static final Binding REFLECTION_BINDINGS = load();
+  private static final boolean ALIVE = REFLECTION_BINDINGS.valid();
 
   private static Binding load() {
     try {
@@ -123,10 +124,22 @@ final class CraftBukkitAdapter implements Adapter {
   }
 
   @Override
-  public void sendComponent(final List<? extends CommandSender> viewers, final Component component, final boolean actionBar) {
-    if(!REFLECTION_BINDINGS.valid()) {
+  public void sendMessage(final List<? extends CommandSender> viewers, final Component component) {
+    if(!ALIVE) {
       return;
     }
+    send(viewers, component, REFLECTION_BINDINGS::createMessagePacket);
+  }
+
+  @Override
+  public void sendActionBar(final List<? extends CommandSender> viewers, final Component component) {
+    if(!ALIVE) {
+      return;
+    }
+    send(viewers, component, REFLECTION_BINDINGS::createActionBarPacket);
+  }
+
+  private static void send(final List<? extends CommandSender> viewers, final Component component, final Function<Component, Object> function) {
     Object packet = null;
     for(final Iterator<? extends CommandSender> iterator = viewers.iterator(); iterator.hasNext(); ) {
       final CommandSender sender = iterator.next();
@@ -134,7 +147,7 @@ final class CraftBukkitAdapter implements Adapter {
         try {
           final Player player = (Player) sender;
           if(packet == null) {
-            packet = REFLECTION_BINDINGS.createPacket(component, actionBar);
+            packet = function.apply(component);
           }
           REFLECTION_BINDINGS.sendPacket(packet, player);
           iterator.remove();
@@ -148,7 +161,9 @@ final class CraftBukkitAdapter implements Adapter {
   private static abstract class Binding {
     abstract boolean valid();
 
-    abstract Object createPacket(final Component component, final boolean actionBar);
+    abstract Object createMessagePacket(final Component component);
+
+    abstract Object createActionBarPacket(final Component component);
 
     abstract void sendPacket(final Object packet, final Player player);
   }
@@ -160,7 +175,12 @@ final class CraftBukkitAdapter implements Adapter {
     }
 
     @Override
-    Object createPacket(final Component component, final boolean actionBar) {
+    Object createMessagePacket(final Component component) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    Object createActionBarPacket(final Component component) {
       throw new UnsupportedOperationException();
     }
 
@@ -197,22 +217,32 @@ final class CraftBukkitAdapter implements Adapter {
     }
 
     @Override
-    Object createPacket(final Component component, final boolean actionBar) {
+    Object createMessagePacket(final Component component) {
       final String json = GsonComponentSerializer.INSTANCE.serialize(component);
       try {
-        if(actionBar && this.canMakeTitle) {
+        return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
+      } catch(final Exception e) {
+        throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
+      }
+    }
+
+    @Override
+    Object createActionBarPacket(final Component component) {
+      if(this.canMakeTitle) {
+        try {
           Enum constant;
           try {
             constant = Enum.valueOf(this.titlePacketClassAction, "ACTIONBAR");
           } catch(final IllegalArgumentException e) {
             constant = this.titlePacketClassAction.getEnumConstants()[2];
           }
+          final String json = GsonComponentSerializer.INSTANCE.serialize(component);
           return this.titlePacketConstructor.newInstance(constant, this.serializeMethod.invoke(null, json));
-        } else {
-          return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
+        } catch(final Exception e) {
+          throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
         }
-      } catch(final Exception e) {
-        throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
+      } else {
+        return this.createMessagePacket(component);
       }
     }
 
