@@ -89,6 +89,7 @@ final class CraftBukkitAdapter implements Adapter {
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
       return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, serializeMethod);
     } catch(final Throwable e) {
+      new CouldNotLoadAdapter("Could not load CraftBukkit adapter", e).printStackTrace();
       return new DeadBinding();
     }
   }
