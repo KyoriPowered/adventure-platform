@@ -118,9 +118,11 @@ final class TextAdapter0 {
 
   private static boolean isSpigotAdapterSupported() {
     try {
-      Player.class.getMethod("spigot");
+      Class<?> spigot = Player.class.getMethod("spigot").getReturnType();
+      spigot.getMethod("sendMessage", Class.forName("net.md_5.bungee.api.ChatMessageType"),
+              Class.forName("net.md_5.bungee.api.chat.BaseComponent"));
       return true;
-    } catch(final NoSuchMethodException e) {
+    } catch(final NoSuchMethodException | ClassNotFoundException e) {
       return false;
     }
   }
