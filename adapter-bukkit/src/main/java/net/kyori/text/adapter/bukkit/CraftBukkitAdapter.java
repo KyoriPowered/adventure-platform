@@ -24,6 +24,15 @@
 package net.kyori.text.adapter.bukkit;
 
 import com.google.gson.JsonDeserializer;
+import net.kyori.text.Component;
+import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -32,12 +41,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
-import net.kyori.text.Component;
-import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 final class CraftBukkitAdapter implements Adapter {
   private static final Binding REFLECTION_BINDINGS = load();
@@ -51,18 +56,30 @@ final class CraftBukkitAdapter implements Adapter {
       }
       final String serverVersion = maybeVersion(server.getPackage().getName().substring("org.bukkit.craftbukkit".length()));
       final Class<?> craftPlayerClass = craftBukkitClass(serverVersion, "entity.CraftPlayer");
-      final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
-      final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
+      final Class<?> entityPlayerClass =  craftPlayerClass.getMethod("getHandle").getReturnType();
       final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
       final Class<?> playerConnectionClass = playerConnectionField.getType();
       final Class<?> packetClass = minecraftClass(serverVersion, "Packet");
-      final Method sendPacketMethod = playerConnectionClass.getMethod("sendPacket", packetClass);
       final Class<?> baseComponentClass = minecraftClass(serverVersion, "IChatBaseComponent");
       final Class<?> chatPacketClass = minecraftClass(serverVersion, "PacketPlayOutChat");
       final Constructor<?> chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass);
       final Class<?> titlePacketClass = optionalMinecraftClass(serverVersion, "PacketPlayOutTitle");
       final Class<? extends Enum> titlePacketClassAction;
       final Constructor<?> titlePacketConstructor;
+
+      MethodHandles.Lookup lookup = MethodHandles.lookup();
+      final Function<Player, Object> playerHandle = (Function<Player, Object>) LambdaMetafactory.metafactory(lookup,
+                "apply",
+                MethodType.methodType(Function.class),
+                MethodType.methodType(Object.class, Object.class),
+                lookup.findVirtual(craftPlayerClass, "getHandle", MethodType.methodType(entityPlayerClass)),
+                MethodType.methodType(entityPlayerClass, craftPlayerClass)).getTarget().invokeExact();
+       final BiConsumer<Object, Object> sendPacket = (BiConsumer<Object, Object>) LambdaMetafactory.metafactory(lookup,
+                "accept",
+                MethodType.methodType(BiConsumer.class),
+                MethodType.methodType(void.class, Object.class, Object.class),
+                lookup.findVirtual(playerConnectionClass, "sendPacket", MethodType.methodType(void.class, packetClass)),
+                MethodType.methodType(void.class, playerConnectionClass, packetClass)).getTarget().invokeExact();
       if(titlePacketClass != null) {
         titlePacketClassAction = (Class<? extends Enum>) minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
         titlePacketConstructor = titlePacketClass.getConstructor(titlePacketClassAction, baseComponentClass);
@@ -87,7 +104,7 @@ final class CraftBukkitAdapter implements Adapter {
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
-      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, serializeMethod);
+      return new AliveBinding(playerHandle, playerConnectionField, sendPacket, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, serializeMethod);
     } catch(final Throwable e) {
       return new DeadBinding();
     }
@@ -191,19 +208,19 @@ final class CraftBukkitAdapter implements Adapter {
   }
 
   private static final class AliveBinding extends Binding {
-    private final Method getHandleMethod;
+    private final Function<Player, Object> playerHandleFunction;
     private final Field playerConnectionField;
-    private final Method sendPacketMethod;
+    private final BiConsumer<Object, Object> sendPacketFunction;
     private final Constructor<?> chatPacketConstructor;
     private final Class<? extends Enum> titlePacketClassAction;
     private final Constructor<?> titlePacketConstructor;
     private final boolean canMakeTitle;
     private final Method serializeMethod;
 
-    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Class<? extends Enum> titlePacketClassAction, final Constructor<?> titlePacketConstructor, final Method serializeMethod) {
-      this.getHandleMethod = getHandleMethod;
+    AliveBinding(final Function<Player, Object> playerHandleFunction, final Field playerConnectionField, final BiConsumer<Object, Object> sendPacketFunction, final Constructor<?> chatPacketConstructor, final Class<? extends Enum> titlePacketClassAction, final Constructor<?> titlePacketConstructor, final Method serializeMethod) {
+      this.playerHandleFunction = playerHandleFunction;
       this.playerConnectionField = playerConnectionField;
-      this.sendPacketMethod = sendPacketMethod;
+      this.sendPacketFunction = sendPacketFunction;
       this.chatPacketConstructor = chatPacketConstructor;
       this.titlePacketClassAction = titlePacketClassAction;
       this.titlePacketConstructor = titlePacketConstructor;
@@ -249,8 +266,8 @@ final class CraftBukkitAdapter implements Adapter {
     @Override
     void sendPacket(final Object packet, final Player player) {
       try {
-        final Object connection = this.playerConnectionField.get(this.getHandleMethod.invoke(player));
-        this.sendPacketMethod.invoke(connection, packet);
+          Object entityPlayer = this.playerHandleFunction.apply(player);
+          this.sendPacketFunction.accept(this.playerConnectionField.get(entityPlayer), packet);
       } catch(final Exception e) {
         throw new UnsupportedOperationException("An exception was encountered while sending a packet for a component", e);
       }
