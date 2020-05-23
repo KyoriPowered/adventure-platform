@@ -44,8 +44,13 @@ subprojects {
 
   dependencies {
     constraints {
-      ['api', 'text-serializer-gson', 'text-serializer-legacy', 'text-serializer-plain',
-       'text-feature-pagination'].each {
+      [
+        'api',
+        'text-serializer-gson',
+        'text-serializer-legacy',
+        'text-serializer-plain',
+        'text-feature-pagination'
+      ].each {
         api "net.kyori:adventure-$it:$version"
       }
     }
