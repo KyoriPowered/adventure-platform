@@ -17,7 +17,7 @@ subprojects {
   apply plugin: 'net.minecrell.licenser'
 
   group 'net.kyori'
-  version '3.0.4-SNAPSHOT'
+  version '4.0.0-SNAPSHOT'
 
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
@@ -37,9 +37,18 @@ subprojects {
   repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+      url 'https://oss.sonatype.org/content/groups/public/'
+    }
   }
 
   dependencies {
+    constraints {
+      ['api', 'text-serializer-gson', 'text-serializer-legacy', 'text-serializer-plain',
+       'text-feature-pagination'].each {
+        api "net.kyori:adventure-$it:$version"
+      }
+    }
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
   }
@@ -81,7 +90,7 @@ subprojects {
           }
 
           pom.project {
-            description 'Extras for text.'
+            description 'Extras for adventure.'
             name project.name
             url 'https://github.com/KyoriPowered/text-extras/'
 

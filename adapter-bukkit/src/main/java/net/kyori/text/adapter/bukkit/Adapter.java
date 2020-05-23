@@ -24,7 +24,8 @@
 package net.kyori.text.adapter.bukkit;
 
 import java.util.List;
-import net.kyori.text.Component;
+
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
 interface Adapter {

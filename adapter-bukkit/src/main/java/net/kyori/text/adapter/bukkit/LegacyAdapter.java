@@ -24,14 +24,14 @@
 package net.kyori.text.adapter.bukkit;
 
 import java.util.List;
-import net.kyori.text.Component;
-import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 
 final class LegacyAdapter implements Adapter {
   @Override
   public void sendMessage(final List<? extends CommandSender> viewers, final Component component) {
-    final String legacy = LegacyComponentSerializer.INSTANCE.serialize(component);
+    final String legacy = LegacyComponentSerializer.legacy().serialize(component);
     for(final CommandSender viewer : viewers) {
       viewer.sendMessage(legacy);
     }

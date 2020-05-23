@@ -23,8 +23,8 @@
  */
 package net.kyori.text.adapter.spongeapi;
 
-import net.kyori.text.Component;
-import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
@@ -84,59 +84,10 @@ public interface TextAdapter {
   }
 
   /**
-   * Sends {@code component} to the given {@code viewer}.
-   *
-   * @param viewer the viewer to send the component to
-   * @param component the component
-   * @deprecated use {@link #sendMessage(MessageReceiver, Component)}
-   */
-  @Deprecated
-  static void sendComponent(final @NonNull MessageReceiver viewer, final @NonNull Component component) {
-    sendMessage(viewer, component);
-  }
-
-  /**
-   * Sends {@code component} to the given {@code viewers}.
-   *
-   * @param viewers the viewers to send the component to
-   * @param component the component
-   * @deprecated use {@link #sendMessage(Iterable, Component)}
-   */
-  @Deprecated
-  static void sendComponent(final @NonNull Iterable<? extends MessageReceiver> viewers, final @NonNull Component component) {
-    sendMessage(viewers, component);
-  }
-  /**
-   * Sends {@code component} to the given {@code viewer}.
-   *
-   * @param viewer the viewer to send the component to
-   * @param component the component
-   * @param type the type
-   * @deprecated use {@link #sendMessage(ChatTypeMessageReceiver, Component, ChatType)}
-   */
-  @Deprecated
-  static void sendComponent(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Component component, final @NonNull ChatType type) {
-    sendMessage(viewer, component, type);
-  }
-
-  /**
-   * Sends {@code component} to the given {@code viewers}.
-   *
-   * @param viewers the viewers to send the component to
-   * @param component the component
-   * @param type the type
-   * @deprecated use {@link #sendMessage(Iterable, Component, ChatType)}
-   */
-  @Deprecated
-  static void sendComponent(final @NonNull Iterable<? extends ChatTypeMessageReceiver> viewers, final @NonNull Component component, final @NonNull ChatType type) {
-    sendMessage(viewers, component, type);
-  }
-
-  /**
    * Converts {@code component} to the {@link Text} format used by Sponge.
    *
    * <p>The adapter makes no guarantees about the underlying structure/type of the components.
-   * i.e. is it not guaranteed that a {@link net.kyori.text.TextComponent} will map to a
+   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
    * {@link org.spongepowered.api.text.LiteralText}.</p>
    *
    * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>

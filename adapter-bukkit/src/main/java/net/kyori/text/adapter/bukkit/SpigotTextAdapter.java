@@ -23,7 +23,7 @@
  */
 package net.kyori.text.adapter.bukkit;
 
-import net.kyori.text.Component;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -38,7 +38,7 @@ public interface SpigotTextAdapter {
    * Converts {@code component} to the {@link BaseComponent} format used by Spigot (BungeeCord).
    *
    * <p>The adapter makes no guarantees about the underlying structure/type of the components.
-   * i.e. is it not guaranteed that a {@link net.kyori.text.TextComponent} will map to a
+   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
    * {@link net.md_5.bungee.api.chat.TextComponent}.</p>
    *
    * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>

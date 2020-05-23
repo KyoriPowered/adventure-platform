@@ -5,8 +5,8 @@ repositories {
 }
 
 dependencies {
-  api 'net.kyori:text-api:3.0.0'
-  api 'net.kyori:text-serializer-gson:3.0.0'
-  api 'net.kyori:text-serializer-legacy:3.0.0'
+  api 'net.kyori:adventure-api'
+  api 'net.kyori:adventure-text-serializer-gson'
+  api 'net.kyori:adventure-text-serializer-legacy'
   compileOnly 'net.md-5:bungeecord-api:1.14-SNAPSHOT'
 }

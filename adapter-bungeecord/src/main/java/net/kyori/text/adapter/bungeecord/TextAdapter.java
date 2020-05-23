@@ -38,9 +38,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.kyori.text.Component;
-import net.kyori.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -74,34 +74,10 @@ public interface TextAdapter {
   }
 
   /**
-   * Sends {@code component} to the given {@code viewer}.
-   *
-   * @param viewer the viewer to send the component to
-   * @param component the component
-   * @deprecated use {@link #sendMessage(CommandSender, Component)}
-   */
-  @Deprecated
-  static void sendComponent(final @NonNull CommandSender viewer, final @NonNull Component component) {
-    sendMessage(viewer, component);
-  }
-
-  /**
-   * Sends {@code component} to the given {@code viewers}.
-   *
-   * @param viewers the viewers to send the component to
-   * @param component the component
-   * @deprecated use {@link #sendMessage(Iterable, Component)}
-   */
-  @Deprecated
-  static void sendComponent(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
-    sendMessage(viewers, component);
-  }
-
-  /**
    * Converts {@code component} to the {@link BaseComponent} format used by BungeeCord.
    *
    * <p>The adapter makes no guarantees about the underlying structure/type of the components.
-   * i.e. is it not guaranteed that a {@link net.kyori.text.TextComponent} will map to a
+   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
    * {@link net.md_5.bungee.api.chat.TextComponent}.</p>
    *
    * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>
@@ -185,7 +161,7 @@ final class TextAdapter0 {
 
     @Override
     public String toLegacyText() {
-      return LegacyComponentSerializer.INSTANCE.serialize(this.component);
+      return LegacyComponentSerializer.legacy().serialize(this.component);
     }
 
     @Override
