@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.bossbar.BossBar;
@@ -96,7 +95,7 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
 
   @Override
   public @NonNull MultiAudience online() {
-    return MultiAudience.of(Bukkit.getOnlinePlayers().stream().map(CraftBukkitPlatform::audience).collect(Collectors.toList()));
+    return new OnlinePlayersAudience(Bukkit.getServer());
   }
 
   @Override

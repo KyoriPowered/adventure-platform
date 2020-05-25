@@ -23,56 +23,23 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.platform.ProviderSupport;
-import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import static java.util.Objects.requireNonNull;
+final class OnlinePlayersAudience implements MultiAudience {
+  private final ProxyServer server;
 
-public class BungeePlatform implements AdventurePlatform {
-
-  public static @NonNull Audience player(final @NonNull ProxiedPlayer player) {
-    return new PlayerAudience(requireNonNull(player, "player"));
+  public OnlinePlayersAudience(final @NonNull ProxyServer server) {
+    this.server = server;
   }
 
   @Override
-  public @NonNull String name() {
-    return "BungeeCord";
-  }
-
-  @Override
-  public @NonNull ProviderSupport supportLevel() {
-    return ProviderSupport.LIMITED;
-  }
-
-  @Override
-  public @NonNull Audience console() {
-    return null;
-  }
-
-  @Override
-  public @NonNull MultiAudience audience(final @NonNull Iterable<Audience> audiences) {
-    return MultiAudience.of(audiences);
-  }
-
-  @Override
-  public @NonNull MultiAudience permission(final @NonNull String permission) {
-    return null;
-  }
-
-  @Override
-  public @NonNull MultiAudience online() {
-    return new OnlinePlayersAudience(ProxyServer.getInstance());
-  }
-
-  @Override
-  public @NonNull BossBar bossBar(final @NonNull Component name, final float fraction, final BossBar.@NonNull Color color, final BossBar.@NonNull Overlay overlay) {
-    return new BungeeBossBar(name, fraction, color, overlay);
+  public @NonNull Iterable<Audience> audiences() {
+    return this.server.getPlayers().stream()
+      .map(PlayerAudience::new)
+      .collect(Collectors.toList());
   }
 }

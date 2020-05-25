@@ -32,10 +32,10 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class BungeePlayerAudience implements Audience {
+public class PlayerAudience implements Audience {
   private final ProxiedPlayer player;
 
-  public BungeePlayerAudience(final ProxiedPlayer player) {
+  public PlayerAudience(final ProxiedPlayer player) {
     this.player = player;
   }
 
