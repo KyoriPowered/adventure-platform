@@ -21,50 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
+import net.md_5.bungee.api.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class ConsoleAudience implements Audience {
-  private final CommandSender viewer;
+public class ConsoleAudience implements Audience {
+  private final CommandSender sender;
 
-  public ConsoleAudience(final @NonNull CommandSender viewer) {
-    this.viewer = viewer;
+  public ConsoleAudience(final CommandSender sender) {
+    this.sender = sender;
   }
 
   @Override
   public void message(final @NonNull Component message) {
-    TextAdapter.sendMessage(this.viewer, message);
+    sender.sendMessage(TextAdapter.toBungeeCord(message));
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
+  public void showBossBar(final @NonNull BossBar bar) { }
 
   @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
+  public void hideBossBar(final @NonNull BossBar bar) { }
 
   @Override
   public void showActionBar(final @NonNull Component message) {
-    // NOOP
+    message(message);
   }
 
   @Override
-  public void playSound(final @NonNull Sound sound) {
-    // NOOP
-  }
+  public void playSound(final @NonNull Sound sound) { }
 
   @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // NOOP
-  }
+  public void stopSound(final @NonNull SoundStop stop) { }
 }

@@ -36,7 +36,7 @@ import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class BungeeBossBar extends AbstractBossBar {
+final class BungeeBossBar extends AbstractBossBar {
   private static final int ACTION_CREATE = 0;
   private static final int ACTION_REMOVE = 1;
   private static final int ACTION_PERCENT = 2;

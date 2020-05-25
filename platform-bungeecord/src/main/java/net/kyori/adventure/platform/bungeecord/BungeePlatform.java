@@ -21,50 +21,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class ConsoleAudience implements Audience {
-  private final CommandSender viewer;
+import static java.util.Objects.requireNonNull;
 
-  public ConsoleAudience(final @NonNull CommandSender viewer) {
-    this.viewer = viewer;
+public class BungeePlatform implements AdventurePlatform {
+
+  public static @NonNull Audience player(final @NonNull ProxiedPlayer player) {
+    return new BungeePlayerAudience(requireNonNull(player, "player"));
   }
 
   @Override
-  public void message(final @NonNull Component message) {
-    TextAdapter.sendMessage(this.viewer, message);
+  public @NonNull String name() {
+    return "Bungee";
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // NOOP
+  public @NonNull ProviderSupport supportLevel() {
+    return ProviderSupport.LIMITED;
   }
 
   @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // NOOP
+  public @NonNull Audience console() {
+    return null;
   }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
-    // NOOP
+  public @NonNull MultiAudience audience(final @NonNull Iterable<Audience> audiences) {
+    return MultiAudience.of(audiences);
   }
 
   @Override
-  public void playSound(final @NonNull Sound sound) {
-    // NOOP
+  public @NonNull MultiAudience permission(final @NonNull String permission) {
+    return null;
   }
 
   @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // NOOP
+  public @NonNull MultiAudience online() {
+    return null;
+  }
+
+  @Override
+  public @NonNull BossBar bossBar(final @NonNull Component name, final float fraction, final BossBar.@NonNull Color color, final BossBar.@NonNull Overlay overlay) {
+    return new BungeeBossBar(name, fraction, color, overlay);
   }
 }

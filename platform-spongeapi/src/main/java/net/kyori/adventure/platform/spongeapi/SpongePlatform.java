@@ -21,50 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.platform.spongeapi;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.Sponge;
 
-class ConsoleAudience implements Audience {
-  private final CommandSender viewer;
-
-  public ConsoleAudience(final @NonNull CommandSender viewer) {
-    this.viewer = viewer;
+public class SpongePlatform implements AdventurePlatform {
+  @Override
+  public @NonNull String name() {
+    return "Sponge";
   }
 
   @Override
-  public void message(final @NonNull Component message) {
-    TextAdapter.sendMessage(this.viewer, message);
+  public @NonNull ProviderSupport supportLevel() {
+    return ProviderSupport.FULL;
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // NOOP
+  public @NonNull Audience console() {
+    return new SpongeAudience(Sponge.getGame().getServer().getConsole());
   }
 
   @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // NOOP
+  public @NonNull MultiAudience audience(final @NonNull Iterable<@NonNull Audience> audiences) {
+    return MultiAudience.of(audiences);
   }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
-    // NOOP
+  public @NonNull MultiAudience permission(final @NonNull String permission) {
+    /*return new SpongeMultiAudience(() -> Sponge.getGame().getServiceManager().provide(PermissionService.class)
+      .orElseThrow(() -> new IllegalArgumentException("Sponge must have a permissions service"))
+      .getUserSubjects().getLoadedWithPermission(spongePerm).keySet());*/
+    return null;
   }
 
   @Override
-  public void playSound(final @NonNull Sound sound) {
-    // NOOP
+  public @NonNull MultiAudience online() {
+    return new SpongeMultiAudience(Sponge.getServer()::getOnlinePlayers);
   }
 
   @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // NOOP
+  public @NonNull BossBar bossBar(final @NonNull Component name, final float fraction, final BossBar.@NonNull Color color, final BossBar.@NonNull Overlay overlay) {
+    return new SpongeBossBar(name, fraction, color, overlay);
   }
 }

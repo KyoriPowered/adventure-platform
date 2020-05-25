@@ -6,5 +6,7 @@
 /platform-bungeecord/out/
 /platform-spongeapi/build/
 /platform-spongeapi/out/
+/platform-common/build/
+/platform-common/out/
 /run/
 /*.iml

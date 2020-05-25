@@ -45,7 +45,7 @@ final class BukkitBossBar extends AbstractBossBar {
   }
 
   @Override
-  protected void changed(final @NonNull Change type) {
+  protected void changed(final Change type) {
     if(type == Change.NAME) {
       this.bukkit.setTitle(legacy(this.name()));
     } else if(type == Change.PERCENT) {
@@ -68,11 +68,11 @@ final class BukkitBossBar extends AbstractBossBar {
     }
   }
 
-  private static @NonNull String legacy(final @NonNull Component component) {
+  private static String legacy(final Component component) {
     return LegacyComponentSerializer.legacy().serialize(component);
   }
 
-  private static @NonNull BarColor bukkit(final @NonNull Color color) {
+  private static BarColor bukkit(final Color color) {
     if(color == Color.PINK) {
       return BarColor.PINK;
     } else if(color == Color.BLUE) {
@@ -91,7 +91,7 @@ final class BukkitBossBar extends AbstractBossBar {
     throw new IllegalArgumentException();
   }
 
-  private static @NonNull BarFlag bukkit(final @NonNull Flag flag) {
+  private static BarFlag bukkit(final Flag flag) {
     if(flag == Flag.DARKEN_SCREEN) {
       return BarFlag.DARKEN_SKY;
     } else if(flag == Flag.PLAY_BOSS_MUSIC) {
@@ -102,7 +102,7 @@ final class BukkitBossBar extends AbstractBossBar {
     throw new IllegalArgumentException();
   }
 
-  private static @NonNull BarStyle bukkit(final @NonNull Overlay overlay) {
+  private static BarStyle bukkit(final Overlay overlay) {
     if(overlay == Overlay.PROGRESS) {
       return BarStyle.SOLID;
     } else if(overlay == Overlay.NOTCHED_6) {

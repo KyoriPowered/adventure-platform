@@ -61,10 +61,10 @@ final class CraftBukkitAdapter implements Adapter {
       final Class<?> chatPacketClass = minecraftClass(serverVersion, "PacketPlayOutChat");
       final Constructor<?> chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass);
       final Class<?> titlePacketClass = optionalMinecraftClass(serverVersion, "PacketPlayOutTitle");
-      final Class<? extends Enum> titlePacketClassAction;
+      final Class<? extends Enum<?>> titlePacketClassAction;
       final Constructor<?> titlePacketConstructor;
       if(titlePacketClass != null) {
-        titlePacketClassAction = (Class<? extends Enum>) minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
+        titlePacketClassAction = (Class<? extends Enum<?>>) minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
         titlePacketConstructor = titlePacketClass.getConstructor(titlePacketClassAction, baseComponentClass);
       } else {
         titlePacketClassAction = null;

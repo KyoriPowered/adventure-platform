@@ -30,27 +30,25 @@ import net.kyori.adventure.audience.MultiAudience;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
+import org.bukkit.plugin.PluginManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class PlayersWithPermissionAudience implements MultiAudience {
-  private final Collection<? extends Player> viewers;
-  private final Permission permission;
+class PlayersWithPermissionAudience implements MultiAudience {
+  private final PluginManager pluginManager;
+  private final String permission;
 
   // All online players with the permission
-  public PlayersWithPermissionAudience(final @NonNull Server server, final @NonNull Permission permission) {
-    this(server.getOnlinePlayers(), permission);
-  }
-
-  public PlayersWithPermissionAudience(final @NonNull Collection<? extends Player> viewers, final @NonNull Permission permission) {
-    this.viewers = viewers;
+  public PlayersWithPermissionAudience(final @NonNull Server server, final @NonNull String permission) {
+    this.pluginManager = server.getPluginManager();
     this.permission = permission;
   }
 
+
   @Override
   public @NonNull Iterable<Audience> audiences() {
-    return this.viewers.stream()
-      .filter(viewer -> viewer.hasPermission(this.permission))
-      .map(PlayerAudience::new)
+    return this.pluginManager.getPermissionSubscriptions(this.permission).stream()
+      .filter(it -> it instanceof Player)
+      .map(viewer -> new PlayerAudience((Player) viewer))
       .collect(Collectors.toList());
   }
 }

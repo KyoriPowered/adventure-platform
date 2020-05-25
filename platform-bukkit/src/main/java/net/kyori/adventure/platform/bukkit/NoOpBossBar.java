@@ -23,48 +23,18 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.bossbar.AbstractBossBar;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class ConsoleAudience implements Audience {
-  private final CommandSender viewer;
-
-  public ConsoleAudience(final @NonNull CommandSender viewer) {
-    this.viewer = viewer;
+/**
+ * A fallback implementation when working on older versions of Bukkit that don't have the necessary API
+ */
+final class NoOpBossBar extends AbstractBossBar {
+  NoOpBossBar(final @NonNull Component name, final float percent, final @NonNull Color color, final @NonNull Overlay overlay) {
+    super(name, percent, color, overlay);
   }
 
   @Override
-  public void message(final @NonNull Component message) {
-    TextAdapter.sendMessage(this.viewer, message);
-  }
-
-  @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
-
-  @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
-
-  @Override
-  public void showActionBar(final @NonNull Component message) {
-    // NOOP
-  }
-
-  @Override
-  public void playSound(final @NonNull Sound sound) {
-    // NOOP
-  }
-
-  @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // NOOP
-  }
+  protected void changed(final @NonNull Change type) { }
 }
