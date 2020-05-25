@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -34,10 +35,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-public class BukkitAudience implements Audience {
+public class PlayerAudience implements Audience {
   private final Player player;
 
-  public BukkitAudience(final Player player) {
+  public PlayerAudience(final Player player) {
     this.player = requireNonNull(player, "player");
   }
 
@@ -48,9 +49,7 @@ public class BukkitAudience implements Audience {
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    if(!(bar instanceof BukkitBossBar)) {
-      throw new IllegalArgumentException("Provided boss bar " + bar + " must be created by Adventure");
-    }
+    this.ensureItIsOurs(bar);
     ((BukkitBossBar) bar).addPlayer(this.player);
     // TODO: Backwards compatibility, packet + API was only added for MC 1.9
     // Use a no-op implementation of BossBar???
@@ -58,10 +57,14 @@ public class BukkitAudience implements Audience {
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
+    this.ensureItIsOurs(bar);
+    ((BukkitBossBar) bar).removePlayer(this.player);
+  }
+
+  private void ensureItIsOurs(final BossBar bar) {
     if(!(bar instanceof BukkitBossBar)) {
       throw new IllegalArgumentException("Provided boss bar " + bar + " must be created by Adventure");
     }
-    ((BukkitBossBar) bar).removePlayer(this.player);
   }
 
   @Override
@@ -72,7 +75,7 @@ public class BukkitAudience implements Audience {
   @Override
   public void playSound(final @NonNull Sound sound) {
     final String name = sound.name().asString();
-    final SoundCategory category = category(sound.source());
+    final SoundCategory category = BukkitPlatform.category(sound.source());
     this.player.playSound(this.player.getLocation(), name, category, sound.volume(), sound.pitch());
     // TODO: legacy compatibility
     // Player.playSound with a SoundCategory only added MC 1.11, Bukkit 7512561bdb4c8f8f95d3dc4e5f58370437adff7f
@@ -82,39 +85,14 @@ public class BukkitAudience implements Audience {
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
-    final String name = stop.sound() == null ? "" : stop.sound().asString();
-    final SoundCategory category = stop.source() == null ? null : category(stop.source());
+    final Key sound = stop.sound();
+    final String name = sound == null ? "" : sound.asString();
+    final Sound.Source source = stop.source();
+    final SoundCategory category = source == null ? null : BukkitPlatform.category(source);
     this.player.stopSound(name, category);
 
     // TODO: legacy compatibility
     // Player.stopSound(String) added: MC 1.9, Bukkit 32351955d81a12fa95006adb98d8c8030079248f
     // Player.stopSound(String, SoundCategory) added MC 1.11, Bukkit c1a8e12c9ce0686b527bacd40fcda6e3051f53b9
-  }
-
-  static SoundCategory category(final Sound.@NonNull Source source) {
-    switch(source) {
-      case MASTER:
-        return SoundCategory.MASTER;
-      case MUSIC:
-        return SoundCategory.MUSIC;
-      case RECORD:
-        return SoundCategory.RECORDS;
-      case WEATHER:
-        return SoundCategory.WEATHER;
-      case BLOCK:
-        return SoundCategory.BLOCKS;
-      case HOSTILE:
-        return SoundCategory.HOSTILE;
-      case NEUTRAL:
-        return SoundCategory.NEUTRAL;
-      case PLAYER:
-        return SoundCategory.PLAYERS;
-      case AMBIENT:
-        return SoundCategory.AMBIENT;
-      case VOICE:
-        return SoundCategory.VOICE;
-      default:
-        throw new IllegalArgumentException("Unknown sound source " + source);
-    }
   }
 }
