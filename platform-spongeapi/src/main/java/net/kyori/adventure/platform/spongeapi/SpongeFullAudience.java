@@ -25,9 +25,11 @@ package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.effect.sound.SoundCategory;
 import org.spongepowered.api.effect.sound.SoundType;
@@ -45,21 +47,23 @@ final class SpongeFullAudience extends SpongeAudience {
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    if(!(bar instanceof SpongeBossBar)) {
-      throw new IllegalArgumentException("Submitted boss bars must be Adventure-created");
-    }
-    if(viewer instanceof Player) {
-      ((SpongeBossBar) bar).addPlayer((Player) viewer);
+    this.ensureItIsOurs(bar);
+    if(this.viewer instanceof Player) {
+      ((SpongeBossBar) bar).addPlayer((Player) this.viewer);
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    if(!(bar instanceof SpongeBossBar)) {
-      throw new IllegalArgumentException("Submitted boss bars must be Adventure-created");
+    this.ensureItIsOurs(bar);
+    if(this.viewer instanceof Player) {
+      ((SpongeBossBar) bar).removePlayer((Player) this.viewer);
     }
-    if(viewer instanceof Player) {
-      ((SpongeBossBar) bar).removePlayer((Player) viewer);
+  }
+
+  private void ensureItIsOurs(final BossBar bar) {
+    if(!(bar instanceof SpongeBossBar)) {
+      throw new IllegalArgumentException(String.format("Incompatible boss bar - expected %s, got %s", SpongeBossBar.class.getName(), bar.getClass().getName()));
     }
   }
 
@@ -69,15 +73,15 @@ final class SpongeFullAudience extends SpongeAudience {
     if(this.viewer instanceof Locatable) {
       loc = ((Locatable) this.viewer).getLocation().getPosition();
     }
-    final SoundType type = Adapters.toSponge(SoundType.class, sound.name());
-    final SoundCategory category = Adapters.toSponge(SoundCategory.class, sound.source(), Sound.Source.NAMES);
+    final SoundType type = sponge(sound.name());
+    final SoundCategory category = sponge(sound.source());
     this.viewer.playSound(type, category, loc, sound.volume(), sound.pitch());
   }
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
-    final SoundType type = stop.sound() == null ? null : Adapters.toSponge(SoundType.class, stop.sound());
-    final SoundCategory category = stop.source() == null ? null : Adapters.toSponge(SoundCategory.class, stop.source(), Sound.Source.NAMES);
+    final SoundType type = sponge(stop.sound());
+    final SoundCategory category = sponge(stop.source());
 
     if(type != null && category != null) {
       this.viewer.stopSounds(type, category);
@@ -88,5 +92,13 @@ final class SpongeFullAudience extends SpongeAudience {
     } else {
       this.viewer.stopSounds();
     }
+  }
+
+  private static SoundType sponge(final @Nullable Key sound) {
+    return sound == null ? null : Adapters.toSponge(SoundType.class, sound);
+  }
+
+  private static SoundCategory sponge(final Sound.@Nullable Source source) {
+    return source == null ? null : Adapters.toSponge(SoundCategory.class, source, Sound.Source.NAMES);
   }
 }

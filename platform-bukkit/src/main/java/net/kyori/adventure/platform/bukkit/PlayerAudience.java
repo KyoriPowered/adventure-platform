@@ -62,7 +62,7 @@ class PlayerAudience extends BukkitAudience<Player> {
 
   private void ensureItIsOurs(final BossBar bar) {
     if(!(bar instanceof BukkitBossBar)) {
-      throw new IllegalArgumentException("Provided boss bar " + bar + " must be created by Adventure");
+      throw new IllegalArgumentException(String.format("Incompatible boss bar - expected %s, got %s", BukkitBossBar.class.getName(), bar.getClass().getName()));
     }
   }
 
