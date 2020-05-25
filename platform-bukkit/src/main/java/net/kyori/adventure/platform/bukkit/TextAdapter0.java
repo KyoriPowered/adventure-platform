@@ -25,59 +25,12 @@ package net.kyori.adventure.platform.bukkit;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-/**
- * An adapter for sending text {@link Component}s to Bukkit objects.
- */
-public interface TextAdapter {
-  /**
-   * Sends {@code component} to the given {@code viewer}.
-   *
-   * @param viewer the viewer to send the component to
-   * @param component the component
-   */
-  static void sendMessage(final @NonNull CommandSender viewer, final @NonNull Component component) {
-    sendMessage(Collections.singleton(viewer), component);
-  }
-
-  /**
-   * Sends {@code component} to the given {@code viewers}.
-   *
-   * @param viewers the viewers to send the component to
-   * @param component the component
-   */
-  static void sendMessage(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
-    TextAdapter0.sendComponent(viewers, component, false);
-  }
-
-  /**
-   * Sends {@code component} to the given {@code viewer}'s action bar.
-   *
-   * @param viewer the viewer to send the component to
-   * @param component the component
-   */
-  static void sendActionBar(final @NonNull CommandSender viewer, final @NonNull Component component) {
-    sendActionBar(Collections.singleton(viewer), component);
-  }
-
-  /**
-   * Sends {@code component} to the given {@code viewers}'s action bar.
-   *
-   * @param viewers the viewers to send the component to
-   * @param component the component
-   */
-  static void sendActionBar(final @NonNull Iterable<? extends CommandSender> viewers, final @NonNull Component component) {
-    TextAdapter0.sendComponent(viewers, component, true);
-  }
-}
 
 final class TextAdapter0 {
   private static final List<Adapter> ADAPTERS = pickAdapters();

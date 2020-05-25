@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.util.Collections;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
@@ -67,7 +68,7 @@ class PlayerAudience extends BukkitAudience<Player> {
 
   @Override
   public void showActionBar(final @NonNull Component message) {
-    TextAdapter.sendActionBar(this.viewer, message);
+    TextAdapter0.sendComponent(Collections.singleton(this.viewer), message, true);
   }
 
   @Override

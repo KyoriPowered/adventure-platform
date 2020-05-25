@@ -29,9 +29,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * An adapter for converting text {@link Component}s to Spigot (BungeeCord) objects.
- *
- * <p>This class is an extension of {@link TextAdapter}, since the plain Bukkit API does not include
- * the BungeeCord Chat API.</p>
  */
 public interface SpigotTextAdapter {
   /**

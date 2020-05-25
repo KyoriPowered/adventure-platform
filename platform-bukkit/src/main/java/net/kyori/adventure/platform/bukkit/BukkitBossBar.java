@@ -45,7 +45,7 @@ final class BukkitBossBar extends AbstractBossBar {
   }
 
   @Override
-  protected void changed(final Change type) {
+  protected void changed(final @NonNull Change type) {
     if(type == Change.NAME) {
       this.bukkit.setTitle(legacy(this.name()));
     } else if(type == Change.PERCENT) {

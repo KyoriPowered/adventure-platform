@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.util.Collections;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
@@ -52,7 +53,7 @@ class BukkitAudience<V extends CommandSender> implements Audience {
 
   @Override
   public void message(final @NonNull Component message) {
-    TextAdapter.sendMessage(this.viewer, message);
+    TextAdapter0.sendComponent(Collections.singleton(this.viewer), message, false);
   }
 
   @Override
