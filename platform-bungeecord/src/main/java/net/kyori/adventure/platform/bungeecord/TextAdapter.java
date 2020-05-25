@@ -102,7 +102,9 @@ final class TextAdapter0 {
       final Field builderHierarchyFactoriesField = field(GsonBuilder.class, "hierarchyFactories");
 
       final Gson gson = (Gson) gsonField.get(null);
-      final GsonBuilder builder = GsonComponentSerializer.populate(new GsonBuilder());
+      final GsonBuilder builder = new GsonBuilder();
+      GsonComponentSerializer.GSON_BUILDER_CONFIGURER.accept(builder);
+
 
       final List<TypeAdapterFactory> existingFactories = (List<TypeAdapterFactory>) factoriesField.get(gson);
       final List<TypeAdapterFactory> newFactories = new ArrayList<>();
