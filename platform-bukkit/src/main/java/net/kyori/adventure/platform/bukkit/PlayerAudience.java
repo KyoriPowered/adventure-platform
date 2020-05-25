@@ -35,16 +35,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-class PlayerAudience implements Audience {
-  private final Player player;
-
+class PlayerAudience extends BukkitAudience<Player> {
   public PlayerAudience(final Player player) {
-    this.player = requireNonNull(player, "player");
-  }
-
-  @Override
-  public void message(final @NonNull Component message) {
-    TextAdapter.sendMessage(this.player, message);
+    super(requireNonNull(player, "player"));
   }
 
   @Override
@@ -53,13 +46,13 @@ class PlayerAudience implements Audience {
       return;
     }
     this.ensureItIsOurs(bar);
-    ((BukkitBossBar) bar).addPlayer(this.player);
+    ((BukkitBossBar) bar).addPlayer(this.viewer);
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
     this.ensureItIsOurs(bar);
-    ((BukkitBossBar) bar).removePlayer(this.player);
+    ((BukkitBossBar) bar).removePlayer(this.viewer);
   }
 
   private boolean isNoOp(final BossBar bar) {
@@ -74,7 +67,7 @@ class PlayerAudience implements Audience {
 
   @Override
   public void showActionBar(final @NonNull Component message) {
-    TextAdapter.sendActionBar(this.player, message);
+    TextAdapter.sendActionBar(this.viewer, message);
   }
 
   @Override
@@ -82,9 +75,9 @@ class PlayerAudience implements Audience {
     final String name = sound.name().asString();
     if(CraftBukkitPlatform.SOUND_CATEGORY_SUPPORTED) {
       final SoundCategory category = CraftBukkitPlatform.category(sound.source());
-      this.player.playSound(this.player.getLocation(), name, category, sound.volume(), sound.pitch());
+      this.viewer.playSound(this.viewer.getLocation(), name, category, sound.volume(), sound.pitch());
     } else {
-      this.player.playSound(this.player.getLocation(), name, sound.volume(), sound.pitch());
+      this.viewer.playSound(this.viewer.getLocation(), name, sound.volume(), sound.pitch());
     }
   }
 
@@ -100,9 +93,9 @@ class PlayerAudience implements Audience {
     if(CraftBukkitPlatform.SOUND_CATEGORY_SUPPORTED) {
       final Sound.Source source = stop.source();
       final SoundCategory category = source == null ? null : CraftBukkitPlatform.category(source);
-      this.player.stopSound(name, category);
+      this.viewer.stopSound(name, category);
     } else {
-      this.player.stopSound(name);
+      this.viewer.stopSound(name);
     }
   }
 }

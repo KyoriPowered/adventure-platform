@@ -23,32 +23,55 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
-import org.bukkit.Server;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.text.Component;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
-import org.bukkit.plugin.PluginManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class PlayersWithPermissionAudience implements MultiAudience {
-  private final PluginManager pluginManager;
-  private final String permission;
+class BukkitAudience<V extends CommandSender> implements Audience {
+  protected final V viewer;
 
-  // All online players with the permission
-  public PlayersWithPermissionAudience(final @NonNull Server server, final @NonNull String permission) {
-    this.pluginManager = server.getPluginManager();
-    this.permission = permission;
+  static Audience of(final CommandSender viewer) {
+    if(viewer instanceof Player) {
+      return new PlayerAudience((Player) viewer);
+    } else if(viewer instanceof ConsoleCommandSender) {
+      return new ConsoleAudience((ConsoleCommandSender) viewer);
+    } else {
+      return new BukkitAudience<>(viewer);
+    }
   }
 
+  public BukkitAudience(final @NonNull V viewer) {
+    this.viewer = viewer;
+  }
 
   @Override
-  public @NonNull Iterable<Audience> audiences() {
-    return this.pluginManager.getPermissionSubscriptions(this.permission).stream()
-      .filter(it -> it instanceof Player)
-      .map(viewer -> new PlayerAudience((Player) viewer))
-      .collect(Collectors.toList());
+  public void message(final @NonNull Component message) {
+    TextAdapter.sendMessage(this.viewer, message);
+  }
+
+  @Override
+  public void showBossBar(final @NonNull BossBar bar) {
+  }
+
+  @Override
+  public void hideBossBar(final @NonNull BossBar bar) {
+  }
+
+  @Override
+  public void showActionBar(final @NonNull Component message) {
+  }
+
+  @Override
+  public void playSound(final @NonNull Sound sound) {
+  }
+
+  @Override
+  public void stopSound(final @NonNull SoundStop stop) {
   }
 }

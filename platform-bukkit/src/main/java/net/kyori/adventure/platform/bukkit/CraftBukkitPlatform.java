@@ -23,8 +23,6 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import java.util.Collection;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
@@ -93,7 +91,7 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
 
   @Override
   public @NonNull MultiAudience permission(final @NonNull String permission) {
-    return new PlayersWithPermissionAudience(Bukkit.getServer(), requireNonNull(permission, "permission"));
+    return new WithPermissionAudience(Bukkit.getServer(), requireNonNull(permission, "permission"));
   }
 
   @Override

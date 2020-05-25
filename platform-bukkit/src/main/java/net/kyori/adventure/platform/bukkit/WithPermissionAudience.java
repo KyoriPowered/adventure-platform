@@ -23,40 +23,30 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
-import net.kyori.adventure.text.Component;
-import org.bukkit.command.ConsoleCommandSender;
+import java.util.stream.Collectors;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.MultiAudience;
+import org.bukkit.Server;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.PluginManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class ConsoleAudience extends BukkitAudience<ConsoleCommandSender> {
-  public ConsoleAudience(final @NonNull ConsoleCommandSender viewer) {
-    super(viewer);
+final class WithPermissionAudience implements MultiAudience {
+  private final PluginManager pm;
+  private final String permission;
+
+  public WithPermissionAudience(final @NonNull Server server, final @NonNull String permission) {
+    this.pm = server.getPluginManager();
+    this.permission = permission;
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
-
-  @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
-
-  @Override
-  public void showActionBar(final @NonNull Component message) {
-    // NOOP
-  }
-
-  @Override
-  public void playSound(final @NonNull Sound sound) {
-    // NOOP
-  }
-
-  @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // NOOP
+  public @NonNull Iterable<Audience> audiences() {
+    return this.pm.getPermissionSubscriptions(this.permission).stream()
+      .filter(viewer -> viewer instanceof CommandSender)
+      .map(viewer -> ( CommandSender) viewer)
+      .filter(viewer -> viewer.hasPermission(this.permission))
+      .map(BukkitAudience::of)
+      .collect(Collectors.toList());
   }
 }
