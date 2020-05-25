@@ -36,21 +36,21 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import static java.util.Objects.requireNonNull;
 
 final class Adapters {
+  private Adapters() {
+  }
 
-  private Adapters() {}
-
-  public static <S extends CatalogType, K> S toSponge(final Class<S> spongeType, final K value, final NameMap<K> elements)  {
+  public static <K, S extends CatalogType> S toSponge(final Class<S> spongeType, final K value, final NameMap<K> elements)  {
     return Sponge.getRegistry().getType(spongeType, elements.name(requireNonNull(value, "value")))
       .orElseThrow(() -> new IllegalArgumentException("Value " + value + " could not be found in Sponge type " + spongeType));
   }
 
-  public static <S extends CatalogType, K> K toAdventure(final S sponge, final NameMap<K> values) {
+  public static <K, S extends CatalogType> K toAdventure(final S sponge, final NameMap<K> values) {
     return values.value(sponge.getId())
       .orElseThrow(() -> new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent"));
   }
 
   public static <S extends CatalogType> S toSponge(final Class<S> spongeType, final Key identifier) {
-    return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").toString())
+    return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
 

@@ -40,12 +40,12 @@ public class BungeePlayerAudience implements Audience {
   }
 
   @Override
-  public void message(@NonNull final Component message) {
+  public void message(final @NonNull Component message) {
     this.player.sendMessage(ChatMessageType.SYSTEM, TextAdapter.toBungeeCord(message));
   }
 
   @Override
-  public void showBossBar(@NonNull final BossBar bar) {
+  public void showBossBar(final @NonNull BossBar bar) {
     if(!(bar instanceof BungeeBossBar)) {
       throw new IllegalArgumentException("Only Bungee-created boss bars are supported");
     }
@@ -53,7 +53,7 @@ public class BungeePlayerAudience implements Audience {
   }
 
   @Override
-  public void hideBossBar(@NonNull final BossBar bar) {
+  public void hideBossBar(final @NonNull BossBar bar) {
     if(!(bar instanceof BungeeBossBar)) {
       throw new IllegalArgumentException("Only Bungee-created boss bars are supported");
     }
@@ -61,12 +61,12 @@ public class BungeePlayerAudience implements Audience {
   }
 
   @Override
-  public void showActionBar(@NonNull final Component message) {
+  public void showActionBar(final @NonNull Component message) {
     this.player.sendMessage(ChatMessageType.ACTION_BAR, TextAdapter.toBungeeCord(message));
   }
 
   @Override
-  public void playSound(@NonNull final Sound sound) {
+  public void playSound(final @NonNull Sound sound) {
     // TODO: Out of scope?
     // Packet Named Sound Effect, 0x19
     // 19w34a (pre of 1.15) (proto 345): 0x19 -> 0x1A
@@ -79,7 +79,7 @@ public class BungeePlayerAudience implements Audience {
   }
 
   @Override
-  public void stopSound(@NonNull final SoundStop stop) {
+  public void stopSound(final @NonNull SoundStop stop) {
     // TODO: Out of scope?
     // 17w46a (pre of 1.13) (proto 345): pkt 0x4A
     // starting 17w45a (pre of 1.13) (proto 343): pkt 0x49

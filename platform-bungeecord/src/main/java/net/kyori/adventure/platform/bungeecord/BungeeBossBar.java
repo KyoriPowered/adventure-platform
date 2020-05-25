@@ -51,12 +51,12 @@ public class BungeeBossBar extends AbstractBossBar {
   private final UUID id = UUID.randomUUID();
   private final Set<ProxiedPlayer> subscribers = Collections.newSetFromMap(new WeakHashMap<>());
 
-  protected BungeeBossBar(@NonNull final Component name, final float percent, @NonNull final Color color, @NonNull final Overlay overlay) {
+  protected BungeeBossBar(final @NonNull Component name, final float percent, final @NonNull Color color, final @NonNull Overlay overlay) {
     super(name, percent, color, overlay);
   }
 
   @Override
-  protected void changed(@NonNull final Change type) {
+  protected void changed(final @NonNull Change type) {
     final BossBar packet;
     switch(type) {
 

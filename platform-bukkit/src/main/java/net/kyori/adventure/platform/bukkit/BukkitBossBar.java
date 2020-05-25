@@ -32,13 +32,14 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 final class BukkitBossBar extends AbstractBossBar {
   private static final Flag[] FLAGS = Flag.values();
   private final BossBar bukkit;
 
-  BukkitBossBar(@NonNull final Component name, final float percent, @NonNull final Color color, @NonNull final Overlay overlay) {
+  BukkitBossBar(final @NonNull Component name, final float percent, final @NonNull Color color, final @NonNull Overlay overlay) {
     super(name, percent, color, overlay);
     this.bukkit = Bukkit.getServer().createBossBar(legacy(name), bukkit(color), bukkit(overlay));
   }
@@ -116,7 +117,11 @@ final class BukkitBossBar extends AbstractBossBar {
     throw new IllegalArgumentException();
   }
 
-  BossBar bukkit() {
-    return this.bukkit;
+  void addPlayer(final Player player) {
+    this.bukkit.addPlayer(player);
+  }
+
+  void removePlayer(final Player player) {
+    this.bukkit.removePlayer(player);
   }
 }

@@ -49,39 +49,39 @@ class SpongeAudience implements Audience {
   }
 
   @Override
-  public void message(@NonNull final Component message) {
+  public void message(final @NonNull Component message) {
     receiver.sendMessage(Adapters.toSponge(message));
   }
 
   @Override
-  public void showBossBar(@NonNull final BossBar bar) {
+  public void showBossBar(final @NonNull BossBar bar) {
     if(!(bar instanceof SpongeBossBar)) {
       throw new IllegalArgumentException("Submited boss bars must be SPI-created");
     }
     if(viewer instanceof Player) {
-      ((SpongeBossBar) bar).sponge().addPlayer((Player) viewer);
+      ((SpongeBossBar) bar).addPlayer((Player) viewer);
     }
   }
 
   @Override
-  public void hideBossBar(@NonNull final BossBar bar) {
+  public void hideBossBar(final @NonNull BossBar bar) {
     if(!(bar instanceof SpongeBossBar)) {
       throw new IllegalArgumentException("Submited boss bars must be SPI-created");
     }
     if(viewer instanceof Player) {
-      ((SpongeBossBar) bar).sponge().removePlayer((Player) viewer);
+      ((SpongeBossBar) bar).removePlayer((Player) viewer);
     }
   }
 
   @Override
-  public void showActionBar(@NonNull final Component message) {
+  public void showActionBar(final @NonNull Component message) {
     if(this.receiver instanceof ChatTypeMessageReceiver) {
       ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, Adapters.toSponge(message));
     }
   }
 
   @Override
-  public void playSound(@NonNull final Sound sound) {
+  public void playSound(final @NonNull Sound sound) {
     Vector3d loc = Vector3d.ZERO;
     if(this.viewer instanceof Locatable) {
       loc = ((Locatable) this.viewer).getLocation().getPosition();
@@ -92,7 +92,7 @@ class SpongeAudience implements Audience {
   }
 
   @Override
-  public void stopSound(@NonNull final SoundStop stop) {
+  public void stopSound(final @NonNull SoundStop stop) {
     final SoundType type = stop.sound() == null ? null : Adapters.toSponge(SoundType.class, stop.sound());
     final SoundCategory category = stop.source() == null ? null : Adapters.toSponge(SoundCategory.class, stop.source(), Sound.Source.NAMES);
 

@@ -42,36 +42,36 @@ public class BukkitAudience implements Audience {
   }
 
   @Override
-  public void message(@NonNull final Component message) {
+  public void message(final @NonNull Component message) {
     TextAdapter.sendMessage(this.player, message);
   }
 
   @Override
-  public void showBossBar(@NonNull final BossBar bar) {
+  public void showBossBar(final @NonNull BossBar bar) {
     if(!(bar instanceof BukkitBossBar)) {
       throw new IllegalArgumentException("Provided boss bar " + bar + " must be created by Adventure");
     }
-    ((BukkitBossBar) bar).bukkit().addPlayer(this.player);
+    ((BukkitBossBar) bar).addPlayer(this.player);
     // TODO: Backwards compatibility, packet + API was only added for MC 1.9
     // Use a no-op implementation of BossBar???
   }
 
   @Override
-  public void hideBossBar(@NonNull final BossBar bar) {
+  public void hideBossBar(final @NonNull BossBar bar) {
     if(!(bar instanceof BukkitBossBar)) {
       throw new IllegalArgumentException("Provided boss bar " + bar + " must be created by Adventure");
     }
-    ((BukkitBossBar) bar).bukkit().addPlayer(this.player);
+    ((BukkitBossBar) bar).removePlayer(this.player);
   }
 
   @Override
-  public void showActionBar(@NonNull final Component message) {
+  public void showActionBar(final @NonNull Component message) {
     TextAdapter.sendActionBar(this.player, message);
   }
 
   @Override
-  public void playSound(@NonNull final Sound sound) {
-    final String name = sound.name().toString();
+  public void playSound(final @NonNull Sound sound) {
+    final String name = sound.name().asString();
     final SoundCategory category = category(sound.source());
     this.player.playSound(this.player.getLocation(), name, category, sound.volume(), sound.pitch());
     // TODO: legacy compatibility
@@ -81,8 +81,8 @@ public class BukkitAudience implements Audience {
   }
 
   @Override
-  public void stopSound(@NonNull final SoundStop stop) {
-    final String name = stop.sound() == null ? "" : stop.sound().toString();
+  public void stopSound(final @NonNull SoundStop stop) {
+    final String name = stop.sound() == null ? "" : stop.sound().asString();
     final SoundCategory category = stop.source() == null ? null : category(stop.source());
     this.player.stopSound(name, category);
 
@@ -91,23 +91,23 @@ public class BukkitAudience implements Audience {
     // Player.stopSound(String, SoundCategory) added MC 1.11, Bukkit c1a8e12c9ce0686b527bacd40fcda6e3051f53b9
   }
 
-  static SoundCategory category(Sound.@NonNull Source source) {
+  static SoundCategory category(final Sound.@NonNull Source source) {
     switch(source) {
       case MASTER:
         return SoundCategory.MASTER;
       case MUSIC:
         return SoundCategory.MUSIC;
-      case RECORDS:
+      case RECORD:
         return SoundCategory.RECORDS;
       case WEATHER:
         return SoundCategory.WEATHER;
-      case BLOCKS:
+      case BLOCK:
         return SoundCategory.BLOCKS;
       case HOSTILE:
         return SoundCategory.HOSTILE;
       case NEUTRAL:
         return SoundCategory.NEUTRAL;
-      case PLAYERS:
+      case PLAYER:
         return SoundCategory.PLAYERS;
       case AMBIENT:
         return SoundCategory.AMBIENT;
