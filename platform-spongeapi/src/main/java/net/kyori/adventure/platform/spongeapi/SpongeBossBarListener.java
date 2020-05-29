@@ -24,52 +24,50 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.Set;
-import net.kyori.adventure.bossbar.AbstractBossBar;
-import net.kyori.adventure.text.Component;
+import net.kyori.adventure.bossbar.BossBar;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.boss.BossBarColor;
 import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.entity.living.player.Player;
 
-class SpongeBossBar extends AbstractBossBar {
+class SpongeBossBarListener implements BossBar.Listener {
   private final ServerBossBar sponge;
 
-  protected SpongeBossBar(@NonNull final Component name, final float percent, @NonNull final Color color, @NonNull final Overlay overlay) {
-    super(name, percent, color, overlay);
+  protected SpongeBossBarListener(BossBar bar) {
     this.sponge = ServerBossBar.builder()
-      .name(Adapters.toSponge(name))
-      .percent(percent)
-      .color(Adapters.toSponge(BossBarColor.class, color, Color.NAMES))
-      .overlay(Adapters.toSponge(BossBarOverlay.class, overlay, Overlay.NAMES))
+      .name(Adapters.toSponge(bar.name()))
+      .percent(bar.percent())
+      .color(Adapters.toSponge(BossBarColor.class, bar.color(), BossBar.Color.NAMES))
+      .overlay(Adapters.toSponge(BossBarOverlay.class, bar.overlay(), BossBar.Overlay.NAMES))
       .build();
   }
 
   @Override
-  protected void changed(@NonNull final Change type) {
+  public void bossBarChanged(final @NonNull BossBar bar, final @NonNull Change type) {
     if(type == Change.NAME) {
-      this.sponge.setName(Adapters.toSponge(this.name()));
+      this.sponge.setName(Adapters.toSponge(bar.name()));
     } else if(type == Change.PERCENT) {
-      this.sponge.setPercent(this.percent());
+      this.sponge.setPercent(bar.percent());
     } else if(type == Change.COLOR) {
-      this.sponge.setColor(Adapters.toSponge(BossBarColor.class, this.color(), Color.NAMES));
+      this.sponge.setColor(Adapters.toSponge(BossBarColor.class, bar.color(), BossBar.Color.NAMES));
     } else if(type == Change.OVERLAY) {
-      this.sponge.setOverlay(Adapters.toSponge(BossBarOverlay.class, this.overlay(), Overlay.NAMES));
+      this.sponge.setOverlay(Adapters.toSponge(BossBarOverlay.class, bar.overlay(), BossBar.Overlay.NAMES));
     } else if(type == Change.FLAGS) {
-      final Set<Flag> flags = this.flags();
-      this.sponge.setCreateFog(flags.contains(Flag.CREATE_WORLD_FOG));
-      this.sponge.setDarkenSky(flags.contains(Flag.DARKEN_SCREEN));
-      this.sponge.setPlayEndBossMusic(flags.contains(Flag.PLAY_BOSS_MUSIC));
+      final Set<BossBar.Flag> flags = bar.flags();
+      this.sponge.setCreateFog(flags.contains(BossBar.Flag.CREATE_WORLD_FOG));
+      this.sponge.setDarkenSky(flags.contains(BossBar.Flag.DARKEN_SCREEN));
+      this.sponge.setPlayEndBossMusic(flags.contains(BossBar.Flag.PLAY_BOSS_MUSIC));
     } else {
       // TODO: Warn on unknown change?
     }
   }
 
-  void addPlayer(final Player player) {
+  void subscribe(final Player player) {
     this.sponge.addPlayer(player);
   }
 
-  void removePlayer(final Player player) {
+  void unsubscribe(final Player player) {
     this.sponge.removePlayer(player);
   }
 }

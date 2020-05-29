@@ -70,9 +70,4 @@ public class BungeePlatform implements AdventurePlatform {
   public @NonNull MultiAudience online() {
     return new OnlinePlayersAudience(ProxyServer.getInstance());
   }
-
-  @Override
-  public @NonNull BossBar bossBar(final @NonNull Component name, final float fraction, final BossBar.@NonNull Color color, final BossBar.@NonNull Overlay overlay) {
-    return new BungeeBossBar(name, fraction, color, overlay);
-  }
 }

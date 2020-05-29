@@ -5,6 +5,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
@@ -18,7 +19,7 @@ class SpongeAudience implements Audience {
   }
 
   @Override
-  public void message(final @NonNull Component message) {
+  public void sendMessage(final @NonNull Component message) {
     receiver.sendMessage(Adapters.toSponge(message));
   }
 
@@ -29,11 +30,11 @@ class SpongeAudience implements Audience {
   public void hideBossBar(@NonNull final BossBar bar) { }
 
   @Override
-  public void showActionBar(@NonNull final Component message) {
+  public void sendActionBar(@NonNull final Component message) {
     if(this.receiver instanceof ChatTypeMessageReceiver) {
       ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, Adapters.toSponge(message));
     } else {
-      message(message);
+      sendMessage(message);
     }
   }
 
@@ -42,4 +43,13 @@ class SpongeAudience implements Audience {
 
   @Override
   public void stopSound(@NonNull final SoundStop stop) { }
+
+  @Override
+  public void showTitle(@NonNull final Title title) { }
+
+  @Override
+  public void clearTitle() { }
+
+  @Override
+  public void resetTitle() { }
 }

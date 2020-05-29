@@ -26,9 +26,7 @@ package net.kyori.adventure.platform;
 import java.util.Arrays;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -105,19 +103,4 @@ public interface AdventurePlatform {
    * @return audience, may be a shared instance
    */
   @NonNull MultiAudience online();
-
-  /**
-   * Create a new boss bar.
-   *
-   * <p>This bar will not be displayed to any audiences until {@link Audience#showBossBar(BossBar)} is called.
-   *
-   * @since 4.0/MC 1.9
-   * @param name text to show above the boss bar
-   * @param fraction bar itself from [0, 1], but values up to 2 supported
-   * @param color color of the bar
-   * @param overlay overlay on the progress section of the bar
-   * @return newly created boss bar
-   */
-  @NonNull BossBar bossBar(@NonNull Component name, float fraction, BossBar.@NonNull Color color, BossBar.@NonNull Overlay overlay);
-
 }

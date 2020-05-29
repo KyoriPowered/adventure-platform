@@ -55,9 +55,9 @@ final class SpigotAdapter implements Adapter {
   @SuppressWarnings("unchecked")
   private static boolean bind() {
     try {
-      final Field gsonField = Reflection.field(ComponentSerializer.class, "gson");
-      return Reflection.injectGson((Gson) gsonField.get(null), builder -> {
-        GsonComponentSerializer.populate(builder);
+      final Field gsonField = Crafty.field(ComponentSerializer.class, "gson");
+      return Crafty.injectGson((Gson) gsonField.get(null), builder -> {
+        GsonComponentSerializer.GSON_BUILDER_CONFIGURER.accept(builder);
         builder.registerTypeAdapter(AdapterComponent.class, new Serializer());
       });
     } catch(NoSuchFieldException | IllegalAccessException ex) {

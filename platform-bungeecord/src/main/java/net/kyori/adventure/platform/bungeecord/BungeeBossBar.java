@@ -36,7 +36,7 @@ import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class BungeeBossBar extends AbstractBossBar {
+final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listener {
   private static final int ACTION_CREATE = 0;
   private static final int ACTION_REMOVE = 1;
   private static final int ACTION_PERCENT = 2;
@@ -51,12 +51,12 @@ final class BungeeBossBar extends AbstractBossBar {
   private final UUID id = UUID.randomUUID();
   private final Set<ProxiedPlayer> subscribers = Collections.newSetFromMap(new WeakHashMap<>());
 
-  protected BungeeBossBar(final @NonNull Component name, final float percent, final @NonNull Color color, final @NonNull Overlay overlay) {
+  protected BungeeBossBar(final @NonNull Component name, final float percent, final @NonNull net.kyori.adventure.bossbar.BossBar.Color color, final @NonNull net.kyori.adventure.bossbar.BossBar.Overlay overlay) {
     super(name, percent, color, overlay);
   }
 
   @Override
-  protected void changed(final @NonNull Change type) {
+  public void bossBarChanged(final net.kyori.adventure.bossbar.BossBar bar, final @NonNull Change type) {
     final BossBar packet;
     switch(type) {
 
@@ -87,9 +87,9 @@ final class BungeeBossBar extends AbstractBossBar {
     }
   }
 
-  private byte bitmaskFlags() {
+  private byte bitmaskFlags(net.kyori.adventure.bossbar.BossBar bar) {
     byte mask = 0;
-    for (Flag flag : flags()) {
+    for (net.kyori.adventure.bossbar.BossBar.Flag flag : bar.flags()) {
       switch(flag) {
         case DARKEN_SCREEN:
           mask |= FLAG_DARKEN_SCREEN;

@@ -30,6 +30,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -47,13 +48,13 @@ class PlayerAudience extends BukkitAudience<Player> {
       return;
     }
     this.ensureItIsOurs(bar);
-    ((BukkitBossBar) bar).addPlayer(this.viewer);
+    //((BukkitBossBar) bar).addPlayer(this.viewer);
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
     this.ensureItIsOurs(bar);
-    ((BukkitBossBar) bar).removePlayer(this.viewer);
+    //((BukkitBossBar) bar).removePlayer(this.viewer);
   }
 
   private boolean isNoOp(final BossBar bar) {
@@ -98,5 +99,20 @@ class PlayerAudience extends BukkitAudience<Player> {
     } else {
       this.viewer.stopSound(name);
     }
+  }
+
+  @Override
+  public void showTitle(final @NonNull Title title) {
+    // TODO
+  }
+
+  @Override
+  public void clearTitle() {
+    this.viewer.sendTitle("", "", -1, -1, -1);
+  }
+
+  @Override
+  public void resetTitle() {
+    this.viewer.resetTitle();
   }
 }

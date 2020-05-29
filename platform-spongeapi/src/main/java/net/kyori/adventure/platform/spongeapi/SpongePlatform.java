@@ -65,9 +65,4 @@ public class SpongePlatform implements AdventurePlatform {
   public @NonNull MultiAudience online() {
     return new SpongeMultiAudience(Sponge.getServer()::getOnlinePlayers);
   }
-
-  @Override
-  public @NonNull BossBar bossBar(final @NonNull Component name, final float fraction, final BossBar.@NonNull Color color, final BossBar.@NonNull Overlay overlay) {
-    return new SpongeBossBar(name, fraction, color, overlay);
-  }
 }

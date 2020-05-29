@@ -24,10 +24,13 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.effect.Viewer;
@@ -47,23 +50,15 @@ final class SpongeFullAudience extends SpongeAudience {
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    this.ensureItIsOurs(bar);
     if(this.viewer instanceof Player) {
-      ((SpongeBossBar) bar).addPlayer((Player) this.viewer);
+      ((SpongeBossBarListener) bar).subscribe((Player) this.viewer);
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    this.ensureItIsOurs(bar);
     if(this.viewer instanceof Player) {
-      ((SpongeBossBar) bar).removePlayer((Player) this.viewer);
-    }
-  }
-
-  private void ensureItIsOurs(final BossBar bar) {
-    if(!(bar instanceof SpongeBossBar)) {
-      throw new IllegalArgumentException(String.format("Incompatible boss bar - expected %s, got %s", SpongeBossBar.class.getName(), bar.getClass().getName()));
+      ((SpongeBossBarListener) bar).unsubscribe((Player) this.viewer);
     }
   }
 
@@ -92,6 +87,31 @@ final class SpongeFullAudience extends SpongeAudience {
     } else {
       this.viewer.stopSounds();
     }
+  }
+
+  @Override
+  public void showTitle(final @NonNull Title title) {
+    this.viewer.sendTitle(org.spongepowered.api.text.title.Title.builder()
+      .title(Adapters.toSponge(title.title()))
+      .subtitle(Adapters.toSponge(title.subtitle()))
+      .fadeIn(ticks(title.fadeInTime()))
+      .fadeOut(ticks(title.fadeOutTime()))
+      .stay(ticks(title.stayTime()))
+      .build());
+  }
+
+  @Override
+  public void clearTitle() {
+    super.clearTitle();
+  }
+
+  @Override
+  public void resetTitle() {
+    super.resetTitle();
+  }
+
+  private static int ticks(final @NonNull Duration duration) {
+    return (int) duration.get(ChronoUnit.SECONDS) * 20;
   }
 
   private static SoundType sponge(final @Nullable Key sound) {

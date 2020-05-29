@@ -29,6 +29,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -74,5 +75,17 @@ class BukkitAudience<V extends CommandSender> implements Audience {
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
+  }
+
+  @Override
+  public void showTitle(@NonNull final Title title) {
+  }
+
+  @Override
+  public void clearTitle() {
+  }
+
+  @Override
+  public void resetTitle() {
   }
 }
