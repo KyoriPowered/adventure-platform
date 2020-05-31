@@ -23,12 +23,16 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.time.Duration;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -40,28 +44,20 @@ public class PlayerAudience implements Audience {
   }
 
   @Override
-  public void message(final @NonNull Component message) {
+  public void sendMessage(final @NonNull Component message) {
     this.player.sendMessage(ChatMessageType.SYSTEM, TextAdapter.toBungeeCord(message));
   }
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    if(!(bar instanceof BungeeBossBar)) {
-      throw new IllegalArgumentException("Only Bungee-created boss bars are supported");
-    }
-    ((BungeeBossBar) bar).subscribe(this.player);
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    if(!(bar instanceof BungeeBossBar)) {
-      throw new IllegalArgumentException("Only Bungee-created boss bars are supported");
-    }
-    ((BungeeBossBar) bar).unsubscribe(this.player);
   }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
+  public void sendActionBar(final @NonNull Component message) {
     this.player.sendMessage(ChatMessageType.ACTION_BAR, TextAdapter.toBungeeCord(message));
   }
 
@@ -85,5 +81,36 @@ public class PlayerAudience implements Audience {
     // starting 17w45a (pre of 1.13) (proto 343): pkt 0x49
     // created: 1.9.3-pre2 (proto 110): custom data MC|StopSound
     // format: string category | string name, either can be empty string meaning wildcard
+  }
+
+  @Override
+  public void showTitle(@NonNull final Title title) {
+    final net.md_5.bungee.api.Title bungee = ProxyServer.getInstance().createTitle();
+    if (!TextComponent.empty().equals(title.title())) {
+      bungee.title(TextAdapter.toBungeeCord(title.title()));
+    }
+    if (!TextComponent.empty().equals(title.subtitle())) {
+      bungee.subTitle(TextAdapter.toBungeeCord(title.subtitle()));
+    }
+
+    bungee.fadeIn(ticks(title.fadeInTime()))
+      .fadeOut(ticks(title.fadeOutTime()))
+      .stay(ticks(title.stayTime()));
+
+    this.player.sendTitle(bungee);
+  }
+
+  private int ticks(Duration duration) {
+    return (int) duration.getSeconds() * 20;
+  }
+
+  @Override
+  public void clearTitle() {
+    this.player.sendTitle(ProxyServer.getInstance().createTitle().clear());
+  }
+
+  @Override
+  public void resetTitle() {
+    this.player.sendTitle(ProxyServer.getInstance().createTitle().reset());
   }
 }

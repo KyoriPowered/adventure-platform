@@ -28,6 +28,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -39,7 +40,7 @@ public class ConsoleAudience implements Audience {
   }
 
   @Override
-  public void message(final @NonNull Component message) {
+  public void sendMessage(final @NonNull Component message) {
     sender.sendMessage(TextAdapter.toBungeeCord(message));
   }
 
@@ -50,8 +51,8 @@ public class ConsoleAudience implements Audience {
   public void hideBossBar(final @NonNull BossBar bar) { }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
-    message(message);
+  public void sendActionBar(final @NonNull Component message) {
+    sendMessage(message);
   }
 
   @Override
@@ -59,4 +60,13 @@ public class ConsoleAudience implements Audience {
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) { }
+
+  @Override
+  public void showTitle(@NonNull final Title title) { }
+
+  @Override
+  public void clearTitle() { }
+
+  @Override
+  public void resetTitle() { }
 }

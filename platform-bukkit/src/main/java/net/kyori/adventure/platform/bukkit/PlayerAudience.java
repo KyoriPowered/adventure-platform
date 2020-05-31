@@ -24,7 +24,6 @@
 package net.kyori.adventure.platform.bukkit;
 
 import java.util.Collections;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -44,31 +43,20 @@ class PlayerAudience extends BukkitAudience<Player> {
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    if(this.isNoOp(bar)) {
-      return;
+    if (CraftBukkitPlatform.BOSS_BAR_SUPPORTED) {
+      CraftBukkitPlatform.BOSS_BARS.subscribe(this.viewer, requireNonNull(bar, "bar"));
     }
-    this.ensureItIsOurs(bar);
-    //((BukkitBossBar) bar).addPlayer(this.viewer);
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    this.ensureItIsOurs(bar);
-    //((BukkitBossBar) bar).removePlayer(this.viewer);
-  }
-
-  private boolean isNoOp(final BossBar bar) {
-    return bar instanceof NoOpBossBar;
-  }
-
-  private void ensureItIsOurs(final BossBar bar) {
-    if(!(bar instanceof BukkitBossBar)) {
-      throw new IllegalArgumentException(String.format("Incompatible boss bar - expected %s, got %s", BukkitBossBar.class.getName(), bar.getClass().getName()));
+    if (CraftBukkitPlatform.BOSS_BAR_SUPPORTED) {
+      CraftBukkitPlatform.BOSS_BARS.unsubscribe(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
+  public void sendActionBar(final @NonNull Component message) {
     TextAdapter0.sendComponent(Collections.singleton(this.viewer), message, true);
   }
 
@@ -103,7 +91,9 @@ class PlayerAudience extends BukkitAudience<Player> {
 
   @Override
   public void showTitle(final @NonNull Title title) {
-    // TODO
+    // (TITLE, text)
+    // (SUBTITLE, text)
+    // (fadeIn, stay, fadeOut)
   }
 
   @Override

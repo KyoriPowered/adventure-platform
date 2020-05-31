@@ -25,11 +25,9 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.command.CommandSender;
@@ -39,9 +37,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import static java.util.Objects.requireNonNull;
 
 public final class CraftBukkitPlatform implements AdventurePlatform {
-  private static final boolean BOSS_BAR_SUPPORTED;
+  static final boolean BOSS_BAR_SUPPORTED;
   static final boolean SOUND_CATEGORY_SUPPORTED;
   static final boolean SOUND_STOP_SUPPORTED;
+  static final BukkitBossBarListener BOSS_BARS = new BukkitBossBarListener();
 
   static {
     BOSS_BAR_SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
@@ -59,13 +58,7 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
   }
 
   public static Audience audience(final CommandSender sender) {
-    if(sender instanceof Player) {
-      return new PlayerAudience((Player) sender);
-    } else if(sender instanceof Audience) { // to support custom senders
-      return (Audience) sender;
-    } else {
-      return new ConsoleAudience(sender);
-    }
+    return BukkitAudience.of(sender);
   }
 
   @Override
@@ -96,18 +89,6 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
   @Override
   public @NonNull MultiAudience online() {
     return new OnlinePlayersAudience(Bukkit.getServer());
-  }
-
-  @Override
-  public @NonNull BossBar bossBar(final @NonNull Component name, final float fraction, final BossBar.@NonNull Color color, final BossBar.@NonNull Overlay overlay) {
-    requireNonNull(name, "name");
-    requireNonNull(color, "color");
-    requireNonNull(overlay, "overlay");
-    if(BOSS_BAR_SUPPORTED) {
-      return new BukkitBossBar(name, fraction, color, overlay);
-    } else {
-      return new NoOpBossBar(name, fraction, color, overlay);
-    }
   }
 
   static SoundCategory category(final Sound.@NonNull Source source) {

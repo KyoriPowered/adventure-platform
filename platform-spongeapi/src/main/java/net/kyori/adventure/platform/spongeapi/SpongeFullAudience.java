@@ -111,7 +111,7 @@ final class SpongeFullAudience extends SpongeAudience {
   }
 
   private static int ticks(final @NonNull Duration duration) {
-    return (int) duration.get(ChronoUnit.SECONDS) * 20;
+    return (int) duration.getSeconds() * 20;
   }
 
   private static SoundType sponge(final @Nullable Key sound) {

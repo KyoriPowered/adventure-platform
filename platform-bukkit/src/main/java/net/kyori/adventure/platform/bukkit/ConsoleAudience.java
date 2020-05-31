@@ -46,7 +46,7 @@ final class ConsoleAudience extends BukkitAudience<ConsoleCommandSender> {
   }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
+  public void sendActionBar(final @NonNull Component message) {
     // NOOP
   }
 

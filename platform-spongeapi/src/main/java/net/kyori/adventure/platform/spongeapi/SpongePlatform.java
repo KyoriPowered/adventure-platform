@@ -25,10 +25,8 @@ package net.kyori.adventure.platform.spongeapi;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.ProviderSupport;
-import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.Sponge;
 

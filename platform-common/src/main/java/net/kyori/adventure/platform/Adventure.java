@@ -1,7 +1,7 @@
 /*
- * This file is part of adventure, licensed under the MIT License.
+ * This file is part of text-extras, licensed under the MIT License.
  *
- * Copyright (c) 2017-2020 KyoriPowered
+ * Copyright (c) 2018 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,23 +83,5 @@ public class Adventure {
   public static MultiAudience online() {
     return PROVIDER.online();
   }
-
-  /**
-   * Create a new boss bar.
-   *
-   * <p>This bar will not be displayed to any audiences until {@link Audience#showBossBar(BossBar)} is called.
-   *
-   *
-   * @since 4.0/MC 1.9
-   * @param name text to show above the boss bar
-   * @param fraction bar itself from [0, 1], but values up to 2 supported
-   * @param color color of the bar
-   * @param overlay overlay on the progress section of the bar
-   * @return newly created boss bar
-   */
-  public static BossBar bossBar(Component name, float fraction, BossBar.Color color, BossBar.Overlay overlay) {
-    return PROVIDER.bossBar(name, fraction, color, overlay);
-  }
-
 
 }

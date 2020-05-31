@@ -109,7 +109,7 @@ final class Crafty {
   }
 
   @SuppressWarnings("unchecked")
-  static @Nullable Object enumValue(@Nullable Class<?> klass, String name, int ordinal) {
+  static @Nullable Object enumValue(final @Nullable Class<?> klass, String name, int ordinal) {
     if(klass == null) {
       return null;
     }

@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
-import net.kyori.adventure.bossbar.AbstractBossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -51,32 +50,30 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
   private final UUID id = UUID.randomUUID();
   private final Set<ProxiedPlayer> subscribers = Collections.newSetFromMap(new WeakHashMap<>());
 
-  protected BungeeBossBar(final @NonNull Component name, final float percent, final @NonNull net.kyori.adventure.bossbar.BossBar.Color color, final @NonNull net.kyori.adventure.bossbar.BossBar.Overlay overlay) {
-    super(name, percent, color, overlay);
-  }
+  BungeeBossBar() { }
 
   @Override
-  public void bossBarChanged(final net.kyori.adventure.bossbar.BossBar bar, final @NonNull Change type) {
+  public void bossBarChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Change type) {
     final BossBar packet;
     switch(type) {
 
       case NAME:
         packet = new BossBar(this.id, ACTION_TITLE);
-        packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(this.name()));
+        packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(bar.name()));
         break;
       case PERCENT:
         packet = new BossBar(this.id, ACTION_PERCENT);
-        packet.setHealth(this.percent());
+        packet.setHealth(bar.percent());
         break;
       case COLOR: // fall-through
       case OVERLAY:
         packet = new BossBar(this.id, ACTION_STYLE);
-        packet.setColor(this.color().ordinal()); // TODO: don't depend on enum ordering
-        packet.setDivision(this.overlay().ordinal());
+        packet.setColor(bar.color().ordinal()); // TODO: don't depend on enum ordering
+        packet.setDivision(bar.overlay().ordinal());
         break;
       case FLAGS:
         packet = new BossBar(this.id, ACTION_FLAGS);
-        packet.setFlags(this.bitmaskFlags());
+        packet.setFlags(this.bitmaskFlags(bar));
         break;
       default:
         throw new IllegalArgumentException("Unknown change type " + type);
@@ -105,19 +102,19 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
     return mask;
   }
 
-  private BossBar newCreatePacket() {
+  private BossBar newCreatePacket(net.kyori.adventure.bossbar.BossBar bar) {
     final BossBar packet = new BossBar(this.id, ACTION_CREATE);
-    packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(name()));
-    packet.setHealth(percent());
-    packet.setColor(this.color().ordinal()); // TODO: see above
-    packet.setDivision(this.overlay().ordinal());
-    packet.setFlags(bitmaskFlags());
+    packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(bar.name()));
+    packet.setHealth(bar.percent());
+    packet.setColor(bar.color().ordinal()); // TODO: see above
+    packet.setDivision(bar.overlay().ordinal());
+    packet.setFlags(bitmaskFlags(bar));
     return packet;
   }
 
-  public void subscribe(ProxiedPlayer player) {
+  public void subscribe(net.kyori.adventure.bossbar.BossBar bar, ProxiedPlayer player) {
     if (canSeeBossBars(player) && subscribers.add(player)) {
-      player.unsafe().sendPacket(newCreatePacket());
+      player.unsafe().sendPacket(newCreatePacket(bar));
     }
   }
 
@@ -127,12 +124,12 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
     }
   }
 
-  public void subscribeAll(Iterable<ProxiedPlayer> players) {
+  public void subscribeAll(net.kyori.adventure.bossbar.BossBar bar, Iterable<ProxiedPlayer> players) {
     final Iterator<ProxiedPlayer> it = players.iterator();
     if (!it.hasNext()) {
       return;
     }
-    final BossBar packet = newCreatePacket();
+    final BossBar packet = newCreatePacket(bar);
     while (it.hasNext()) {
       final ProxiedPlayer ply = it.next();
       if (canSeeBossBars(ply) && subscribers.add(ply)) {

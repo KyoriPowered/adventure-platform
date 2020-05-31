@@ -53,7 +53,7 @@ public class BungeePlatform implements AdventurePlatform {
 
   @Override
   public @NonNull Audience console() {
-    return null;
+    return new ConsoleAudience(ProxyServer.getInstance().getConsole());
   }
 
   @Override

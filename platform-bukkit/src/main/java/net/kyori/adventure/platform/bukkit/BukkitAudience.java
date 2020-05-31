@@ -53,7 +53,7 @@ class BukkitAudience<V extends CommandSender> implements Audience {
   }
 
   @Override
-  public void message(final @NonNull Component message) {
+  public void sendMessage(final @NonNull Component message) {
     TextAdapter0.sendComponent(Collections.singleton(this.viewer), message, false);
   }
 
@@ -66,7 +66,7 @@ class BukkitAudience<V extends CommandSender> implements Audience {
   }
 
   @Override
-  public void showActionBar(final @NonNull Component message) {
+  public void sendActionBar(final @NonNull Component message) {
   }
 
   @Override
@@ -78,7 +78,7 @@ class BukkitAudience<V extends CommandSender> implements Audience {
   }
 
   @Override
-  public void showTitle(@NonNull final Title title) {
+  public void showTitle(final @NonNull Title title) {
   }
 
   @Override
