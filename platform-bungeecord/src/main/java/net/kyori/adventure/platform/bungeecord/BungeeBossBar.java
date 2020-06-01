@@ -56,7 +56,6 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
   public void bossBarChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Change type) {
     final BossBar packet;
     switch(type) {
-
       case NAME:
         packet = new BossBar(this.id, ACTION_TITLE);
         packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(bar.name()));
@@ -79,14 +78,14 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
         throw new IllegalArgumentException("Unknown change type " + type);
     }
 
-    for (ProxiedPlayer player : subscribers) {
+    for(ProxiedPlayer player : this.subscribers) {
       player.unsafe().sendPacket(packet);
     }
   }
 
   private byte bitmaskFlags(net.kyori.adventure.bossbar.BossBar bar) {
     byte mask = 0;
-    for (net.kyori.adventure.bossbar.BossBar.Flag flag : bar.flags()) {
+    for(net.kyori.adventure.bossbar.BossBar.Flag flag : bar.flags()) {
       switch(flag) {
         case DARKEN_SCREEN:
           mask |= FLAG_DARKEN_SCREEN;
@@ -113,24 +112,24 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
   }
 
   public void subscribe(net.kyori.adventure.bossbar.BossBar bar, ProxiedPlayer player) {
-    if (canSeeBossBars(player) && subscribers.add(player)) {
+    if(canSeeBossBars(player) && subscribers.add(player)) {
       player.unsafe().sendPacket(newCreatePacket(bar));
     }
   }
 
   public void unsubscribe(ProxiedPlayer player) {
-    if (subscribers.remove(player)) {
+    if(subscribers.remove(player)) {
       player.unsafe().sendPacket(new BossBar(this.id, ACTION_REMOVE));
     }
   }
 
   public void subscribeAll(net.kyori.adventure.bossbar.BossBar bar, Iterable<ProxiedPlayer> players) {
     final Iterator<ProxiedPlayer> it = players.iterator();
-    if (!it.hasNext()) {
+    if(!it.hasNext()) {
       return;
     }
     final BossBar packet = newCreatePacket(bar);
-    while (it.hasNext()) {
+    while(it.hasNext()) {
       final ProxiedPlayer ply = it.next();
       if (canSeeBossBars(ply) && subscribers.add(ply)) {
         ply.unsafe().sendPacket(packet);
@@ -140,13 +139,13 @@ final class BungeeBossBar implements net.kyori.adventure.bossbar.BossBar.Listene
 
   public void unsubscribeAll(Iterable<ProxiedPlayer> players) {
     final Iterator<ProxiedPlayer> it = players.iterator();
-    if (!it.hasNext()) {
+    if(!it.hasNext()) {
       return;
     }
     final BossBar packet = new BossBar(this.id, ACTION_REMOVE);
-    while (it.hasNext()) {
+    while(it.hasNext()) {
       final ProxiedPlayer ply = it.next();
-      if (subscribers.remove(ply)) {
+      if(subscribers.remove(ply)) {
         ply.unsafe().sendPacket(packet);
       }
     }

@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -34,11 +35,16 @@ import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatTypes;
 
-/* package */ class SpongeAudience implements Audience {
-  protected final MessageReceiver receiver;
+/* package */ class SpongeAudience<M extends MessageReceiver> implements PlatformAudience<M> {
+  protected final M receiver;
 
-  public SpongeAudience(MessageReceiver target) {
+  public SpongeAudience(M target) {
     this.receiver = target;
+  }
+
+  @Override
+  public M viewer() {
+    return this.receiver;
   }
 
   @Override

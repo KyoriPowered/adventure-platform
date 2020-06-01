@@ -30,6 +30,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -37,6 +38,7 @@ import net.kyori.adventure.util.NameMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
@@ -53,11 +55,12 @@ public class SpongePlatform implements AdventurePlatform {
     return INSTANCE;
   }
 
-  public static Audience audience(MessageReceiver receiver) {
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public static <M extends MessageReceiver> PlatformAudience<M> audience(M receiver) {
     if(receiver instanceof Viewer) {
-      return new SpongeFullAudience((MessageReceiver & Viewer) receiver);
+      return new SpongeFullAudience(receiver); // hisss
     } else {
-      return new SpongeAudience(receiver);
+      return new SpongeAudience<>(receiver);
     }
   }
 
@@ -129,8 +132,8 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience console() {
-    return new SpongeAudience(Sponge.getGame().getServer().getConsole());
+  public @NonNull PlatformAudience<ConsoleSource> console() {
+    return new SpongeAudience<>(Sponge.getGame().getServer().getConsole());
   }
 
   @Override

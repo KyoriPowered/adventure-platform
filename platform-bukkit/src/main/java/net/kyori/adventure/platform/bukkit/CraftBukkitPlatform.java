@@ -26,11 +26,13 @@ package net.kyori.adventure.platform.bukkit;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -50,14 +52,14 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
 
   public CraftBukkitPlatform() {}
 
-  private final Audience console = new ConsoleAudience(Bukkit.getConsoleSender());
+  private final PlatformAudience<ConsoleCommandSender> console = new ConsoleAudience(Bukkit.getConsoleSender());
 
   // TODO: ugly but it's here to test with until proper solution
-  public static Audience audience(final Player player) {
+  public static PlatformAudience<Player> audience(final Player player) {
     return new PlayerAudience(player);
   }
 
-  public static Audience audience(final CommandSender sender) {
+  public static PlatformAudience<? extends CommandSender> audience(final CommandSender sender) {
     return BukkitAudience.of(sender);
   }
 
@@ -72,7 +74,7 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience console() {
+  public @NonNull PlatformAudience<ConsoleCommandSender> console() {
     return console;
   }
 

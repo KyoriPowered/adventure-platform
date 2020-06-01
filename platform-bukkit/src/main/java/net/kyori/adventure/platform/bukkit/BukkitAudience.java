@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import java.util.Collections;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -35,10 +36,10 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class BukkitAudience<V extends CommandSender> implements Audience {
+class BukkitAudience<V extends CommandSender> implements PlatformAudience<V> {
   protected final V viewer;
 
-  static Audience of(final CommandSender viewer) {
+  static PlatformAudience<? extends CommandSender> of(final CommandSender viewer) {
     if(viewer instanceof Player) {
       return new PlayerAudience((Player) viewer);
     } else if(viewer instanceof ConsoleCommandSender) {
@@ -50,6 +51,11 @@ class BukkitAudience<V extends CommandSender> implements Audience {
 
   public BukkitAudience(final @NonNull V viewer) {
     this.viewer = viewer;
+  }
+
+  @Override
+  public V viewer() {
+    return this.viewer;
   }
 
   @Override

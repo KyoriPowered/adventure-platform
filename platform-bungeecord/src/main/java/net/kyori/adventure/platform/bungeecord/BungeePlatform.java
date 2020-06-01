@@ -27,8 +27,10 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -37,7 +39,7 @@ import static java.util.Objects.requireNonNull;
 
 public class BungeePlatform implements AdventurePlatform {
 
-  public static @NonNull Audience player(final @NonNull ProxiedPlayer player) {
+  public static @NonNull PlatformAudience<ProxiedPlayer> player(final @NonNull ProxiedPlayer player) {
     return new PlayerAudience(requireNonNull(player, "player"));
   }
 
@@ -52,7 +54,7 @@ public class BungeePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience console() {
+  public @NonNull PlatformAudience<CommandSender> console() {
     return new ConsoleAudience(ProxyServer.getInstance().getConsole());
   }
 

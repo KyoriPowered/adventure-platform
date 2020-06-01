@@ -23,8 +23,8 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -32,11 +32,16 @@ import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class ConsoleAudience implements Audience {
+public class ConsoleAudience implements PlatformAudience<CommandSender> {
   private final CommandSender sender;
 
   public ConsoleAudience(final CommandSender sender) {
     this.sender = sender;
+  }
+
+  @Override
+  public CommandSender viewer() {
+    return this.sender;
   }
 
   @Override
