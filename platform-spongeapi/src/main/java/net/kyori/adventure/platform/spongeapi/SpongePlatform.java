@@ -23,14 +23,101 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.ProviderSupport;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.util.NameMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.effect.Viewer;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageReceiver;
+import org.spongepowered.api.text.serializer.TextSerializers;
+
+import static java.util.Objects.requireNonNull;
 
 public class SpongePlatform implements AdventurePlatform {
+
+  private static final SpongePlatform INSTANCE = new SpongePlatform();
+  static final SpongeBossBarListener BOSS_BAR_LISTENER = new SpongeBossBarListener();
+
+  public static AdventurePlatform provider() {
+    return INSTANCE;
+  }
+
+  public static Audience audience(MessageReceiver receiver) {
+    if(receiver instanceof Viewer) {
+      return new SpongeFullAudience((MessageReceiver & Viewer) receiver);
+    } else {
+      return new SpongeAudience(receiver);
+    }
+  }
+
+  public static MultiAudience audience(MessageReceiver... receiver) {
+    final List<MessageReceiver> receivers = Arrays.asList(receiver);
+    return new SpongeMultiAudience(() -> receivers);
+  }
+
+  public static MultiAudience audience(Collection<MessageReceiver> receivers) {
+    return new SpongeMultiAudience(() -> receivers);
+  }
+
+  static <K, S extends CatalogType> S sponge(final Class<S> spongeType, final K value, final NameMap<K> elements)  {
+    return Sponge.getRegistry().getType(spongeType, elements.name(requireNonNull(value, "value")))
+      .orElseThrow(() -> new IllegalArgumentException("Value " + value + " could not be found in Sponge type " + spongeType));
+  }
+
+  static <K, S extends CatalogType> K adventure(final S sponge, final NameMap<K> values) {
+    return values.value(sponge.getId())
+      .orElseThrow(() -> new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent"));
+  }
+
+  static <S extends CatalogType> S sponge(final Class<S> spongeType, final Key identifier) {
+    return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
+      .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
+  }
+
+  private SpongePlatform() { }
+
+  /**
+   * Converts {@code component} to the {@link Text} format used by Sponge.
+   *
+   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
+   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
+   * {@link org.spongepowered.api.text.LiteralText}.</p>
+   *
+   * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>
+   *
+   * @param component the component
+   * @return the Text representation of the component
+   */
+  public static @NonNull Text sponge(final @NonNull Component component) {
+    return TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
+  }
+
+  /**
+   * Converts {@code text} to Adventure's own {@link Component} format
+   *
+   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
+   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
+   * {@link org.spongepowered.api.text.LiteralText}.</p>
+   *
+   *
+   * @param text the Sponge text
+   * @return the Component representation of the text
+   */
+  public static @NonNull Component adventure(final @NonNull Text text) {
+    return GsonComponentSerializer.INSTANCE.deserialize(TextSerializers.JSON.serialize(text));
+  }
+
   @Override
   public @NonNull String name() {
     return "Sponge";

@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -40,7 +39,9 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.world.Locatable;
 
-final class SpongeFullAudience extends SpongeAudience {
+import static java.util.Objects.requireNonNull;
+
+/* package */ final class SpongeFullAudience extends SpongeAudience {
   private final Viewer viewer;
 
   public <T extends MessageReceiver & Viewer> SpongeFullAudience(T target) {
@@ -51,14 +52,14 @@ final class SpongeFullAudience extends SpongeAudience {
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
     if(this.viewer instanceof Player) {
-      ((SpongeBossBarListener) bar).subscribe((Player) this.viewer);
+      SpongePlatform.BOSS_BAR_LISTENER.subscribe(requireNonNull(bar, "bar"), (Player) this.viewer);
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
     if(this.viewer instanceof Player) {
-      ((SpongeBossBarListener) bar).unsubscribe((Player) this.viewer);
+      SpongePlatform.BOSS_BAR_LISTENER.unsubscribe(requireNonNull(bar, "bar"), (Player) this.viewer);
     }
   }
 
@@ -92,8 +93,8 @@ final class SpongeFullAudience extends SpongeAudience {
   @Override
   public void showTitle(final @NonNull Title title) {
     this.viewer.sendTitle(org.spongepowered.api.text.title.Title.builder()
-      .title(Adapters.toSponge(title.title()))
-      .subtitle(Adapters.toSponge(title.subtitle()))
+      .title(SpongePlatform.sponge(title.title()))
+      .subtitle(SpongePlatform.sponge(title.subtitle()))
       .fadeIn(ticks(title.fadeInTime()))
       .fadeOut(ticks(title.fadeOutTime()))
       .stay(ticks(title.stayTime()))
@@ -115,10 +116,10 @@ final class SpongeFullAudience extends SpongeAudience {
   }
 
   private static SoundType sponge(final @Nullable Key sound) {
-    return sound == null ? null : Adapters.toSponge(SoundType.class, sound);
+    return sound == null ? null : SpongePlatform.sponge(SoundType.class, sound);
   }
 
   private static SoundCategory sponge(final Sound.@Nullable Source source) {
-    return source == null ? null : Adapters.toSponge(SoundCategory.class, source, Sound.Source.NAMES);
+    return source == null ? null : SpongePlatform.sponge(SoundCategory.class, source, Sound.Source.NAMES);
   }
 }

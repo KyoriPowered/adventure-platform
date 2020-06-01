@@ -32,7 +32,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
-final class SpongeMultiAudience implements MultiAudience {
+/* package */ final class SpongeMultiAudience implements MultiAudience {
   private final Supplier<Collection<? extends MessageReceiver>> viewers;
 
   SpongeMultiAudience(final Supplier<Collection<? extends MessageReceiver>> viewers) {
@@ -43,7 +43,7 @@ final class SpongeMultiAudience implements MultiAudience {
   public @NonNull Iterable<Audience> audiences() {
     return viewers.get().stream()
       .map(viewer -> {
-        if (viewer instanceof Viewer) {
+        if(viewer instanceof Viewer) {
           return new SpongeFullAudience((Viewer & MessageReceiver) viewer);
         } else {
           return new SpongeAudience(viewer);

@@ -34,7 +34,7 @@ import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatTypes;
 
-class SpongeAudience implements Audience {
+/* package */ class SpongeAudience implements Audience {
   protected final MessageReceiver receiver;
 
   public SpongeAudience(MessageReceiver target) {
@@ -43,7 +43,7 @@ class SpongeAudience implements Audience {
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    receiver.sendMessage(Adapters.toSponge(message));
+    receiver.sendMessage(SpongePlatform.sponge(message));
   }
 
   @Override
@@ -55,7 +55,7 @@ class SpongeAudience implements Audience {
   @Override
   public void sendActionBar(@NonNull final Component message) {
     if(this.receiver instanceof ChatTypeMessageReceiver) {
-      ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, Adapters.toSponge(message));
+      ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, SpongePlatform.sponge(message));
     } else {
       sendMessage(message);
     }
