@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -37,39 +38,52 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /* package */ final class BukkitBossBarListener implements BossBar.Listener {
-  private final Map<BossBar, org.bukkit.boss.BossBar> bars = new IdentityHashMap<>();
   private static final BossBar.Flag[] FLAGS = BossBar.Flag.values();
+  private final Map<BossBar, org.bukkit.boss.BossBar> bars = new IdentityHashMap<>();
 
   /* package */ BukkitBossBarListener() {
   }
 
-  @Override
-  public void bossBarChanged(final @NonNull BossBar bar, final @NonNull Change type) {
-    final org.bukkit.boss.BossBar bukkit = bars.get(bar);
-    if(bukkit == null) {
-      return;
+  private void withBar(final BossBar bar, final Consumer<org.bukkit.boss.BossBar> consumer) {
+    final org.bukkit.boss.BossBar bukkit = this.bars.get(bar);
+    if(bukkit != null) {
+      consumer.accept(bukkit);
     }
+  }
 
-    if(type == Change.NAME) {
-      bukkit.setTitle(legacy(bar.name()));
-    } else if(type == Change.PERCENT) {
-      bukkit.setProgress(bar.percent());
-    } else if(type == Change.COLOR) {
-      bukkit.setColor(bukkit(bar.color()));
-    } else if(type == Change.OVERLAY) {
-      bukkit.setStyle(bukkit(bar.overlay()));
-    } else if(type == Change.FLAGS) {
-      final Set<BossBar.Flag> flags = bar.flags();
+  @Override
+  public void bossBarNameChanged(@NonNull final BossBar bar, @NonNull final Component oldName, @NonNull final Component newName) {
+    this.withBar(bar, bukkit -> bukkit.setTitle(legacy(bar.name())));
+  }
+
+  @Override
+  public void bossBarPercentChanged(@NonNull final BossBar bar, final float oldPercent, final float newPercent) {
+    this.withBar(bar, bukkit -> bukkit.setProgress(newPercent));
+  }
+
+  @Override
+  public void bossBarColorChanged(@NonNull final BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
+    this.withBar(bar, bukkit -> bukkit.setColor(bukkit(newColor)));
+  }
+
+  @Override
+  public void bossBarOverlayChanged(@NonNull final BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
+    this.withBar(bar, bukkit -> bukkit.setStyle(bukkit(newOverlay)));
+  }
+
+  @Override
+  public void bossBarFlagsChanged(@NonNull final BossBar bar, @NonNull final Set<BossBar.Flag> oldFlags, @NonNull final Set<BossBar.Flag> newFlags) {
+    this.withBar(bar, bukkit -> {
       for(int i = 0, length = FLAGS.length; i < length; i++) {
         final BossBar.Flag flag = FLAGS[i];
         final BarFlag bukkitFlag = bukkit(flag);
-        if(flags.contains(flag)) {
+        if(newFlags.contains(flag)) {
           bukkit.addFlag(bukkitFlag);
         } else {
           bukkit.removeFlag(bukkitFlag);
         }
       }
-    }
+    });
   }
 
   private static String legacy(final @NonNull Component component) {
@@ -123,7 +137,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
   void subscribe(final @NonNull Player player, final @NonNull BossBar bar) {
     final org.bukkit.boss.BossBar bukkit = this.bars.computeIfAbsent(bar, adventure -> {
-      org.bukkit.boss.BossBar ret = Bukkit.createBossBar(legacy(adventure.name()), bukkit(adventure.color()), bukkit(adventure.overlay()));
+      final org.bukkit.boss.BossBar ret = Bukkit.createBossBar(legacy(adventure.name()), bukkit(adventure.color()), bukkit(adventure.overlay()));
       ret.setProgress(adventure.percent());
       bar.addListener(this);
       return ret;
