@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -43,7 +44,6 @@ import org.bukkit.entity.Player;
 final class SpigotAdapter implements Adapter {
   private static final boolean BOUND = bind();
 
-  @SuppressWarnings("unchecked")
   private static boolean bind() {
     try {
       final Field gsonField = Crafty.field(ComponentSerializer.class, "gson");
@@ -67,7 +67,8 @@ final class SpigotAdapter implements Adapter {
 
   @Override
   public void sendActionBar(final List<? extends CommandSender> viewers, final Component component) {
-    if(!BOUND) {
+    // Only send via spigot if we have no other choice -- it tries to send as a legacy message rather than using the title packet.
+    if(!BOUND || Crafty.hasCraftBukkit()) {
       return;
     }
     send(viewers, component, (viewer, components) -> viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, components));
@@ -109,6 +110,11 @@ final class SpigotAdapter implements Adapter {
     @Override
     public BaseComponent duplicate() {
       return this;
+    }
+
+    @Override
+    public String toLegacyText() {
+      return LegacyComponentSerializer.legacy().serialize(this.component);
     }
   }
 
