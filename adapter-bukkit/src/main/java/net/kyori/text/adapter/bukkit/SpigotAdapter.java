@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import net.kyori.text.Component;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -51,7 +52,6 @@ import org.bukkit.entity.Player;
 final class SpigotAdapter implements Adapter {
   private static final boolean BOUND = bind();
 
-  @SuppressWarnings("unchecked")
   private static boolean bind() {
     try {
       final Field gsonField = field(ComponentSerializer.class, "gson");
@@ -165,6 +165,11 @@ final class SpigotAdapter implements Adapter {
     @Override
     public BaseComponent duplicate() {
       return this;
+    }
+
+    @Override
+    public String toLegacyText() {
+      return LegacyComponentSerializer.INSTANCE.serialize(this.component);
     }
   }
 
