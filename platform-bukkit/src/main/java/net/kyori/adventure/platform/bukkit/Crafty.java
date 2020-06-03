@@ -28,7 +28,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.Excluder;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,6 +104,18 @@ final class Crafty {
     }
   }
 
+  static MethodHandle optionalConstructor(final @Nullable Class<?> target, final @NonNull MethodType type) {
+    if(target == null) {
+      return null;
+    }
+
+    try {
+      return LOOKUP.findConstructor(target, type);
+    } catch(NoSuchMethodException | IllegalAccessException e) {
+      return null;
+    }
+  }
+
   static Field field(final Class<?> klass, final String name) throws NoSuchFieldException {
     final Field field = klass.getDeclaredField(name);
     field.setAccessible(true);
@@ -113,7 +127,7 @@ final class Crafty {
     if(klass == null) {
       return null;
     }
-    if(!klass.isAssignableFrom(Enum.class)) {
+    if(!Enum.class.isAssignableFrom(klass)) {
       return null;
     }
 

@@ -42,7 +42,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 final class SpigotAdapter implements Adapter {
-  private static final boolean BOUND = bind();
+  private static final boolean BOUND = System.getProperty("adventure.noSpigot", "false").equals("false") && bind();
 
   private static boolean bind() {
     try {

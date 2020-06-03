@@ -24,7 +24,9 @@
 package net.kyori.adventure.platform.bukkit;
 
 import com.google.gson.JsonDeserializer;
-import java.lang.reflect.Constructor;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,111 +34,133 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodType.methodType;
+import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
 
 final class CraftBukkitAdapter implements Adapter {
-  private static final Binding REFLECTION_BINDINGS = load();
-  private static final boolean ALIVE = REFLECTION_BINDINGS.valid();
 
-  private static Binding load() {
+  // Packets //
+  private static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
+  private static final @Nullable MethodHandle ENTITY_PLAYER_GET_CONNECTION;
+  private static final @Nullable MethodHandle PLAYER_CONNECTION_SEND_PACKET;
+
+  static {
+    final @Nullable Class<?> craftPlayerClass = Crafty.findCraftClass("entity.CraftPlayer");
+    final @Nullable Class<?> packetClass = Crafty.findNmsClass("Packet");
+    @Nullable MethodHandle craftPlayerGetHandle = null;
+    @Nullable MethodHandle entityPlayerGetConnection = null;
+    @Nullable MethodHandle playerConnectionSendPacket = null;
+    if(craftPlayerClass != null && packetClass != null) {
+      try {
+        final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
+        final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
+        craftPlayerGetHandle = Crafty.LOOKUP.unreflect(getHandleMethod);
+        final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
+        entityPlayerGetConnection = Crafty.LOOKUP.unreflectGetter(playerConnectionField);
+        final Class<?> playerConnectionClass = playerConnectionField.getType();
+        playerConnectionSendPacket = Crafty.LOOKUP.findVirtual(playerConnectionClass, "sendPacket", methodType(void.class, packetClass));
+      } catch(NoSuchMethodException | IllegalAccessException | NoSuchFieldException ignore) {
+      }
+    }
+    CRAFT_PLAYER_GET_HANDLE = craftPlayerGetHandle;
+    ENTITY_PLAYER_GET_CONNECTION = entityPlayerGetConnection;
+    PLAYER_CONNECTION_SEND_PACKET = playerConnectionSendPacket;
+  }
+
+  // Titles //
+  private static final @Nullable Class<?> CLASS_TITLE_PACKET = Crafty.findNmsClass("PacketPlayOutTitle");
+  private static final @Nullable Class<?> CLASS_TITLE_ACTION = Crafty.findNmsClass("PacketPlayOutTitle$EnumTitleAction"); // welcome to spigot, where we can't name classes? i guess?
+  private static final MethodHandle CONSTRUCTOR_TITLE_MESSAGE; // (EnumTitleAction, IChatBaseComponent)
+  private static final @Nullable MethodHandle CONSTRUCTOR_TITLE_TIMES = Crafty.optionalConstructor(CLASS_TITLE_PACKET, methodType(int.class, int.class, int.class));
+  private static final @Nullable Object TITLE_ACTION_TITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "TITLE", 0);
+  private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "SUBTITLE", 1);
+  private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR", 2);
+
+  // Components //
+  private static final @Nullable Class<?> CLASS_MESSAGE_TYPE = Crafty.findNmsClass("ChatMessageType");
+  private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.enumValue(CLASS_MESSAGE_TYPE, "CHAT", 0);
+  private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
+  private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
+  private static final UUID NIL_UUID = new UUID(0, 0);
+
+  private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
+  private static final @Nullable MethodHandle BASE_COMPONENT_SERIALIZE; // (String) -> IChatBaseComponent
+
+  private static final boolean VALID;
+
+  static {
+    MethodHandle chatPacketConstructor = null;
+    MethodHandle serializeMethod = null;
+    MethodHandle titlePacketConstructor = null;
+
     try {
-      final Class<?> server = Bukkit.getServer().getClass();
-      if(!isCompatibleServer(server)) {
-        throw new UnsupportedOperationException("Incompatible server version");
+      // Chat packet //
+      final Class<?> baseComponentClass = Crafty.nmsClass("IChatBaseComponent");
+      final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
+      if(CLASS_TITLE_PACKET != null) {
+        titlePacketConstructor = Crafty.LOOKUP.findConstructor(CLASS_TITLE_PACKET, methodType(void.class, CLASS_TITLE_ACTION, baseComponentClass));
       }
-      final String serverVersion = maybeVersion(server.getPackage().getName().substring("org.bukkit.craftbukkit".length()));
-      final Class<?> craftPlayerClass = craftBukkitClass(serverVersion, "entity.CraftPlayer");
-      final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
-      final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
-      final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
-      final Class<?> playerConnectionClass = playerConnectionField.getType();
-      final Class<?> packetClass = minecraftClass(serverVersion, "Packet");
-      final Method sendPacketMethod = playerConnectionClass.getMethod("sendPacket", packetClass);
-      final Class<?> baseComponentClass = minecraftClass(serverVersion, "IChatBaseComponent");
-      final Class<?> chatPacketClass = minecraftClass(serverVersion, "PacketPlayOutChat");
-      final Constructor<?> chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass);
-      final Class<?> titlePacketClass = optionalMinecraftClass(serverVersion, "PacketPlayOutTitle");
-      final Class<? extends Enum<?>> titlePacketClassAction;
-      final Constructor<?> titlePacketConstructor;
-      if(titlePacketClass != null) {
-        titlePacketClassAction = (Class<? extends Enum<?>>) minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
-        titlePacketConstructor = titlePacketClass.getConstructor(titlePacketClassAction, baseComponentClass);
+      // PacketPlayOutChat constructor changed for 1.16
+      chatPacketConstructor = Crafty.optionalConstructor(chatPacketClass, methodType(void.class, baseComponentClass));
+      if(chatPacketConstructor == null) {
+        if (CLASS_MESSAGE_TYPE != null) {
+          chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, baseComponentClass, UUID.class));
+        }
       } else {
-        titlePacketClassAction = null;
-        titlePacketConstructor = null;
+        // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
+        chatPacketConstructor = dropArguments(dropArguments(chatPacketConstructor, 0, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE), 2, UUID.class);
       }
+
+      // Chat serializer //
       final Class<?> chatSerializerClass = Arrays.stream(baseComponentClass.getClasses())
         .filter(JsonDeserializer.class::isAssignableFrom)
         .findAny()
         // fallback to the 1.7 class?
         .orElseGet(() -> {
-          try {
-            return minecraftClass(serverVersion, "ChatSerializer");
-          } catch(final ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
+          return nmsClass("ChatSerializer");
         });
-      final Method serializeMethod = Arrays.stream(chatSerializerClass.getMethods())
+      final Method serialize = Arrays.stream(chatSerializerClass.getMethods())
         .filter(m -> Modifier.isStatic(m.getModifiers()))
         .filter(m -> m.getReturnType().equals(baseComponentClass))
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
-        .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
-      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatPacketConstructor, titlePacketClassAction, titlePacketConstructor, serializeMethod);
-    } catch(final Throwable e) {
-      return new DeadBinding();
+        .orElse(null);
+
+      if(serialize != null) {
+        serializeMethod = Crafty.LOOKUP.unreflect(serialize);
+      }
+    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     }
-  }
-
-  private static boolean isCompatibleServer(final Class<?> serverClass) {
-    return serverClass.getPackage().getName().startsWith("org.bukkit.craftbukkit")
-      && serverClass.getSimpleName().equals("CraftServer");
-  }
-
-  private static Class<?> craftBukkitClass(final String version, final String name) throws ClassNotFoundException {
-    return Class.forName("org.bukkit.craftbukkit." + version + name);
-  }
-
-  private static Class<?> minecraftClass(final String version, final String name) throws ClassNotFoundException {
-    return Class.forName("net.minecraft.server." + version + name);
-  }
-
-  private static String maybeVersion(final String version) {
-    if(version.isEmpty()) {
-      return "";
-    } else if(version.charAt(0) == '.') {
-      return version.substring(1) + '.';
-    }
-    throw new IllegalArgumentException("Unknown version " + version);
-  }
-
-  private static Class<?> optionalMinecraftClass(final String version, final String name) {
-    try {
-      return minecraftClass(version, name);
-    } catch(final ClassNotFoundException e) {
-      return null;
-    }
+    CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
+    BASE_COMPONENT_SERIALIZE = serializeMethod;
+    CONSTRUCTOR_TITLE_MESSAGE = titlePacketConstructor;
+    VALID = serializeMethod != null;
   }
 
   @Override
   public void sendMessage(final List<? extends CommandSender> viewers, final Component component) {
-    if(!ALIVE) {
+    if(!VALID) {
       return;
     }
-    send(viewers, component, REFLECTION_BINDINGS::createMessagePacket);
+    send(viewers, component, msg -> createChatPacket(MESSAGE_TYPE_SYSTEM, msg, NIL_UUID));
   }
 
   @Override
   public void sendActionBar(final List<? extends CommandSender> viewers, final Component component) {
-    if(!ALIVE) {
+    if(!VALID) {
       return;
     }
-    send(viewers, component, REFLECTION_BINDINGS::createActionBarPacket);
+    send(viewers, component, CraftBukkitAdapter::createActionBarPacket);
   }
 
   private static void send(final List<? extends CommandSender> viewers, final Component component, final Function<Component, Object> function) {
@@ -148,9 +172,13 @@ final class CraftBukkitAdapter implements Adapter {
           final Player player = (Player) sender;
           if(packet == null) {
             packet = function.apply(component);
+            if(packet == null) {
+              break; // failed, skip to next handler
+            }
           }
-          REFLECTION_BINDINGS.sendPacket(packet, player);
-          iterator.remove();
+          if(sendPacket(player, packet)) {
+            iterator.remove();
+          }
         } catch(final Exception e) {
           e.printStackTrace();
         }
@@ -158,102 +186,57 @@ final class CraftBukkitAdapter implements Adapter {
     }
   }
 
-  private static abstract class Binding {
-    abstract boolean valid();
-
-    abstract Object createMessagePacket(final Component component);
-
-    abstract Object createActionBarPacket(final Component component);
-
-    abstract void sendPacket(final Object packet, final Player player);
-  }
-
-  private static final class DeadBinding extends Binding {
-    @Override
-    boolean valid() {
+  private static boolean sendPacket(Player player, Object packet) {
+    if(CRAFT_PLAYER_GET_HANDLE == null || ENTITY_PLAYER_GET_CONNECTION == null || PLAYER_CONNECTION_SEND_PACKET == null) {
       return false;
     }
-
-    @Override
-    Object createMessagePacket(final Component component) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    Object createActionBarPacket(final Component component) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    void sendPacket(final Object packet, final Player player) {
-      throw new UnsupportedOperationException();
+    try {
+      PLAYER_CONNECTION_SEND_PACKET.invoke(ENTITY_PLAYER_GET_CONNECTION.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(player)), requireNonNull(packet, "packet"));
+      return true;
+    } catch(Throwable t) {
+      return false;
     }
   }
 
-  private static final class AliveBinding extends Binding {
-    private final Method getHandleMethod;
-    private final Field playerConnectionField;
-    private final Method sendPacketMethod;
-    private final Constructor<?> chatPacketConstructor;
-    private final Class<? extends Enum> titlePacketClassAction;
-    private final Constructor<?> titlePacketConstructor;
-    private final boolean canMakeTitle;
-    private final Method serializeMethod;
+  private static Object mcTextFromJson(String json) {
+    if(BASE_COMPONENT_SERIALIZE == null) {
+      throw new IllegalStateException("Not supported");
+    }
+    try {
+      return BASE_COMPONENT_SERIALIZE.invoke(json);
+    } catch(Throwable throwable) {
+      return null;
+    }
+  }
 
-    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Constructor<?> chatPacketConstructor, final Class<? extends Enum> titlePacketClassAction, final Constructor<?> titlePacketConstructor, final Method serializeMethod) {
-      this.getHandleMethod = getHandleMethod;
-      this.playerConnectionField = playerConnectionField;
-      this.sendPacketMethod = sendPacketMethod;
-      this.chatPacketConstructor = chatPacketConstructor;
-      this.titlePacketClassAction = titlePacketClassAction;
-      this.titlePacketConstructor = titlePacketConstructor;
-      this.canMakeTitle = this.titlePacketClassAction != null && this.titlePacketConstructor != null;
-      this.serializeMethod = serializeMethod;
+  private static Object createChatPacket(Object chatType, Component message, UUID sender) {
+    if(CHAT_PACKET_CONSTRUCTOR == null) {
+      return null;
+    }
+    final Object nmsMessage = mcTextFromJson(GsonComponentSerializer.INSTANCE.serialize(message));
+    if(nmsMessage == null) {
+      return null;
     }
 
-    @Override
-    boolean valid() {
-      return true;
+    try {
+      return CHAT_PACKET_CONSTRUCTOR.invoke(chatType, nmsMessage, sender);
+    } catch(Throwable throwable) {
+      return null;
     }
+  }
 
-    @Override
-    Object createMessagePacket(final Component component) {
-      final String json = GsonComponentSerializer.INSTANCE.serialize(component);
-      try {
-        return this.chatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json));
-      } catch(final Exception e) {
-        throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
-      }
+  private static Object createActionBarPacket(Component message) {
+    if(CONSTRUCTOR_TITLE_MESSAGE == null) {
+      return null;
     }
-
-    @Override
-    Object createActionBarPacket(final Component component) {
-      if(this.canMakeTitle) {
-        try {
-          Enum constant;
-          try {
-            constant = Enum.valueOf(this.titlePacketClassAction, "ACTIONBAR");
-          } catch(final IllegalArgumentException e) {
-            constant = this.titlePacketClassAction.getEnumConstants()[2];
-          }
-          final String json = GsonComponentSerializer.INSTANCE.serialize(component);
-          return this.titlePacketConstructor.newInstance(constant, this.serializeMethod.invoke(null, json));
-        } catch(final Exception e) {
-          throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
-        }
-      } else {
-        return this.createMessagePacket(component);
-      }
+    final Object nmsMessage = mcTextFromJson(GsonComponentSerializer.INSTANCE.serialize(message));
+    if(nmsMessage == null) {
+      return null;
     }
-
-    @Override
-    void sendPacket(final Object packet, final Player player) {
-      try {
-        final Object connection = this.playerConnectionField.get(this.getHandleMethod.invoke(player));
-        this.sendPacketMethod.invoke(connection, packet);
-      } catch(final Exception e) {
-        throw new UnsupportedOperationException("An exception was encountered while sending a packet for a component", e);
-      }
+    try {
+      return CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_ACTIONBAR, nmsMessage);
+    } catch(Throwable throwable) {
+      return null;
     }
   }
 }
