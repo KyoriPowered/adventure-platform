@@ -55,10 +55,12 @@ public class PlayerAudience implements PlatformAudience<ProxiedPlayer> {
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
+    BungeeBossBarListener.INSTANCE.subscribe(bar, this.player);
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
+    BungeeBossBarListener.INSTANCE.unsubscribe(bar, this.player);
   }
 
   @Override

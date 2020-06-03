@@ -26,7 +26,9 @@ package net.kyori.adventure.platform.spongeapi;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,28 +46,41 @@ class SpongeBossBarListener implements BossBar.Listener {
   }
 
   @Override
-  public void bossBarChanged(final @NonNull BossBar bar, final @NonNull Change type) {
+  public void bossBarNameChanged(@NonNull final BossBar bar, @NonNull final Component oldName, @NonNull final Component newName) {
+    updateBar(bar, newName, (val, sponge) -> sponge.setName(SpongePlatform.sponge(val)));
+  }
+
+  @Override
+  public void bossBarPercentChanged(@NonNull final BossBar bar, final float oldPercent, final float newPercent) {
+    updateBar(bar, newPercent, (val, sponge) -> sponge.setPercent(val));
+  }
+
+  @Override
+  public void bossBarColorChanged(@NonNull final BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
+    updateBar(bar, newColor, (val, sponge) -> sponge.setColor(SpongePlatform.sponge(BossBarColor.class, val, BossBar.Color.NAMES)));
+  }
+
+  @Override
+  public void bossBarOverlayChanged(@NonNull final BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
+    updateBar(bar, newOverlay, (val, sponge) -> sponge.setOverlay(SpongePlatform.sponge(BossBarOverlay.class, val, BossBar.Overlay.NAMES)));
+  }
+
+  @Override
+  public void bossBarFlagsChanged(@NonNull final BossBar bar, @NonNull final Set<BossBar.Flag> oldFlags, @NonNull final Set<BossBar.Flag> newFlags) {
+    updateBar(bar, newFlags, (flags, sponge) -> {
+      sponge.setCreateFog(flags.contains(BossBar.Flag.CREATE_WORLD_FOG));
+      sponge.setDarkenSky(flags.contains(BossBar.Flag.DARKEN_SCREEN));
+      sponge.setPlayEndBossMusic(flags.contains(BossBar.Flag.PLAY_BOSS_MUSIC));
+    });
+  }
+
+  private <T> void updateBar(BossBar bar, T change, BiConsumer<T, ServerBossBar> applicator) {
     final ServerBossBar sponge = this.bars.get(bar);
     if(sponge == null) {
       LOGGER.warn("Attached to Adventure BossBar {} but did not have an associated Sponge bar. Ignoring change.", bar);
       return;
     }
-    if(type == Change.NAME) {
-      sponge.setName(SpongePlatform.sponge(bar.name()));
-    } else if(type == Change.PERCENT) {
-      sponge.setPercent(bar.percent());
-    } else if(type == Change.COLOR) {
-      sponge.setColor(SpongePlatform.sponge(BossBarColor.class, bar.color(), BossBar.Color.NAMES));
-    } else if(type == Change.OVERLAY) {
-      sponge.setOverlay(SpongePlatform.sponge(BossBarOverlay.class, bar.overlay(), BossBar.Overlay.NAMES));
-    } else if(type == Change.FLAGS) {
-      final Set<BossBar.Flag> flags = bar.flags();
-      sponge.setCreateFog(flags.contains(BossBar.Flag.CREATE_WORLD_FOG));
-      sponge.setDarkenSky(flags.contains(BossBar.Flag.DARKEN_SCREEN));
-      sponge.setPlayEndBossMusic(flags.contains(BossBar.Flag.PLAY_BOSS_MUSIC));
-    } else {
-      // TODO: Warn on unknown change?
-    }
+    applicator.accept(change, sponge);
   }
 
   void subscribe(final @NonNull BossBar adventure, final @NonNull Player player) {

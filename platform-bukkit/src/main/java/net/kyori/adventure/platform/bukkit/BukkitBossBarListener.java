@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.bukkit;
 
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -155,5 +156,15 @@ import org.checkerframework.checker.nullness.qual.NonNull;
         return bukkit;
       }
     });
+  }
+
+  public void unsubscribeFromAll(final Player player) {
+    for(Iterator<org.bukkit.boss.BossBar> it = this.bars.values().iterator(); it.hasNext();) {
+      final org.bukkit.boss.BossBar bukkit = it.next();
+      bukkit.removePlayer(player);
+      if(bukkit.getPlayers().isEmpty()) {
+        it.remove();
+      }
+    }
   }
 }

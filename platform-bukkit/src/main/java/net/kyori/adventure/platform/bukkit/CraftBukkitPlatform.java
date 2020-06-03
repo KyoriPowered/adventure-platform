@@ -34,6 +34,11 @@ import org.bukkit.SoundCategory;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -48,6 +53,10 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
     BOSS_BAR_SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
     SOUND_CATEGORY_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class, Crafty.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
     SOUND_STOP_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
+    PlayerQuitEvent.getHandlerList().register(new RegisteredListener(null, (listener, event) -> {
+      System.out.println("Player " + ((PlayerQuitEvent) event).getPlayer().getName());
+      BOSS_BARS.unsubscribeFromAll(((PlayerQuitEvent) event).getPlayer());
+    }, EventPriority.NORMAL, null, false));
   }
 
   public CraftBukkitPlatform() {}
