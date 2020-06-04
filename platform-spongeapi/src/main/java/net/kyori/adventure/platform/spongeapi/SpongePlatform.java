@@ -40,6 +40,7 @@ import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.effect.Viewer;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.serializer.TextSerializers;
@@ -55,10 +56,13 @@ public class SpongePlatform implements AdventurePlatform {
     return INSTANCE;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public static <M extends MessageReceiver> PlatformAudience<M> audience(M receiver) {
+  public static <V extends Viewer & MessageReceiver> PlatformAudience<V> audience(V player) {
+    return new SpongeFullAudience<>(player);
+  }
+
+  public static PlatformAudience<? extends MessageReceiver> audience(MessageReceiver receiver) {
     if(receiver instanceof Viewer) {
-      return new SpongeFullAudience(receiver); // hisss
+      return new SpongeFullAudience<>((MessageReceiver & Viewer) receiver);
     } else {
       return new SpongeAudience<>(receiver);
     }

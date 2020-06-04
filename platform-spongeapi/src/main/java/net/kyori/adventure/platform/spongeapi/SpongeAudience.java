@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
