@@ -35,10 +35,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import net.kyori.text.Component;
+import net.kyori.text.TextComponent;
 import net.kyori.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 final class CraftBukkitAdapter implements Adapter {
@@ -75,12 +78,13 @@ final class CraftBukkitAdapter implements Adapter {
         longConstructor = true;
         chatPacketConstructor = chatPacketClass.getConstructor(baseComponentClass, chatMessageTypeClass, UUID.class);
       }
+      final Constructor<?> legacyChatPacketConstructor = optionalConstructor(chatPacketClass, baseComponentClass, byte.class);
       final Class<?> titlePacketClass = optionalMinecraftClass(serverVersion, "PacketPlayOutTitle");
       final Object titleActionActionBar;
       final Constructor<?> titlePacketConstructor;
       if(titlePacketClass != null) {
         Class<?> titlePacketClassAction = minecraftClass(serverVersion, "PacketPlayOutTitle$EnumTitleAction");
-        titleActionActionBar = enumValue(titlePacketClassAction, "ACTIONBAR", 2);
+        titleActionActionBar = enumValue(titlePacketClassAction, "ACTIONBAR", Integer.MAX_VALUE); // added after 1.8 in middle of enum, we don't want to look up by ordinal (or else we get TIMES)
         titlePacketConstructor = titlePacketClass.getConstructor(titlePacketClassAction, baseComponentClass);
       } else {
         titleActionActionBar = null;
@@ -103,7 +107,7 @@ final class CraftBukkitAdapter implements Adapter {
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
-      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatMessageTypeSystem, chatPacketConstructor, titleActionActionBar, titlePacketConstructor, serializeMethod, longConstructor);
+      return new AliveBinding(getHandleMethod, playerConnectionField, sendPacketMethod, chatMessageTypeSystem, legacyChatPacketConstructor, chatPacketConstructor, titleActionActionBar, titlePacketConstructor, serializeMethod, longConstructor);
     } catch(final Throwable e) {
       return new DeadBinding();
     }
@@ -208,11 +212,13 @@ final class CraftBukkitAdapter implements Adapter {
 
   private static final class AliveBinding extends Binding {
     private static final UUID NIL_UUID = new UUID(0, 0);
+    private static final byte LEGACY_CHAT_MESSAGE_TYPE_ACTION_BAR = 2;
 
     private final Method getHandleMethod;
     private final Field playerConnectionField;
     private final Method sendPacketMethod;
     private final Object chatMessageTypeSystem;
+    private final Constructor<?> legacyChatPacketConstructor;
     private final Constructor<?> chatPacketConstructor;
     private final Object titlePacketActionActionBar;
     private final Constructor<?> titlePacketConstructor;
@@ -220,11 +226,12 @@ final class CraftBukkitAdapter implements Adapter {
     private final Method serializeMethod;
     private final boolean longChatPacketConstructor;
 
-    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Object chatMessageTypeSystem, final Constructor<?> chatPacketConstructor, final Object titlePacketActionActionBar, final Constructor<?> titlePacketConstructor, final Method serializeMethod, final boolean longChatPacketConstructor) {
+    AliveBinding(final Method getHandleMethod, final Field playerConnectionField, final Method sendPacketMethod, final Object chatMessageTypeSystem, final Constructor<?> legacyChatPacketConstructor, final Constructor<?> chatPacketConstructor, final Object titlePacketActionActionBar, final Constructor<?> titlePacketConstructor, final Method serializeMethod, final boolean longChatPacketConstructor) {
       this.getHandleMethod = getHandleMethod;
       this.playerConnectionField = playerConnectionField;
       this.sendPacketMethod = sendPacketMethod;
       this.chatMessageTypeSystem = chatMessageTypeSystem;
+      this.legacyChatPacketConstructor = legacyChatPacketConstructor;
       this.chatPacketConstructor = chatPacketConstructor;
       this.titlePacketConstructor = titlePacketConstructor;
       this.titlePacketActionActionBar = titlePacketActionActionBar;
@@ -255,14 +262,23 @@ final class CraftBukkitAdapter implements Adapter {
 
     @Override
     Object createActionBarPacket(final Component component) {
-      if(this.canMakeTitle) {
+      if(this.canMakeTitle) { // fuly supported (1.11+)
         try {
           final String json = GsonComponentSerializer.INSTANCE.serialize(component);
           return this.titlePacketConstructor.newInstance(this.titlePacketActionActionBar, this.serializeMethod.invoke(null, json));
         } catch(final Exception e) {
           throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
         }
-      } else {
+      } else if(this.legacyChatPacketConstructor != null) { // 1.8-1.10.2
+        final String legacy = LegacyComponentSerializer.INSTANCE.serialize(component);
+        final String json = GsonComponentSerializer.INSTANCE.serialize(TextComponent.of(legacy));
+
+        try {
+          return this.legacyChatPacketConstructor.newInstance(this.serializeMethod.invoke(null, json), LEGACY_CHAT_MESSAGE_TYPE_ACTION_BAR);
+        } catch(final Exception e) {
+          throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
+        }
+      } else { // oh well
         return this.createMessagePacket(component);
       }
     }
@@ -292,9 +308,21 @@ final class CraftBukkitAdapter implements Adapter {
     } catch(IllegalArgumentException ex) {
       final Object[] constants = klass.getEnumConstants();
       if(constants.length > ordinal) {
-        return ordinal;
+        return constants[ordinal];
       }
     }
     return null;
+  }
+
+  private static <T> @Nullable Constructor<T> optionalConstructor(@Nullable Class<T> klass, @NonNull Class<?> @NonNull... args) {
+    if (klass == null) {
+      return null;
+    }
+
+    try {
+      return klass.getConstructor(args);
+    } catch(NoSuchMethodException e) {
+      return null;
+    }
   }
 }
