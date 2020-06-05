@@ -82,6 +82,11 @@ public class PlayerAudience implements PlatformAudience<ProxiedPlayer> {
   }
 
   @Override
+  public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
+    // see above
+  }
+
+  @Override
   public void stopSound(final @NonNull SoundStop stop) {
     // TODO: Out of scope?
     // 17w46a (pre of 1.13) (proto 345): pkt 0x4A

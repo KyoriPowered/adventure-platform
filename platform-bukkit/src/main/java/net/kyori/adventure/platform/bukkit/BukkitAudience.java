@@ -80,6 +80,10 @@ class BukkitAudience<V extends CommandSender> implements PlatformAudience<V> {
   }
 
   @Override
+  public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
+  }
+
+  @Override
   public void stopSound(final @NonNull SoundStop stop) {
   }
 

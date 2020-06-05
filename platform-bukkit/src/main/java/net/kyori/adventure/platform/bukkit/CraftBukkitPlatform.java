@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import java.lang.reflect.Proxy;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.ProviderSupport;
@@ -37,10 +38,13 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -48,12 +52,14 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
   static final boolean BOSS_BAR_SUPPORTED;
   static final boolean SOUND_CATEGORY_SUPPORTED;
   static final boolean SOUND_STOP_SUPPORTED;
+  static final boolean IS_AT_LEAST_113;
   static final BukkitBossBarListener BOSS_BARS = new BukkitBossBarListener();
 
   static {
     BOSS_BAR_SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
     SOUND_CATEGORY_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class, Crafty.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
     SOUND_STOP_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
+    IS_AT_LEAST_113 = Crafty.hasClass("org.bukkit.NamespacedKey");
     final Plugin fakePlugin = (Plugin) Proxy.newProxyInstance(CraftBukkitPlatform.class.getClassLoader(), new Class[] {Plugin.class}, (proxy, method, args) -> {
       switch(method.getName()) {
         case "isEnabled":
@@ -65,11 +71,11 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
       }
     });
     final Listener holder = new Listener() {};
-
+    
     // Remove players from boss bars
-    PlayerQuitEvent.getHandlerList().register(new RegisteredListener(holder, (listener, event) -> {
+    Bukkit.getPluginManager().registerEvent(PlayerQuitEvent.class, holder, EventPriority.NORMAL, (listener, event) -> {
       BOSS_BARS.unsubscribeFromAll(((PlayerQuitEvent) event).getPlayer());
-    }, EventPriority.NORMAL, fakePlugin, false));
+    }, fakePlugin, false);
   }
 
   public CraftBukkitPlatform() {}
@@ -128,6 +134,18 @@ public final class CraftBukkitPlatform implements AdventurePlatform {
       case AMBIENT: return SoundCategory.AMBIENT;
       case VOICE: return SoundCategory.VOICE;
       default: throw new IllegalArgumentException("Unknown sound source " + source);
+    }
+  }
+  
+  static @NonNull String soundName(final @Nullable Key name) {
+    if(name == null) {
+      return "";
+    }
+
+    if(IS_AT_LEAST_113) { // sound format changed to use identifiers
+      return name.asString();
+    } else {
+      return name.value();
     }
   }
 }

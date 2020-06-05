@@ -25,11 +25,11 @@ package net.kyori.adventure.platform.bukkit;
 
 import java.util.Collections;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Location;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -62,12 +62,21 @@ class PlayerAudience extends BukkitAudience<Player> {
 
   @Override
   public void playSound(final @NonNull Sound sound) {
-    final String name = sound.name().asString();
+    playSound(sound, this.viewer.getLocation());
+  }
+
+  @Override
+  public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
+    playSound(sound, new Location(this.viewer.getWorld(), x, y, z));
+  }
+
+  private void playSound(final @NonNull Sound sound, final @NonNull Location loc) {
+    final String name = CraftBukkitPlatform.soundName(sound.name());
     if(CraftBukkitPlatform.SOUND_CATEGORY_SUPPORTED) {
       final SoundCategory category = CraftBukkitPlatform.category(sound.source());
-      this.viewer.playSound(this.viewer.getLocation(), name, category, sound.volume(), sound.pitch());
+      this.viewer.playSound(loc, name, category, sound.volume(), sound.pitch());
     } else {
-      this.viewer.playSound(this.viewer.getLocation(), name, sound.volume(), sound.pitch());
+      this.viewer.playSound(loc, name, sound.volume(), sound.pitch());
     }
   }
 
@@ -77,15 +86,13 @@ class PlayerAudience extends BukkitAudience<Player> {
       return;
     }
 
-    final Key sound = stop.sound();
-    final String name = sound == null ? "" : sound.asString();
-
+    final String soundName = CraftBukkitPlatform.soundName(stop.sound());
     if(CraftBukkitPlatform.SOUND_CATEGORY_SUPPORTED) {
       final Sound.Source source = stop.source();
       final SoundCategory category = source == null ? null : CraftBukkitPlatform.category(source);
-      this.viewer.stopSound(name, category);
+      this.viewer.stopSound(soundName, category);
     } else {
-      this.viewer.stopSound(name);
+      this.viewer.stopSound(soundName);
     }
   }
 

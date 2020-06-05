@@ -70,6 +70,9 @@ import org.spongepowered.api.text.chat.ChatTypes;
   public void playSound(@NonNull final Sound sound) { }
 
   @Override
+  public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) { }
+
+  @Override
   public void stopSound(@NonNull final SoundStop stop) { }
 
   @Override

@@ -67,9 +67,18 @@ import static java.util.Objects.requireNonNull;
     if(this.viewer() instanceof Locatable) {
       loc = ((Locatable) this.viewer()).getLocation().getPosition();
     }
+    playSound(sound, loc);
+  }
+
+  @Override
+  public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
+    playSound(sound, new Vector3d(x, y, z));
+  }
+
+  private void playSound(final @NonNull Sound sound, final @NonNull Vector3d position) {
     final SoundType type = sponge(sound.name());
     final SoundCategory category = sponge(sound.source());
-    this.viewer().playSound(type, category, loc, sound.volume(), sound.pitch());
+    this.viewer().playSound(type, category, position, sound.volume(), sound.pitch());
   }
 
   @Override
