@@ -45,7 +45,7 @@ public interface AdventurePlatform {
   /**
    * Gets an audience for all online players, including the server's console.
    *
-   * <p>The audience is dynamically updated as players join and leave.
+   * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' and console audience
    */
@@ -63,7 +63,7 @@ public interface AdventurePlatform {
   /**
    * Gets an audience for all online players.
    *
-   * <p>The audience is dynamically updated as players join and leave.
+   * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' audience
    */
@@ -72,7 +72,7 @@ public interface AdventurePlatform {
   /**
    * Gets an audience for an individual player.
    *
-   * <p>If the player is not online, messages are silently dropped.
+   * <p>If the player is not online, messages are silently dropped.</p>
    *
    * @param playerId a player uuid
    * @return a player audience
@@ -82,7 +82,7 @@ public interface AdventurePlatform {
   /**
    * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The audience is dynamically updated as permissions change.
+   * <p>The audience is dynamically updated as permissions change.</p>
    *
    * @param permission the permission to filter sending to
    * @return a permissible audience
@@ -94,7 +94,7 @@ public interface AdventurePlatform {
   /**
    * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The audience is dynamically updated as permissions change.
+   * <p>The audience is dynamically updated as permissions change.</p>
    *
    * @param permission the permission to filter sending to
    * @return a permissible audience
@@ -104,10 +104,10 @@ public interface AdventurePlatform {
   /**
    * Gets an audience for online players in a world, including the server's console.
    *
-   * <p>The audience is dynamically updated as players join and leave.
+   * <p>The audience is dynamically updated as players join and leave.</p>
    *
-   * @param worldName a world name
+   * @param worldId a world uuid
    * @return the world's audience
    */
-  @NonNull Audience world(@NonNull String worldName);
+  @NonNull Audience world(@NonNull UUID worldId);
 }

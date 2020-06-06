@@ -114,7 +114,7 @@ public final class BukkitPlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience world(final @NonNull String worldName) {
-    return new WorldAudience(server, worldName);
+  public @NonNull Audience world(final @NonNull UUID worldId) {
+    return new WorldAudience(server, worldId);
   }
 }

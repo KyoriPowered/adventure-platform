@@ -78,7 +78,7 @@ public class BungeePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience world(@NonNull String worldName) {
+  public @NonNull Audience world(@NonNull UUID worldId) {
     return Audience.empty(); // TODO
   }
 }

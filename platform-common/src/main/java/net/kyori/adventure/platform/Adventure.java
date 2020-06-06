@@ -40,7 +40,7 @@ public final class Adventure {
   /**
    * Gets an audience for all online players, including the server's console.
    *
-   * <p>The audience is dynamically updated as players join and leave.
+   * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' and console audience
    */
@@ -60,7 +60,7 @@ public final class Adventure {
   /**
    * Gets an audience for all online players.
    *
-   * <p>The audience is dynamically updated as players join and leave.
+   * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' audience
    */
@@ -71,7 +71,7 @@ public final class Adventure {
   /**
    * Gets an audience for an individual player.
    *
-   * <p>If the player is not online, messages are silently dropped.
+   * <p>If the player is not online, messages are silently dropped.</p>
    *
    * @param playerId a player uuid
    * @return a player audience
@@ -83,7 +83,7 @@ public final class Adventure {
   /**
    * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The audience is dynamically updated as permissions change.
+   * <p>The audience is dynamically updated as permissions change.</p>
    *
    * @param permission the permission to filter sending to
    * @return a permissible audience
@@ -95,7 +95,7 @@ public final class Adventure {
   /**
    * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The audience is dynamically updated as permissions change.
+   * <p>The audience is dynamically updated as permissions change.</p>
    *
    * @param permission the permission to filter sending to
    * @return a permissible audience
@@ -107,12 +107,12 @@ public final class Adventure {
   /**
    * Gets an audience for online players in a world, including the server's console.
    *
-   * <p>The audience is dynamically updated as players join and leave.
+   * <p>The audience is dynamically updated as players join and leave.</p>
    *
-   * @param worldName a world name
+   * @param worldId a world uuid
    * @return the world's audience
    */
-  public static @NonNull Audience world(@NonNull String worldName) {
-    return PROVIDER.world(worldName);
+  public static @NonNull Audience world(@NonNull UUID worldId) {
+    return PROVIDER.world(worldId);
   }
 }

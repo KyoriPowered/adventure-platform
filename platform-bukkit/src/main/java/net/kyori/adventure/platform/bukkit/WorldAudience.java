@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.UUID;
 
 import static com.google.common.collect.Iterables.transform;
 import static java.util.Objects.requireNonNull;
@@ -15,12 +16,12 @@ import static java.util.Objects.requireNonNull;
 final class WorldAudience implements MultiAudience {
 
     private final Server server;
-    private final String worldName;
+    private final UUID worldId;
     private WeakReference<World> worldRef;
 
-    public WorldAudience(final @NonNull Server server, final @NonNull String worldName) {
+    public WorldAudience(final @NonNull Server server, final @NonNull UUID worldId) {
         this.server = requireNonNull(server, "server");
-        this.worldName = requireNonNull(worldName, "world name");
+        this.worldId = requireNonNull(worldId, "world uuid");
         this.worldRef = new WeakReference<>(null);
     }
 
@@ -28,7 +29,7 @@ final class WorldAudience implements MultiAudience {
     public @NonNull Iterable<? extends Audience> audiences() {
         World world = worldRef.get();
         if (world == null) {
-            world = server.getWorld(worldName);
+            world = server.getWorld(worldId);
             if (world != null) {
                 worldRef = new WeakReference<>(world);
             }
