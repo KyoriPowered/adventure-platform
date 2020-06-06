@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import java.time.Duration;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -70,7 +71,12 @@ public interface Handler<V> {
 
     void clear(@NonNull V viewer);
 
-    void reset(@NonNull V player);
+    void reset(@NonNull V viewer);
+    
+    default int ticks(Duration time) {
+      final int seconds = (int) time.getSeconds();
+      return seconds == -1 ? -1 : 20 * seconds;
+    }
   }
 
   interface BossBar<V> extends Handler<V> {

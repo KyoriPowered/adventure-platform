@@ -1,6 +1,6 @@
 repositories {
   maven {
-    url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots'
+    url 'https://papermc.io/repo/repository/maven-public/'
   }
   maven {
     url 'https://oss.sonatype.org/content/repositories/snapshots/'
@@ -12,5 +12,5 @@ dependencies {
   api 'net.kyori:adventure-text-serializer-gson'
   api 'net.kyori:adventure-text-serializer-legacy'
   implementation project(":adventure-platform-impl-common")
-  compileOnly 'org.spigotmc:spigot-api:1.14-R0.1-SNAPSHOT'
+  compileOnly 'com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT'
 }

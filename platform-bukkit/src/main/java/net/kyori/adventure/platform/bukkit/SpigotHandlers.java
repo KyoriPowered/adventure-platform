@@ -96,6 +96,7 @@ public class SpigotHandlers {
     }
 
     @Override
+    @SuppressWarnings("deprecation") // pls stop
     public void send(@NonNull final Player viewer, final BaseComponent @NonNull [] message) {
       viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, message);
     }

@@ -274,19 +274,14 @@ public class CraftBukkitHandlers {
       }
     }
 
-    private static int ticks(Duration time) {
-      final int seconds = (int) time.getSeconds();
-      return seconds == -1 ? -1 : 20 * seconds;
-    }
-
     @Override
     public void clear(@NonNull final Player viewer) {
       viewer.sendTitle("", "", -1, -1, -1);
     }
 
     @Override
-    public void reset(@NonNull final Player player) {
-      player.resetTitle();
+    public void reset(@NonNull final Player viewer) {
+      viewer.resetTitle();
     }
   }
 }

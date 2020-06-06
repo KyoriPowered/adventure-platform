@@ -44,7 +44,7 @@ public final class BukkitPlatform implements AdventurePlatform {
     new CraftBukkitHandlers.Chat(), new BukkitHandlers.Chat());
   static HandlerCollection<Player, Handler.ActionBar<Player, ?>> ACTION_BAR = new HandlerCollection<>(new SpigotHandlers.ActionBar(),
     new CraftBukkitHandlers.ActionBarModern(), new CraftBukkitHandlers.ActionBar1_8thru1_11());
-  static HandlerCollection<Player, Handler.Title<Player>> TITLE = new HandlerCollection<>(new CraftBukkitHandlers.Title());
+  static HandlerCollection<Player, Handler.Title<Player>> TITLE = new HandlerCollection<>(new PaperHandlers.Title(), new CraftBukkitHandlers.Title());
   static HandlerCollection<Player, Handler.BossBar<Player>> BOSS_BAR = new HandlerCollection<>(new BukkitHandlers.BossBar());
   static HandlerCollection<Player, Handler.PlaySound<Player>> PLAY_SOUND = new HandlerCollection<>(new BukkitHandlers.PlaySound_WithCategory(),
     new BukkitHandlers.PlaySound_NoCategory());
