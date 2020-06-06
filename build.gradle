@@ -87,7 +87,16 @@ subprojects {
 
             developers {
               developer {
+                id 'kashike'
+                name 'kashike'
+                timezone 'America/Vancouver'
+              }
+
+              developer {
+                id 'lucko'
                 name 'Luck'
+                url 'https://lucko.me'
+                email 'git@lucko.me'
               }
             }
 
