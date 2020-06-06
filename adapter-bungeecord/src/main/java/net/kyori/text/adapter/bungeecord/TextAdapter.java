@@ -179,13 +179,14 @@ final class TextAdapter0 {
   public static final class AdapterComponent extends BaseComponent {
     private final Component component;
 
+    @SuppressWarnings("deprecation") // weeeee
     AdapterComponent(final Component component) {
       this.component = component;
     }
 
     @Override
     public String toLegacyText() {
-      return LegacyComponentSerializer.INSTANCE.serialize(this.component);
+      return LegacyComponentSerializer.legacy().serialize(this.component);
     }
 
     @Override

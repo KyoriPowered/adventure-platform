@@ -270,7 +270,7 @@ final class CraftBukkitAdapter implements Adapter {
           throw new UnsupportedOperationException("An exception was encountered while creating a packet for a component", e);
         }
       } else if(this.legacyChatPacketConstructor != null) { // 1.8-1.10.2
-        final String legacy = LegacyComponentSerializer.INSTANCE.serialize(component);
+        final String legacy = LegacyComponentSerializer.legacy().serialize(component);
         final String json = GsonComponentSerializer.INSTANCE.serialize(TextComponent.of(legacy));
 
         try {

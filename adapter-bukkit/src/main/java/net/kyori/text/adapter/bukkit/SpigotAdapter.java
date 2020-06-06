@@ -158,6 +158,7 @@ final class SpigotAdapter implements Adapter {
   public static final class AdapterComponent extends BaseComponent {
     private final Component component;
 
+    @SuppressWarnings("deprecation") // weeeee
     AdapterComponent(final Component component) {
       this.component = component;
     }
@@ -169,7 +170,7 @@ final class SpigotAdapter implements Adapter {
 
     @Override
     public String toLegacyText() {
-      return LegacyComponentSerializer.INSTANCE.serialize(this.component);
+      return LegacyComponentSerializer.legacy().serialize(this.component);
     }
   }
 
