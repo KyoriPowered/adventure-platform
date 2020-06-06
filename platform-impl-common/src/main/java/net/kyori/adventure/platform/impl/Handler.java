@@ -74,8 +74,7 @@ public interface Handler<V> {
     void reset(@NonNull V viewer);
     
     default int ticks(Duration time) {
-      final int seconds = (int) time.getSeconds();
-      return seconds == -1 ? -1 : 20 * seconds;
+      return time.isNegative() ? -1 : (int) Math.ceil(time.toMillis() / 50.0);
     }
   }
 

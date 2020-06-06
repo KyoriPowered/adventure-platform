@@ -28,6 +28,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 final class AdventureProvider0 {
+  private AdventureProvider0() {}
   private static AdventurePlatform provider;
 
   /**
@@ -45,8 +46,9 @@ final class AdventureProvider0 {
       while (it.hasNext()) {
         try {
           AdventurePlatform prov = it.next();
-          if (result == null || prov.supportLevel().ordinal() >= result.supportLevel().ordinal()) {
+          if (result == null) {
             result = prov;
+            break;
           }
         } catch(ServiceConfigurationError ex) {
           ex.printStackTrace();
@@ -54,7 +56,7 @@ final class AdventureProvider0 {
         }
       }
       if (result == null) {
-        throw new IllegalArgumentException("Could not find Adventure provider");
+        throw new UnsupportedOperationException("Could not find Adventure provider");
       }
       return provider = result;
   }

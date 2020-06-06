@@ -23,84 +23,91 @@
  */
 package net.kyori.adventure.platform;
 
-import java.util.Arrays;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.UUID;
+
 /**
- * SPI interface, to be implemented only by platform implementers
+ * A platform for implementing Adventure.
  */
 public interface AdventurePlatform {
 
   /**
-   * A friendly name to give information about this provider
+   * Gets the name of the platform.
    *
-   * @return display name
+   * @return the platform name
    */
   @NonNull String name();
 
   /**
-   * Get the support level of this provider. Higher support levels will be preferred.
+   * Gets an audience for all online players, including the server's console.
    *
-   * @return provider support level
+   * <p>The audience is dynamically updated as players join and leave.
+   *
+   * @return the players' and console audience
    */
-  @NonNull ProviderSupport supportLevel();
+  default @NonNull Audience everyone() {
+    return MultiAudience.of(console(), players());
+  }
 
   /**
-   * Create an audience that will only send to the server console.
+   * Gets an audience for the server's console.
    *
-   * @return server console audience
+   * @return the console audience
    */
   @NonNull Audience console();
 
   /**
-   * Create an audience that will send to all of the provided audiences.
+   * Gets an audience for all online players.
    *
-   * @param audiences child audiences
-   * @return sew audience containing all child audiences
+   * <p>The audience is dynamically updated as players join and leave.
+   *
+   * @return the players' audience
    */
-  default @NonNull MultiAudience audience(@NonNull Audience @NonNull... audiences) {
-    return audience(Arrays.asList(audiences));
-  }
+  @NonNull Audience players();
 
   /**
-   * Create an audience that will send to all of the provided audiences.
+   * Gets an audience for an individual player.
    *
-   * @param audiences child audiences
-   * @return new audience containing all child audiences
+   * <p>If the player is not online, messages are silently dropped.
+   *
+   * @param playerId a player uuid
+   * @return a player audience
    */
-  @NonNull MultiAudience audience(@NonNull Iterable<@NonNull Audience> audiences);
+  @NonNull Audience player(@NonNull UUID playerId);
 
   /**
-   * Create a new audience containing all users with the provided permission.
+   * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The returned audience will dynamically update as viewer permissions change.
+   * <p>The audience is dynamically updated as permissions change.
    *
-   * @param permission permission to filter sending to
-   * @return new audience
+   * @param permission the permission to filter sending to
+   * @return a permissible audience
    */
-  default @NonNull MultiAudience permission(@NonNull Key permission) {
+  default @NonNull Audience permission(@NonNull Key permission) {
     return permission(permission.namespace() + '.' + permission.value());
   }
 
   /**
-   * Create a new audience containing all users with the provided permission.
+   * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The returned audience will dynamically update as viewer permissions change.
+   * <p>The audience is dynamically updated as permissions change.
    *
-   * @param permission permission to filter sending to
-   * @return new audience
+   * @param permission the permission to filter sending to
+   * @return a permissible audience
    */
-  @NonNull MultiAudience permission(@NonNull String permission);
+  @NonNull Audience permission(@NonNull String permission);
 
   /**
-   * Create a new audience containing all online viewers. This audience does not contain any console.
+   * Gets an audience for online players in a world, including the server's console.
    *
-   * <p>The returned audience will dynamically update as the online viewers change.
+   * <p>The audience is dynamically updated as players join and leave.
    *
-   * @return audience, may be a shared instance
+   * @param worldName a world name
+   * @return the world's audience
    */
-  @NonNull MultiAudience online();
+  @NonNull Audience world(@NonNull String worldName);
 }

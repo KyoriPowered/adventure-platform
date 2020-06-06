@@ -26,12 +26,13 @@ package net.kyori.adventure.platform.spongeapi;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.PlatformAudience;
-import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.util.NameMap;
@@ -127,12 +128,7 @@ public class SpongePlatform implements AdventurePlatform {
 
   @Override
   public @NonNull String name() {
-    return "Sponge";
-  }
-
-  @Override
-  public @NonNull ProviderSupport supportLevel() {
-    return ProviderSupport.FULL;
+    return Sponge.getPlatform().toString();
   }
 
   @Override
@@ -141,20 +137,25 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull MultiAudience audience(final @NonNull Iterable<@NonNull Audience> audiences) {
-    return MultiAudience.of(audiences);
-  }
-
-  @Override
-  public @NonNull MultiAudience permission(final @NonNull String permission) {
-    /*return new SpongeMultiAudience(() -> Sponge.getGame().getServiceManager().provide(PermissionService.class)
-      .orElseThrow(() -> new IllegalArgumentException("Sponge must have a permissions service"))
-      .getUserSubjects().getLoadedWithPermission(spongePerm).keySet());*/
+  public @NonNull Audience players() {
     return null;
   }
 
   @Override
-  public @NonNull MultiAudience online() {
-    return new SpongeMultiAudience(Sponge.getServer()::getOnlinePlayers);
+  public @NonNull Audience player(@NonNull UUID playerId) {
+    return null;
+  }
+
+  @Override
+  public @NonNull Audience permission(final @NonNull String permission) {
+    /*return new SpongeMultiAudience(() -> Sponge.getGame().getServiceManager().provide(PermissionService.class)
+      .orElseThrow(() -> new IllegalArgumentException("Sponge must have a permissions service"))
+      .getUserSubjects().getLoadedWithPermission(spongePerm).keySet());*/
+    return Audience.empty(); // TODO
+  }
+
+  @Override
+  public @NonNull Audience world(@NonNull String worldName) {
+    return Audience.empty(); // TODO
   }
 }

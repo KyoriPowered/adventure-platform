@@ -24,15 +24,72 @@
 package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
- * An audience that wraps a native type.
+ * An audience that wraps a platform viewer.
+ * @param <V> a viewer type
  */
-public interface PlatformAudience<T> extends Audience {
+public interface PlatformAudience<V> extends Audience {
   /**
    * Gets the wrapped viewer this audience forwards to.
    *
-   * @return the wrapped viewer
+   * @return the viewer
    */
-  T viewer();
+  V viewer();
+
+  @Override
+  default void sendMessage(@NonNull Component message) {
+    // No-op
+  }
+
+  @Override
+  default void showBossBar(@NonNull BossBar bar) {
+    // No-op
+  }
+
+  @Override
+  default void hideBossBar(@NonNull BossBar bar) {
+    // No-op
+  }
+
+  @Override
+  default void sendActionBar(@NonNull Component message) {
+    // No-op
+  }
+
+  @Override
+  default void playSound(@NonNull Sound sound) {
+    // No-op
+  }
+
+  @Override
+  default void playSound(@NonNull Sound sound, double x, double y, double z) {
+    // No-op
+  }
+
+  @Override
+  default void stopSound(@NonNull SoundStop stop) {
+    // No-op
+  }
+
+  @Override
+  default void showTitle(@NonNull Title title) {
+    // No-op
+  }
+
+  @Override
+  default void clearTitle() {
+    // No-op
+  }
+
+  @Override
+  default void resetTitle() {
+    // No-op
+  }
 }

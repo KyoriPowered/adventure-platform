@@ -23,30 +23,35 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.PluginManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class WithPermissionAudience implements MultiAudience {
-  private final PluginManager pm;
+import static com.google.common.collect.Iterables.transform;
+import static java.util.Objects.requireNonNull;
+
+final class PermissibleAudience implements MultiAudience {
+  private final PluginManager pluginManager;
   private final String permission;
 
-  public WithPermissionAudience(final @NonNull Server server, final @NonNull String permission) {
-    this.pm = server.getPluginManager();
-    this.permission = permission;
+  public PermissibleAudience(final @NonNull Server server, final @NonNull String permission) {
+    this.pluginManager = requireNonNull(server, "server").getPluginManager();
+    this.permission = requireNonNull(permission, "permission");
   }
 
   @Override
   public @NonNull Iterable<Audience> audiences() {
-    return this.pm.getPermissionSubscriptions(this.permission).stream()
-      .filter(viewer -> viewer instanceof CommandSender)
-      .map(viewer -> ( CommandSender) viewer)
-      .filter(viewer -> viewer.hasPermission(this.permission))
-      .map(BukkitPlatform::audience)
-      .collect(Collectors.toList());
+    return transform(this.pluginManager.getPermissionSubscriptions(this.permission), this::audience);
+  }
+
+  private Audience audience(Permissible permissible) {
+    if (permissible.hasPermission(this.permission) && permissible instanceof CommandSender) {
+      return BukkitPlatform.audience((CommandSender) permissible);
+    }
+    return Audience.empty();
   }
 }

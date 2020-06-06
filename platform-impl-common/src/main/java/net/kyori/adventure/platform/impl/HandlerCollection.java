@@ -45,7 +45,7 @@ public class HandlerCollection<V, H extends Handler<V>> {
       .filter(Handler::isAvailable)
       .collect(Collectors.toList());
     if (this.activeHandlers.isEmpty()) {
-      throw new IllegalArgumentException("No handler of " + Arrays.toString(options) + " was available");
+      throw new UnsupportedOperationException("No handler of " + Arrays.toString(options) + " was available");
     }
   }
 

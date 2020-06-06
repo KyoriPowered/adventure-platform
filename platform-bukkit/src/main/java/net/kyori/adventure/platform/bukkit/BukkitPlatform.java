@@ -27,17 +27,20 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.PlatformAudience;
-import net.kyori.adventure.platform.ProviderSupport;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.UUID;
+
 import static java.util.Objects.requireNonNull;
 
+// TODO: implement Listener and use singletons
 public final class BukkitPlatform implements AdventurePlatform {
 
   static HandlerCollection<? super CommandSender, ? extends Handler.Chat<? super CommandSender, ?>> CHAT = new HandlerCollection<>(new SpigotHandlers.Chat(),
@@ -49,9 +52,21 @@ public final class BukkitPlatform implements AdventurePlatform {
   static HandlerCollection<Player, Handler.PlaySound<Player>> PLAY_SOUND = new HandlerCollection<>(new BukkitHandlers.PlaySound_WithCategory(),
     new BukkitHandlers.PlaySound_NoCategory());
 
-  public BukkitPlatform() {}
+  private final Server server;
+  private final Audience console;
+  private final Audience players;
+  private final Audience everyone;
 
-  private final PlatformAudience<? extends CommandSender> console = audience(Bukkit.getConsoleSender());
+  public BukkitPlatform() {
+    this(Bukkit.getServer());
+  }
+
+  public BukkitPlatform(final @NonNull Server server) {
+    this.server = requireNonNull(server, "bukkit server");
+    this.console = audience(server.getConsoleSender());
+    this.players = new PlayersAudience(server);
+    this.everyone = MultiAudience.of(console, players);
+  }
 
   // TODO: ugly but it's here to test with until proper solution
   public static PlatformAudience<Player> audience(final Player player) {
@@ -68,32 +83,38 @@ public final class BukkitPlatform implements AdventurePlatform {
 
   @Override
   public @NonNull String name() {
-    return "CraftBukkit";
+    return server.getBukkitVersion();
   }
 
   @Override
-  public @NonNull ProviderSupport supportLevel() {
-    return ProviderSupport.FULL;
+  public @NonNull Audience everyone() {
+    return everyone;
   }
 
   @Override
-  public @NonNull PlatformAudience<? extends CommandSender> console() {
+  public @NonNull Audience console() {
     return console;
   }
 
   @Override
-  public @NonNull MultiAudience audience(final @NonNull Iterable<Audience> audiences) {
-    return MultiAudience.of(audiences);
+  public @NonNull Audience players() {
+    return players;
   }
 
   @Override
-  public @NonNull MultiAudience permission(final @NonNull String permission) {
-    return new WithPermissionAudience(Bukkit.getServer(), requireNonNull(permission, "permission"));
+  public @NonNull Audience player(@NonNull UUID playerId) {
+    final Player player = server.getPlayer(playerId);
+    if (player == null) return Audience.empty();
+    return audience(player);
   }
 
   @Override
-  public @NonNull MultiAudience online() {
-    return new OnlinePlayersAudience(Bukkit.getServer());
+  public @NonNull Audience permission(final @NonNull String permission) {
+    return new PermissibleAudience(server, permission);
   }
 
+  @Override
+  public @NonNull Audience world(final @NonNull String worldName) {
+    return new WorldAudience(server, worldName);
+  }
 }

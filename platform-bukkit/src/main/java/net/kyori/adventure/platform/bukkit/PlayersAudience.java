@@ -21,25 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bungeecord;
+package net.kyori.adventure.platform.bukkit;
 
-import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.md_5.bungee.api.ProxyServer;
+import org.bukkit.Server;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class OnlinePlayersAudience implements MultiAudience {
-  private final ProxyServer server;
+import static com.google.common.collect.Iterables.transform;
+import static java.util.Objects.requireNonNull;
 
-  public OnlinePlayersAudience(final @NonNull ProxyServer server) {
-    this.server = server;
+final class PlayersAudience implements MultiAudience {
+  private final Server server;
+
+  public PlayersAudience(final @NonNull Server server) {
+    this.server = requireNonNull(server, "server");
   }
 
   @Override
   public @NonNull Iterable<Audience> audiences() {
-    return this.server.getPlayers().stream()
-      .map(PlayerAudience::new)
-      .collect(Collectors.toList());
+    return transform(this.server.getOnlinePlayers(), BukkitPlatform::audience);
   }
 }

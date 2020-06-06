@@ -24,16 +24,13 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.PlatformAudience;
-import net.kyori.adventure.platform.ProviderSupport;
-import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
@@ -43,33 +40,45 @@ public class BungeePlatform implements AdventurePlatform {
     return new PlayerAudience(requireNonNull(player, "player"));
   }
 
+  private final ProxyServer proxy;
+  private final Audience console;
+  private final Audience players;
+
+  public BungeePlatform(final @NonNull ProxyServer proxy) {
+    this.proxy = requireNonNull(proxy, "proxy");
+    this.console = new ConsoleAudience(proxy.getConsole());
+    this.players = new PlayersAudience(proxy);
+  }
+
   @Override
   public @NonNull String name() {
-    return "BungeeCord";
+    return proxy.getName() + " " + proxy.getVersion();
   }
 
   @Override
-  public @NonNull ProviderSupport supportLevel() {
-    return ProviderSupport.LIMITED;
+  public @NonNull Audience console() {
+    return console;
   }
 
   @Override
-  public @NonNull PlatformAudience<CommandSender> console() {
-    return new ConsoleAudience(ProxyServer.getInstance().getConsole());
+  public @NonNull Audience players() {
+    return players;
   }
 
   @Override
-  public @NonNull MultiAudience audience(final @NonNull Iterable<Audience> audiences) {
-    return MultiAudience.of(audiences);
+  public @NonNull Audience player(@NonNull UUID playerId) {
+    final ProxiedPlayer player = proxy.getPlayer(playerId);
+    if (player == null) return Audience.empty();
+    return new PlayerAudience(player);
   }
 
   @Override
-  public @NonNull MultiAudience permission(final @NonNull String permission) {
-    return null;
+  public @NonNull Audience permission(final @NonNull String permission) {
+    return Audience.empty(); // TODO
   }
 
   @Override
-  public @NonNull MultiAudience online() {
-    return new OnlinePlayersAudience(ProxyServer.getInstance());
+  public @NonNull Audience world(@NonNull String worldName) {
+    return Audience.empty(); // TODO
   }
 }

@@ -43,7 +43,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class BukkitHandlers {
-  
   private BukkitHandlers() {}
 
   static class Chat implements Handler.Chat<CommandSender, String> {

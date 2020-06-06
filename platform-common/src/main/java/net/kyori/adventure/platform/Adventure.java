@@ -24,64 +24,95 @@
 package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class Adventure {
+import java.util.UUID;
+
+/**
+ * A factory for getting {@link Audience}s.
+ * @see AdventurePlatform
+ */
+public final class Adventure {
+  private Adventure() {}
   private static final AdventurePlatform PROVIDER = AdventureProvider0.provide();
 
   /**
-   * Create an audience that will only send to the server console.
+   * Gets an audience for all online players, including the server's console.
    *
-   * @return server console audience
+   * <p>The audience is dynamically updated as players join and leave.
+   *
+   * @return the players' and console audience
    */
-  public static Audience console() {
+  public static @NonNull Audience everyone() {
+    return PROVIDER.everyone();
+  }
+
+  /**
+   * Gets an audience for the server's console.
+   *
+   * @return the console audience
+   */
+  public static @NonNull Audience console() {
     return PROVIDER.console();
   }
 
   /**
-   * Create an audience that will send to all of the provided audiences.
+   * Gets an audience for all online players.
    *
-   * @param audiences child audiences
-   * @return sew audience containing all child audiences
+   * <p>The audience is dynamically updated as players join and leave.
+   *
+   * @return the players' audience
    */
-  public static MultiAudience audience(Audience... audiences) {
-    return PROVIDER.audience(audiences);
+  public static @NonNull Audience players() {
+    return PROVIDER.players();
   }
 
   /**
-   * Create an audience that will send to all of the provided audiences.
+   * Gets an audience for an individual player.
    *
-   * @param audiences child audiences
-   * @return new audience containing all child audiences
+   * <p>If the player is not online, messages are silently dropped.
+   *
+   * @param playerId a player uuid
+   * @return a player audience
    */
-  public static MultiAudience audience(Iterable<Audience> audiences) {
-    return PROVIDER.audience(audiences);
+  public static @NonNull Audience player(@NonNull UUID playerId) {
+    return PROVIDER.player(playerId);
   }
 
   /**
-   * Create a new audience containing all users with the provided permission.
+   * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The returned audience will dynamically update as viewer permissions change.
+   * <p>The audience is dynamically updated as permissions change.
    *
-   * @param permission permission to filter sending to
-   * @return new audience
+   * @param permission the permission to filter sending to
+   * @return a permissible audience
    */
-  public static MultiAudience permission(Key permission) {
+  public static @NonNull Audience permission(@NonNull Key permission) {
     return PROVIDER.permission(permission);
   }
 
   /**
-   * Create a new audience containing all online viewers. This audience does not contain any console.
+   * Gets or creates an audience containing all viewers with the provided permission.
    *
-   * <p>The returned audience will dynamically update as the online viewers change.
+   * <p>The audience is dynamically updated as permissions change.
    *
-   * @return audience, may be a shared instance
+   * @param permission the permission to filter sending to
+   * @return a permissible audience
    */
-  public static MultiAudience online() {
-    return PROVIDER.online();
+  public static @NonNull Audience permission(@NonNull String permission) {
+    return PROVIDER.permission(permission);
   }
 
+  /**
+   * Gets an audience for online players in a world, including the server's console.
+   *
+   * <p>The audience is dynamically updated as players join and leave.
+   *
+   * @param worldName a world name
+   * @return the world's audience
+   */
+  public static @NonNull Audience world(@NonNull String worldName) {
+    return PROVIDER.world(worldName);
+  }
 }
