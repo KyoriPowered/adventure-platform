@@ -29,9 +29,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.BiConsumer;
+import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -40,10 +38,12 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class SpigotAdapter implements Adapter {
+public class SpigotHandlers {
+
   private static final boolean BOUND = System.getProperty("adventure.noSpigot", "false").equals("false") && bind();
-
+  
   private static boolean bind() {
     try {
       final Field gsonField = Crafty.field(ComponentSerializer.class, "gson");
@@ -56,39 +56,48 @@ final class SpigotAdapter implements Adapter {
     }
   }
 
+  private static class WithBungeeText<T extends CommandSender> implements Handler<T> {
 
-  @Override
-  public void sendMessage(final List<? extends CommandSender> viewers, final Component component) {
-    if(!BOUND) {
-      return;
+    @Override
+    public boolean isAvailable() {
+      return BOUND;
     }
-    send(viewers, component, (viewer, components) -> viewer.spigot().sendMessage(components));
+
+    public BaseComponent[] initState(final Component message) {
+      return toBungeeCord(message);
+    }
   }
 
-  @Override
-  public void sendActionBar(final List<? extends CommandSender> viewers, final Component component) {
-    // Only send via spigot if we have no other choice -- it tries to send as a legacy message rather than using the title packet.
-    if(!BOUND || Crafty.hasCraftBukkit()) {
-      return;
+  static class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+    @Override
+    public void send(@NonNull final CommandSender target, final BaseComponent @NonNull [] message) {
+      target.spigot().sendMessage(message);
     }
-    send(viewers, component, (viewer, components) -> viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, components));
   }
+  
+  static class ActionBar extends WithBungeeText<Player> implements Handler.ActionBar<Player, BaseComponent[]> {
 
-  private static void send(final List<? extends CommandSender> viewers, final Component component, final BiConsumer<Player, BaseComponent[]> consumer) {
-    if(!BOUND) {
-      return;
-    }
-    final BaseComponent[] components = {new AdapterComponent(component)};
-    for(final Iterator<? extends CommandSender> it = viewers.iterator(); it.hasNext(); ) {
-      final CommandSender viewer = it.next();
-      if(viewer instanceof Player) {
-        try {
-          consumer.accept((Player) viewer, components);
-          it.remove();
-        } catch(final Throwable e) {
-          e.printStackTrace();
-        }
+    @Override
+    public boolean isAvailable() {
+      if (!super.isAvailable() || Crafty.hasCraftBukkit()) {
+        return false;
       }
+      try {
+        final Class<?> spigotClass = Player.class.getMethod("spigot").getReturnType();
+        final Class<?> chatMessageType = Crafty.findClass("net.md_5.bungee.api.ChatMessageType");
+        final Class<?> baseComponent = Crafty.findClass("net.md_5.bungee.api.chat.BaseComponent");
+        if(chatMessageType == null || baseComponent == null) {
+          return false;
+        }
+        return Crafty.hasMethod(spigotClass, "sendMessage", chatMessageType, baseComponent);
+      } catch(NoSuchMethodException e) {
+        return false;
+      }
+    }
+
+    @Override
+    public void send(@NonNull final Player viewer, final BaseComponent @NonNull [] message) {
+      viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }
 
@@ -100,7 +109,7 @@ final class SpigotAdapter implements Adapter {
     }
   }
 
-  public static final class AdapterComponent extends BaseComponent {
+  static final class AdapterComponent extends BaseComponent {
     private final Component component;
 
     AdapterComponent(final Component component) {
@@ -118,7 +127,7 @@ final class SpigotAdapter implements Adapter {
     }
   }
 
-  public static class Serializer implements JsonSerializer<AdapterComponent> {
+  static class Serializer implements JsonSerializer<AdapterComponent> {
     @Override
     public JsonElement serialize(final AdapterComponent src, final Type typeOfSrc, final JsonSerializationContext context) {
       return context.serialize(src.component);

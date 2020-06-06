@@ -21,42 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.platform.impl;
 
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
-import net.kyori.adventure.text.Component;
-import org.bukkit.command.ConsoleCommandSender;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-final class ConsoleAudience extends BukkitAudience<ConsoleCommandSender> {
-  public ConsoleAudience(final @NonNull ConsoleCommandSender viewer) {
-    super(viewer);
+/**
+ * Collection, that exposes the first available handler
+ *
+ * @param <H> handler type
+ */
+public class HandlerCollection<V, H extends Handler<V>> {
+  private final @NonNull List<H> activeHandlers;
+
+  @SuppressWarnings("unchecked")
+  @SafeVarargs
+  public HandlerCollection(final @NonNull H @NonNull... options) {
+    this.activeHandlers = Stream.of(options)
+      .filter(Handler::isAvailable)
+      .collect(Collectors.toList());
+    if (this.activeHandlers.isEmpty()) {
+      throw new IllegalArgumentException("No handler of " + Arrays.toString(options) + " was available");
+    }
   }
 
-  @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // NOOP
+  public @Nullable H get(final V viewer) {
+    for (H handler : activeHandlers) {
+      if (handler.isAvailable(viewer)) {
+        return handler;
+      }
+    }
+    return null;
   }
-
-  @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // NOOP
-  }
-
-  @Override
-  public void sendActionBar(final @NonNull Component message) {
-    // NOOP
-  }
-
-  @Override
-  public void playSound(final @NonNull Sound sound) {
-    // NOOP
-  }
-
-  @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // NOOP
-  }
+  
 }

@@ -136,7 +136,7 @@ final class Crafty {
     } catch(IllegalArgumentException ex) {
       final Object[] constants = klass.getEnumConstants();
       if(constants.length > ordinal) {
-        return ordinal;
+        return constants[ordinal];
       }
     }
     return null;
@@ -175,7 +175,7 @@ final class Crafty {
   }
 
   @ForName
-  static @Nullable Class<?> findCraftClass(@NonNull String name) {
+  static @Nullable Class<?> findCraftClass(final @NonNull String name) {
     final @Nullable String className = craftClassName(name);
     if(className == null) {
       return null;
@@ -183,9 +183,18 @@ final class Crafty {
 
     return findClass(className);
   }
+  
+  @ForName
+  static <T> @Nullable Class<? extends T> findCraftClass(final @NonNull String name, final Class<T> parentType) {
+    final @Nullable Class<?> clazz = findCraftClass(name);
+    if (clazz == null || !requireNonNull(parentType, "parentType").isAssignableFrom(clazz)) {
+      return null;
+    }
+    return clazz.asSubclass(parentType);
+  }
 
   @ForName
-  static @Nullable Class<?> findNmsClass(@NonNull String name) {
+  static @Nullable Class<?> findNmsClass(final @NonNull String name) {
     final @Nullable String className = nmsClassName(name);
     if(className == null) {
       return null;

@@ -1,12 +1,6 @@
 /.gradle/
 /.idea/
-/platform-bukkit/build/
-/platform-bukkit/out/
-/platform-bungeecord/build/
-/platform-bungeecord/out/
-/platform-spongeapi/build/
-/platform-spongeapi/out/
-/platform-common/build/
-/platform-common/out/
+/platform-*/build/
+/platform-*/out/
 /run/
 /*.iml

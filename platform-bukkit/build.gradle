@@ -11,5 +11,6 @@ dependencies {
   api project(":adventure-platform-common")
   api 'net.kyori:adventure-text-serializer-gson'
   api 'net.kyori:adventure-text-serializer-legacy'
+  implementation project(":adventure-platform-impl-common")
   compileOnly 'org.spigotmc:spigot-api:1.14-R0.1-SNAPSHOT'
 }

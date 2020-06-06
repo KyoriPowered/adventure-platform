@@ -44,6 +44,6 @@ public interface SpigotTextAdapter {
    * @return the Text representation of the component
    */
   static @NonNull BaseComponent[] toBungeeCord(final @NonNull Component component) {
-    return SpigotAdapter.toBungeeCord(component);
+    return SpigotHandlers.toBungeeCord(component);
   }
 }

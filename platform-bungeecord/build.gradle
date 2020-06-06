@@ -8,5 +8,6 @@ dependencies {
   api project(":adventure-platform-common")
   api 'net.kyori:adventure-text-serializer-gson'
   api 'net.kyori:adventure-text-serializer-legacy'
+  implementation project(":adventure-platform-impl-common")
   compileOnly 'net.md-5:bungeecord-api:1.14-SNAPSHOT'
 }

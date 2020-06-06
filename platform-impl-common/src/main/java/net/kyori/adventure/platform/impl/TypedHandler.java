@@ -21,28 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.platform.impl;
 
-import java.util.List;
-import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-interface Adapter {
-  /**
-   * Attempts to send the {@code component} to each sender in the given list, removing
-   * viewers from the list if the adapter was able to successfully send the component.
-   *
-   * @param viewers the viewers
-   * @param component the component
-   */
-  void sendMessage(final List<? extends CommandSender> viewers, final Component component);
+/**
+ * A handler subtype that determines availability for a viewer by its type.
+ *
+ * @param <V> viewer type
+ */
+public abstract class TypedHandler<V> implements Handler<V> {
+  private final Class<? extends V> enforcedType;
 
-  /**
-   * Attempts to send the {@code component} to each sender in the given list, removing
-   * viewers from the list if the adapter was able to successfully send the component.
-   *
-   * @param viewers the viewers
-   * @param component the component
-   */
-  void sendActionBar(final List<? extends CommandSender> viewers, final Component component);
+  protected TypedHandler(final @Nullable Class<? extends V> enforcedType) {
+    this.enforcedType = enforcedType;
+  }
+
+  @Override
+  public boolean isAvailable() {
+    return this.enforcedType != null;
+  }
+
+  @Override
+  public boolean isAvailable(final V viewer) {
+    return this.enforcedType != null && this.enforcedType.isInstance(viewer);
+  }
 }

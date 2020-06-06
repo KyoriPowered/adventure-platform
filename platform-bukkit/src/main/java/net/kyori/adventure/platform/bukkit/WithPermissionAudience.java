@@ -46,7 +46,7 @@ final class WithPermissionAudience implements MultiAudience {
       .filter(viewer -> viewer instanceof CommandSender)
       .map(viewer -> ( CommandSender) viewer)
       .filter(viewer -> viewer.hasPermission(this.permission))
-      .map(BukkitAudience::of)
+      .map(BukkitPlatform::audience)
       .collect(Collectors.toList());
   }
 }

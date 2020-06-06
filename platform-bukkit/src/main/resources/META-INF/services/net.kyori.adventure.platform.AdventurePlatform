@@ -1,1 +1,1 @@
-net.kyori.adventure.platform.bukkit.CraftBukkitPlatform
+net.kyori.adventure.platform.bukkit.BukkitPlatform

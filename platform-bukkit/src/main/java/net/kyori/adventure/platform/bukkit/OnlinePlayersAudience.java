@@ -39,7 +39,7 @@ final class OnlinePlayersAudience implements MultiAudience {
   @Override
   public @NonNull Iterable<Audience> audiences() {
     return this.server.getOnlinePlayers().stream()
-      .map(PlayerAudience::new)
+      .map(BukkitPlatform::audience)
       .collect(Collectors.toList());
   }
 }
