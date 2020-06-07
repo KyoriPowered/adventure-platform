@@ -38,7 +38,7 @@ final class PermissibleAudience implements MultiAudience {
   private final PluginManager pluginManager;
   private final String permission;
 
-  public PermissibleAudience(final @NonNull Server server, final @NonNull String permission) {
+  PermissibleAudience(final @NonNull Server server, final @NonNull String permission) {
     this.pluginManager = requireNonNull(server, "server").getPluginManager();
     this.permission = requireNonNull(permission, "permission");
   }
@@ -48,7 +48,7 @@ final class PermissibleAudience implements MultiAudience {
     return transform(this.pluginManager.getPermissionSubscriptions(this.permission), this::audience);
   }
 
-  private Audience audience(Permissible permissible) {
+  private Audience audience(final @NonNull Permissible permissible) {
     if (permissible.hasPermission(this.permission) && permissible instanceof CommandSender) {
       return BukkitPlatform.audience((CommandSender) permissible);
     }

@@ -30,6 +30,7 @@ import java.util.function.BiConsumer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.boss.BossBarColor;
@@ -37,7 +38,7 @@ import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.entity.living.player.Player;
 
-class SpongeBossBarListener implements BossBar.Listener {
+/* package */ class SpongeBossBarListener implements BossBar.Listener {
   private static final Logger LOGGER = LoggerFactory.getLogger(SpongeBossBarListener.class);
 
   private final Map<BossBar, ServerBossBar> bars = new IdentityHashMap<>();
@@ -46,27 +47,27 @@ class SpongeBossBarListener implements BossBar.Listener {
   }
 
   @Override
-  public void bossBarNameChanged(@NonNull final BossBar bar, @NonNull final Component oldName, @NonNull final Component newName) {
+  public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
     updateBar(bar, newName, (val, sponge) -> sponge.setName(SpongePlatform.sponge(val)));
   }
 
   @Override
-  public void bossBarPercentChanged(@NonNull final BossBar bar, final float oldPercent, final float newPercent) {
+  public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
     updateBar(bar, newPercent, (val, sponge) -> sponge.setPercent(val));
   }
 
   @Override
-  public void bossBarColorChanged(@NonNull final BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
+  public void bossBarColorChanged(final @NonNull BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
     updateBar(bar, newColor, (val, sponge) -> sponge.setColor(SpongePlatform.sponge(BossBarColor.class, val, BossBar.Color.NAMES)));
   }
 
   @Override
-  public void bossBarOverlayChanged(@NonNull final BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
+  public void bossBarOverlayChanged(final @NonNull BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
     updateBar(bar, newOverlay, (val, sponge) -> sponge.setOverlay(SpongePlatform.sponge(BossBarOverlay.class, val, BossBar.Overlay.NAMES)));
   }
 
   @Override
-  public void bossBarFlagsChanged(@NonNull final BossBar bar, @NonNull final Set<BossBar.Flag> oldFlags, @NonNull final Set<BossBar.Flag> newFlags) {
+  public void bossBarFlagsChanged(final @NonNull BossBar bar, final @NonNull Set<BossBar.Flag> oldFlags, final @NonNull Set<BossBar.Flag> newFlags) {
     updateBar(bar, newFlags, (flags, sponge) -> {
       sponge.setCreateFog(flags.contains(BossBar.Flag.CREATE_WORLD_FOG));
       sponge.setDarkenSky(flags.contains(BossBar.Flag.DARKEN_SCREEN));
@@ -74,7 +75,7 @@ class SpongeBossBarListener implements BossBar.Listener {
     });
   }
 
-  private <T> void updateBar(BossBar bar, T change, BiConsumer<T, ServerBossBar> applicator) {
+  private <T> void updateBar(final @NonNull BossBar bar, final @Nullable T change, final @NonNull BiConsumer<T, ServerBossBar> applicator) {
     final ServerBossBar sponge = this.bars.get(bar);
     if(sponge == null) {
       LOGGER.warn("Attached to Adventure BossBar {} but did not have an associated Sponge bar. Ignoring change.", bar);
@@ -83,9 +84,9 @@ class SpongeBossBarListener implements BossBar.Listener {
     applicator.accept(change, sponge);
   }
 
-  void subscribe(final @NonNull BossBar adventure, final @NonNull Player player) {
+  /* package */ void subscribe(final @NonNull BossBar adventure, final @NonNull Player player) {
     this.bars.computeIfAbsent(adventure, key -> {
-      adventure.addListener(this);
+      key.addListener(this);
       return ServerBossBar.builder()
         .name(SpongePlatform.sponge(key.name()))
         .percent(key.percent())
@@ -98,7 +99,7 @@ class SpongeBossBarListener implements BossBar.Listener {
     }).addPlayer(player);
   }
 
-  void unsubscribe(final @NonNull BossBar adventure, final @NonNull Player player) {
+  /* package */ void unsubscribe(final @NonNull BossBar adventure, final @NonNull Player player) {
     this.bars.computeIfPresent(adventure, (key, existing) -> {
       existing.removePlayer(player);
       if(existing.getPlayers().isEmpty()) {

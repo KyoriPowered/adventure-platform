@@ -166,7 +166,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     });
   }
 
-  public void unsubscribeFromAll(final Player player) {
+  public void unsubscribeFromAll(final @NonNull Player player) {
     for(Iterator<org.bukkit.boss.BossBar> it = this.bars.values().iterator(); it.hasNext();) {
       final org.bukkit.boss.BossBar bukkit = it.next();
       bukkit.removePlayer(player);
@@ -180,6 +180,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
    * Set the name on a Bukkit boss bar.
    */
   interface NameSetter extends Handler<org.bukkit.boss.BossBar> {
-    void setName(org.bukkit.boss.BossBar bar, Component name);
+    void setName(org.bukkit.boss.@NonNull BossBar bar, @NonNull Component name);
   }
 }

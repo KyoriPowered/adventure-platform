@@ -66,7 +66,7 @@ public class BungeePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience player(@NonNull UUID playerId) {
+  public @NonNull Audience player(final @NonNull UUID playerId) {
     final ProxiedPlayer player = proxy.getPlayer(playerId);
     if (player == null) return Audience.empty();
     return new PlayerAudience(player);
@@ -78,12 +78,12 @@ public class BungeePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience server(@NonNull String serverName) {
+  public @NonNull Audience server(final @NonNull String serverName) {
     return new PlayersAudience(proxy, requireNonNull(serverName, "server name"));
   }
 
   @Override
-  public @NonNull Audience world(@NonNull UUID worldId) {
+  public @NonNull Audience world(final @NonNull UUID worldId) {
     return Audience.empty(); // Bungee has no concept of worlds, so silently fail
   }
 }

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.annotation.Nonnegative;
 import org.bukkit.Bukkit;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -46,7 +47,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Get your snacks... and your hacks
  */
-final class Crafty {
+/* package */ final class Crafty {
 
   private Crafty() {
   }
@@ -72,7 +73,7 @@ final class Crafty {
     }
   }
 
-  static boolean hasClass(final @NonNull String clazz) {
+  /* package */ static boolean hasClass(final @NonNull String clazz) {
     try {
       Class.forName(clazz);
       return true;
@@ -81,7 +82,7 @@ final class Crafty {
     }
   }
 
-  static @Nullable Class<?> findClass(final @NonNull String clazz) {
+  /* package */ static @Nullable Class<?> findClass(final @NonNull String clazz) {
     try {
       return Class.forName(clazz);
     } catch(ClassNotFoundException ex) {
@@ -89,7 +90,7 @@ final class Crafty {
     }
   }
 
-  static boolean hasMethod(final @NonNull Class<?> klass, final @NonNull String methodName, final @Nullable Class<?> @NonNull ... parameters) {
+  /* package */ static boolean hasMethod(final @NonNull Class<?> klass, final @NonNull String methodName, final @Nullable Class<?> @NonNull ... parameters) {
     for(Class<?> param : parameters) {
       if(param == null) {
         return false;
@@ -104,7 +105,7 @@ final class Crafty {
     }
   }
 
-  static MethodHandle optionalConstructor(final @Nullable Class<?> target, final @NonNull MethodType type) {
+  /* package */ static MethodHandle optionalConstructor(final @Nullable Class<?> target, final @NonNull MethodType type) {
     if(target == null) {
       return null;
     }
@@ -116,18 +117,18 @@ final class Crafty {
     }
   }
 
-  static Field field(final Class<?> klass, final String name) throws NoSuchFieldException {
+  /* package */ static Field field(final @NonNull Class<?> klass, final @NonNull String name) throws NoSuchFieldException {
     final Field field = klass.getDeclaredField(name);
     field.setAccessible(true);
     return field;
   }
 
-  static @Nullable Object enumValue(final @Nullable Class<?> klass, String name) {
+  /* package */ static @Nullable Object enumValue(final @Nullable Class<?> klass, String name) {
     return enumValue(klass, name, Integer.MAX_VALUE);
   }
 
   @SuppressWarnings("unchecked")
-  static @Nullable Object enumValue(final @Nullable Class<?> klass, String name, int ordinal) {
+  /* package */ static @Nullable Object enumValue(final @Nullable Class<?> klass, final @NonNull String name, final int ordinal) {
     if(klass == null) {
       return null;
     }
@@ -146,7 +147,7 @@ final class Crafty {
     return null;
   }
 
-  public static boolean hasCraftBukkit() {
+  /* package */ static boolean hasCraftBukkit() {
     return VERSION != null;
   }
 
@@ -156,7 +157,7 @@ final class Crafty {
    * @param name The name of the class without the "org.bukkit.craftbukkit" prefix
    * @return The versioned class name, or {@code null} if not CraftBukkit.
    */
-  static @Nullable String craftClassName(String name) {
+  /* package */ static @Nullable String craftClassName(final @NonNull String name) {
     if(VERSION == null) {
       return null;
     }
@@ -170,7 +171,7 @@ final class Crafty {
    * @param name The name of the class without the "net.minecraft.server" prefix
    * @return The versioned class name, or {@code null} if not CraftBukkit.
    */
-  public static @Nullable String nmsClassName(String name) {
+  /* package */ static @Nullable String nmsClassName(final @NonNull String name) {
     if(VERSION == null) {
       return null;
     }
@@ -179,7 +180,7 @@ final class Crafty {
   }
 
   @ForName
-  static @Nullable Class<?> findCraftClass(final @NonNull String name) {
+  /* package */ static @Nullable Class<?> findCraftClass(final @NonNull String name) {
     final @Nullable String className = craftClassName(name);
     if(className == null) {
       return null;
@@ -189,7 +190,7 @@ final class Crafty {
   }
   
   @ForName
-  static <T> @Nullable Class<? extends T> findCraftClass(final @NonNull String name, final Class<T> parentType) {
+  static <T> @Nullable Class<? extends T> findCraftClass(final @NonNull String name, final @Nonnegative Class<T> parentType) {
     final @Nullable Class<?> clazz = findCraftClass(name);
     if (clazz == null || !requireNonNull(parentType, "parentType").isAssignableFrom(clazz)) {
       return null;
@@ -198,7 +199,7 @@ final class Crafty {
   }
 
   @ForName
-  static @Nullable Class<?> findNmsClass(final @NonNull String name) {
+  /* package */ static @Nullable Class<?> findNmsClass(final @NonNull String name) {
     final @Nullable String className = nmsClassName(name);
     if(className == null) {
       return null;
@@ -208,12 +209,12 @@ final class Crafty {
   }
 
   @ForName
-  static Class<?> craftClass(String name) {
+  /* package */ static Class<?> craftClass(final @NonNull String name) {
     return requireNonNull(findCraftClass(name), "Could not find CraftBukkit class " + name);
   }
 
   @ForName
-  static Class<?> nmsClass(String name) {
+  /* package */ static Class<?> nmsClass(final @NonNull String name) {
     return requireNonNull(findNmsClass(name), "Could not find net.minecraft.server class " + name);
   }
 
@@ -221,7 +222,7 @@ final class Crafty {
   // Gson //
 
   @SuppressWarnings("unchecked")
-  public static boolean injectGson(Gson existing, Consumer<GsonBuilder> accepter) {
+  /* package */ static boolean injectGson(final @NonNull Gson existing, final @NonNull Consumer<GsonBuilder> accepter) {
     try {
       final Field factoriesField = field(Gson.class, "factories");
       final Field builderFactoriesField = field(GsonBuilder.class, "factories");
@@ -265,7 +266,7 @@ final class Crafty {
     }
   }
 
-  private static int findExcluderIndex(final List<TypeAdapterFactory> factories) {
+  private static int findExcluderIndex(final @NonNull List<TypeAdapterFactory> factories) {
     for(int i = 0, size = factories.size(); i < size; i++) {
       final TypeAdapterFactory factory = factories.get(i);
       if(factory instanceof Excluder) {

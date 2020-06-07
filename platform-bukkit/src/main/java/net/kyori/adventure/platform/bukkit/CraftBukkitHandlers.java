@@ -80,7 +80,7 @@ public class CraftBukkitHandlers {
     PLAYER_CONNECTION_SEND_PACKET = playerConnectionSendPacket;
   }
 
-  static class PacketSendingHandler<V extends CommandSender> extends TypedHandler<V> {
+  /* package */ static class PacketSendingHandler<V extends CommandSender> extends TypedHandler<V> {
 
     @SuppressWarnings("unchecked")
     protected PacketSendingHandler() {
@@ -153,14 +153,14 @@ public class CraftBukkitHandlers {
           gson = (Gson) gsonField.get(null);
         }
       }
-    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
+    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException ignore) {
     }
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
     MC_TEXT_GSON = gson;
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
 
-  private static Object mcTextFromComponent(Component message) {
+  private static Object mcTextFromComponent(final @NonNull Component message) {
     if(MC_TEXT_GSON == null || CLASS_CHAT_COMPONENT == null) {
       throw new IllegalStateException("Not supported");
     }
@@ -172,7 +172,7 @@ public class CraftBukkitHandlers {
     }
   }
 
-  static class Chat extends PacketSendingHandler<CommandSender> implements Handler.Chat<CommandSender, Object> {
+  /* package */ static class Chat extends PacketSendingHandler<CommandSender> implements Handler.Chat<CommandSender, Object> {
     
     @Override
     public boolean isAvailable() {
@@ -180,7 +180,7 @@ public class CraftBukkitHandlers {
     }
 
     @Override
-    public Object initState(final Component message) {
+    public Object initState(final @NonNull Component message) {
       final Object nmsMessage = mcTextFromComponent(message);
       if(nmsMessage == null) {
         return null;
@@ -216,7 +216,7 @@ public class CraftBukkitHandlers {
 
   }
 
-  static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
+  /* package */static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
 
     @Override
     public boolean isAvailable() {
@@ -224,7 +224,7 @@ public class CraftBukkitHandlers {
     }
 
     @Override
-    public Object initState(final Component message) {
+    public Object initState(final @NonNull Component message) {
       try {
         return CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_ACTIONBAR, mcTextFromComponent(message));
       } catch(Throwable throwable) {
@@ -233,11 +233,11 @@ public class CraftBukkitHandlers {
     }
   }
 
-  static class ActionBar1_8thru1_11 extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
+  /* package */ static class ActionBar1_8thru1_11 extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
 
     @Override
-    public Object initState(final Component message) {
-      // Action bar through the chat packet doesn't properly support
+    public Object initState(final @NonNull Component message) {
+      // Action bar through the chat packet doesn't properly support formatting
       final TextComponent legacyMessage = TextComponent.of(LegacyComponentSerializer.legacy().serialize(message));
       try {
         return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), LEGACY_CHAT_POSITION_ACTIONBAR);
@@ -247,7 +247,7 @@ public class CraftBukkitHandlers {
     }
   }
 
-  static class Title extends PacketSendingHandler<Player> implements Handler.Title<Player> {
+  /* package */ static class Title extends PacketSendingHandler<Player> implements Handler.Title<Player> {
 
     @Override
     public boolean isAvailable() {
@@ -255,7 +255,7 @@ public class CraftBukkitHandlers {
     }
 
     @Override
-    public void send(@NonNull final Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
+    public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
       final Object nmsTitleText = mcTextFromComponent(title.title());
       final Object nmsSubtitleText = mcTextFromComponent(title.subtitle());
       try {
@@ -282,17 +282,17 @@ public class CraftBukkitHandlers {
     }
 
     @Override
-    public void clear(@NonNull final Player viewer) {
+    public void clear(final @NonNull Player viewer) {
       viewer.sendTitle("", "", -1, -1, -1);
     }
 
     @Override
-    public void reset(@NonNull final Player viewer) {
+    public void reset(final @NonNull Player viewer) {
       viewer.resetTitle();
     }
   }
 
-  static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
+  /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
     private static final Class<?> CRAFT_BOSS_BAR = Crafty.findCraftClass("boss.CraftBossBar");
     private static final MethodHandle CRAFT_BOSS_BAR_HANDLE;
     private static final MethodHandle NMS_BOSS_BATTLE_SET_NAME;
@@ -319,7 +319,7 @@ public class CraftBukkitHandlers {
     }
 
     @Override
-    public void setName(final org.bukkit.boss.BossBar bar, final Component name) {
+    public void setName(final org.bukkit.boss.@NonNull BossBar bar, final @NonNull Component name) {
       try {
         final Object nmsBar = CRAFT_BOSS_BAR_HANDLE.invoke(bar);
         final Object mcText = mcTextFromComponent(name);

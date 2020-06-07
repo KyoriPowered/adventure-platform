@@ -99,7 +99,7 @@ public interface AdventurePlatform {
    * @param permission the permission to filter sending to
    * @return a permissible audience
    */
-  default @NonNull Audience permission(@NonNull Key permission) {
+  default @NonNull Audience permission(final @NonNull Key permission) {
     return permission(permission.namespace() + '.' + permission.value());
   }
 

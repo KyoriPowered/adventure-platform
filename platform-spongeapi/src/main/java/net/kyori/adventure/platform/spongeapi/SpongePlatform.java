@@ -57,7 +57,7 @@ public class SpongePlatform implements AdventurePlatform {
     return INSTANCE;
   }
 
-  public static <V extends Viewer & MessageReceiver> PlatformAudience<V> audience(V player) {
+  public static <V extends Viewer & MessageReceiver> PlatformAudience<V> audience(final @NonNull V player) {
     return new SpongeFullAudience<>(player);
   }
 
@@ -78,17 +78,17 @@ public class SpongePlatform implements AdventurePlatform {
     return new SpongeMultiAudience(() -> receivers);
   }
 
-  static <K, S extends CatalogType> S sponge(final Class<S> spongeType, final K value, final NameMap<K> elements)  {
+  /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull NameMap<K> elements)  {
     return Sponge.getRegistry().getType(spongeType, elements.name(requireNonNull(value, "value")))
       .orElseThrow(() -> new IllegalArgumentException("Value " + value + " could not be found in Sponge type " + spongeType));
   }
 
-  static <K, S extends CatalogType> K adventure(final S sponge, final NameMap<K> values) {
-    return values.value(sponge.getId())
+  /* package */ static <K, S extends CatalogType> K adventure(final @NonNull S sponge, final @NonNull NameMap<K> values) {
+    return values.value(requireNonNull(sponge, "sponge").getId())
       .orElseThrow(() -> new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent"));
   }
 
-  static <S extends CatalogType> S sponge(final Class<S> spongeType, final Key identifier) {
+  /* package */ static <S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
     return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
@@ -108,7 +108,7 @@ public class SpongePlatform implements AdventurePlatform {
    * @return the Text representation of the component
    */
   public static @NonNull Text sponge(final @NonNull Component component) {
-    return TextSerializers.JSON.deserialize(VersionedGsonComponentSerializer.PRE_1_16.serialize(component));
+    return TextSerializers.JSON.deserialize(VersionedGsonComponentSerializer.PRE_1_16.serialize(requireNonNull(component, "component")));
   }
 
   /**
@@ -123,7 +123,7 @@ public class SpongePlatform implements AdventurePlatform {
    * @return the Component representation of the text
    */
   public static @NonNull Component adventure(final @NonNull Text text) {
-    return GsonComponentSerializer.INSTANCE.deserialize(TextSerializers.JSON.serialize(text));
+    return GsonComponentSerializer.INSTANCE.deserialize(TextSerializers.JSON.serialize(requireNonNull(text, "text")));
   }
 
   @Override
@@ -142,7 +142,7 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience player(@NonNull UUID playerId) {
+  public @NonNull Audience player(final @NonNull UUID playerId) {
     return null;
   }
 
@@ -155,7 +155,7 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience world(@NonNull UUID worldId) {
+  public @NonNull Audience world(final @NonNull UUID worldId) {
     return Audience.empty(); // TODO
   }
 }

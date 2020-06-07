@@ -39,7 +39,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class SpigotHandlers {
+import static java.util.Objects.requireNonNull;
+
+/* package */ class SpigotHandlers {
 
   private static final boolean BOUND = System.getProperty("adventure.noSpigot", "false").equals("false") && bind();
   
@@ -62,19 +64,19 @@ public class SpigotHandlers {
       return BOUND;
     }
 
-    public BaseComponent[] initState(final Component message) {
+    public BaseComponent[] initState(final @NonNull Component message) {
       return toBungeeCord(message);
     }
   }
 
-  static class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+  /* package */ static final class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
     @Override
     public void send(@NonNull final CommandSender target, final BaseComponent @NonNull [] message) {
       target.spigot().sendMessage(message);
     }
   }
-  
-  static class ActionBar extends WithBungeeText<Player> implements Handler.ActionBar<Player, BaseComponent[]> {
+
+  /* package */ static final class ActionBar extends WithBungeeText<Player> implements Handler.ActionBar<Player, BaseComponent[]> {
 
     @Override
     public boolean isAvailable() {
@@ -96,12 +98,13 @@ public class SpigotHandlers {
 
     @Override
     @SuppressWarnings("deprecation") // pls stop
-    public void send(@NonNull final Player viewer, final BaseComponent @NonNull [] message) {
+    public void send(final @NonNull Player viewer, final BaseComponent @NonNull [] message) {
       viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }
 
-  static BaseComponent[] toBungeeCord(final Component component) {
+  static BaseComponent[] toBungeeCord(final @NonNull Component component) {
+    requireNonNull(component, "component");
     if(BOUND) {
       return new BaseComponent[]{new AdapterComponent(component)};
     } else {
@@ -109,10 +112,10 @@ public class SpigotHandlers {
     }
   }
 
-  static final class AdapterComponent extends BaseComponent {
+  /* package */ static final class AdapterComponent extends BaseComponent {
     private final Component component;
 
-    AdapterComponent(final Component component) {
+    /* package */ AdapterComponent(final Component component) {
       this.component = component;
     }
 
@@ -127,7 +130,7 @@ public class SpigotHandlers {
     }
   }
 
-  static class Serializer implements JsonSerializer<AdapterComponent> {
+  /* package */ static class Serializer implements JsonSerializer<AdapterComponent> {
     @Override
     public JsonElement serialize(final AdapterComponent src, final Type typeOfSrc, final JsonSerializationContext context) {
       return context.serialize(src.component);

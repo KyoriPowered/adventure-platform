@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -43,7 +44,7 @@ import static java.util.Objects.requireNonNull;
 
 /* package */ final class SpongeFullAudience<V extends MessageReceiver & Viewer> extends SpongeAudience<V> {
 
-  public SpongeFullAudience(V target) {
+  /* package */ SpongeFullAudience(V target) {
     super(target);
   }
 
@@ -76,6 +77,7 @@ import static java.util.Objects.requireNonNull;
   }
 
   private void playSound(final @NonNull Sound sound, final @NonNull Vector3d position) {
+    requireNonNull(sound, "sound");
     final SoundType type = sponge(sound.name());
     final SoundCategory category = sponge(sound.source());
     this.viewer().playSound(type, category, position, sound.volume(), sound.pitch());
@@ -83,6 +85,7 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
+    requireNonNull(stop, "stop");
     final SoundType type = sponge(stop.sound());
     final SoundCategory category = sponge(stop.source());
 
@@ -99,6 +102,7 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void showTitle(final @NonNull Title title) {
+    requireNonNull(title, "title");
     this.viewer().sendTitle(org.spongepowered.api.text.title.Title.builder()
       .title(SpongePlatform.sponge(title.title()))
       .subtitle(SpongePlatform.sponge(title.subtitle()))
@@ -119,7 +123,7 @@ import static java.util.Objects.requireNonNull;
   }
 
   private static int ticks(final @NonNull Duration duration) {
-    return (int) duration.getSeconds() * 20;
+    return duration.getSeconds() == -1 ? -1 : (int) duration.getSeconds() * 20; // TODO: fractions of seconds
   }
 
   private static SoundType sponge(final @Nullable Key sound) {

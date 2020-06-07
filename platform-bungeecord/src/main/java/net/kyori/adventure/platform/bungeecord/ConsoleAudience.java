@@ -32,21 +32,23 @@ import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class ConsoleAudience implements PlatformAudience<CommandSender> {
-  private final CommandSender sender;
+import static java.util.Objects.requireNonNull;
 
-  public ConsoleAudience(final CommandSender sender) {
+public class ConsoleAudience implements PlatformAudience<CommandSender> {
+  private final @NonNull CommandSender sender;
+
+  public ConsoleAudience(final @NonNull CommandSender sender) {
     this.sender = sender;
   }
 
   @Override
-  public CommandSender viewer() {
+  public @NonNull CommandSender viewer() {
     return this.sender;
   }
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    sender.sendMessage(TextAdapter.toBungeeCord(message));
+    this.sender.sendMessage(TextAdapter.toBungeeCord(requireNonNull(message, "message")));
   }
 
   @Override
@@ -71,7 +73,7 @@ public class ConsoleAudience implements PlatformAudience<CommandSender> {
   public void stopSound(final @NonNull SoundStop stop) { }
 
   @Override
-  public void showTitle(@NonNull final Title title) { }
+  public void showTitle(final @NonNull Title title) { }
 
   @Override
   public void clearTitle() { }

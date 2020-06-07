@@ -37,20 +37,20 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class PlayerAudience implements PlatformAudience<ProxiedPlayer> {
-  private final ProxiedPlayer player;
+  private final @NonNull ProxiedPlayer player;
 
-  public PlayerAudience(final ProxiedPlayer player) {
+  public PlayerAudience(final @NonNull ProxiedPlayer player) {
     this.player = player;
   }
 
   @Override
-  public ProxiedPlayer viewer() {
+  public @NonNull ProxiedPlayer viewer() {
     return this.player;
   }
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    this.player.sendMessage(ChatMessageType.SYSTEM, TextAdapter.toBungeeCord(message));
+    this.player.sendMessage(ChatMessageType.SYSTEM, TextAdapter.toBungeeCord(message)); // todo: adjust by player protocol version
   }
 
   @Override
@@ -96,7 +96,7 @@ public class PlayerAudience implements PlatformAudience<ProxiedPlayer> {
   }
 
   @Override
-  public void showTitle(@NonNull final Title title) {
+  public void showTitle(final @NonNull Title title) {
     final net.md_5.bungee.api.Title bungee = ProxyServer.getInstance().createTitle();
     if (!TextComponent.empty().equals(title.title())) {
       bungee.title(TextAdapter.toBungeeCord(title.title()));
@@ -113,7 +113,7 @@ public class PlayerAudience implements PlatformAudience<ProxiedPlayer> {
   }
 
   private int ticks(Duration duration) {
-    return (int) duration.getSeconds() * 20;
+    return duration.getSeconds() == -1 ? -1 : (int) duration.getSeconds() * 20;
   }
 
   @Override

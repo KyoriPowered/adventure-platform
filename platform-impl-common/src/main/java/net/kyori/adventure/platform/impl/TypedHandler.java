@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -43,7 +44,7 @@ public abstract class TypedHandler<V> implements Handler<V> {
   }
 
   @Override
-  public boolean isAvailable(final V viewer) {
+  public boolean isAvailable(final @NonNull V viewer) {
     return this.enforcedType != null && this.enforcedType.isInstance(viewer);
   }
 }

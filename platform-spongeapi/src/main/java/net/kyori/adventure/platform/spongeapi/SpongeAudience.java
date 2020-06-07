@@ -34,11 +34,13 @@ import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatTypes;
 
+import static java.util.Objects.requireNonNull;
+
 /* package */ class SpongeAudience<M extends MessageReceiver> implements PlatformAudience<M> {
   protected final M receiver;
 
-  public SpongeAudience(M target) {
-    this.receiver = target;
+  public SpongeAudience(M viewer) {
+    this.receiver = requireNonNull(viewer, "viewer");
   }
 
   @Override
@@ -48,17 +50,17 @@ import org.spongepowered.api.text.chat.ChatTypes;
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    receiver.sendMessage(SpongePlatform.sponge(message));
+    this.receiver.sendMessage(SpongePlatform.sponge(message));
   }
 
   @Override
-  public void showBossBar(@NonNull final BossBar bar) { }
+  public void showBossBar(final @NonNull BossBar bar) { }
 
   @Override
-  public void hideBossBar(@NonNull final BossBar bar) { }
+  public void hideBossBar(final @NonNull BossBar bar) { }
 
   @Override
-  public void sendActionBar(@NonNull final Component message) {
+  public void sendActionBar(final @NonNull Component message) {
     if(this.receiver instanceof ChatTypeMessageReceiver) {
       ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, SpongePlatform.sponge(message));
     } else {
@@ -67,16 +69,16 @@ import org.spongepowered.api.text.chat.ChatTypes;
   }
 
   @Override
-  public void playSound(@NonNull final Sound sound) { }
+  public void playSound(final @NonNull Sound sound) { }
 
   @Override
   public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) { }
 
   @Override
-  public void stopSound(@NonNull final SoundStop stop) { }
+  public void stopSound(final @NonNull SoundStop stop) { }
 
   @Override
-  public void showTitle(@NonNull final Title title) { }
+  public void showTitle(final @NonNull Title title) { }
 
   @Override
   public void clearTitle() { }

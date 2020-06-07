@@ -52,18 +52,18 @@ public interface Handler<V> {
    * @param viewer viewer to check
    * @return availability for this viewer
    */
-  default boolean isAvailable(V viewer) {
+  default boolean isAvailable(@NonNull V viewer) {
     return true;
   }
 
   interface Chat<V, S> extends Handler<V> {
-    S initState(Component component);
+    S initState(@NonNull Component component);
     
     void send(@NonNull V target, @NonNull S message);
   }
 
   interface ActionBar<V, S> extends Handler<V> {
-    S initState(Component message);
+    S initState(@NonNull Component message);
     
     void send(@NonNull V viewer, @NonNull S message);
   }
@@ -75,7 +75,7 @@ public interface Handler<V> {
 
     void reset(@NonNull V viewer);
     
-    default int ticks(Duration time) {
+    default int ticks(@NonNull Duration time) {
       return time.isNegative() ? -1 : (int) Math.ceil(time.toMillis() / 50.0);
     }
   }

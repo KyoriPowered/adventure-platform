@@ -33,7 +33,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
-import org.bukkit.boss.BossBar;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -43,35 +42,35 @@ import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class BukkitHandlers {
+/* package */ class BukkitHandlers {
   private BukkitHandlers() {}
 
   private static String legacy(final @NonNull Component component) {
     return LegacyComponentSerializer.legacy().serialize(component);
   }
 
-  static class Chat implements Handler.Chat<CommandSender, String> {
+  /* package */ static class Chat implements Handler.Chat<CommandSender, String> {
     @Override
     public boolean isAvailable() {
       return true;
     }
 
     @Override
-    public String initState(final Component component) {
+    public String initState(final @NonNull Component component) {
       return legacy(component);
     }
 
     @Override
-    public void send(@NonNull final CommandSender target, @NonNull final String message) {
+    public void send(final @NonNull CommandSender target, final @NonNull String message) {
       target.sendMessage(message);
     }
   }
 
-  static class BossBar implements Handler.BossBar<Player> {
-    static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
-    static final BukkitBossBarListener LISTENERS = new BukkitBossBarListener();
+  /* package */ static class BossBar implements Handler.BossBar<Player> {
+    /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
+    private static final BukkitBossBarListener LISTENERS = new BukkitBossBarListener();
     
-    BossBar() {
+    /* package */ BossBar() {
       final Plugin fakePlugin = (Plugin) Proxy.newProxyInstance(BukkitPlatform.class.getClassLoader(), new Class<?>[] {Plugin.class}, (proxy, method, args) -> {
         switch(method.getName()) {
           case "isEnabled":
@@ -97,20 +96,20 @@ public class BukkitHandlers {
     }
 
     @Override
-    public void show(@NonNull final Player viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void show(final @NonNull Player viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       LISTENERS.subscribe(viewer, bar);
     }
 
     @Override
-    public void hide(@NonNull final Player viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void hide(final @NonNull Player viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       LISTENERS.unsubscribe(viewer, bar);
     }
   }
 
-  static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
+  /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
 
     @Override
-    public void setName(final org.bukkit.boss.BossBar bar, final Component name) {
+    public void setName(final org.bukkit.boss.@NonNull BossBar bar, final @NonNull Component name) {
       bar.setTitle(legacy(name));
     }
 
@@ -120,16 +119,16 @@ public class BukkitHandlers {
     }
   }
 
-  static abstract class PlaySound implements Handler.PlaySound<Player> {
-    static final boolean IS_AT_LEAST_113 = Crafty.hasClass("org.bukkit.NamespacedKey");
+  /* package */ static abstract class PlaySound implements Handler.PlaySound<Player> {
+    private static final boolean IS_AT_LEAST_113 = Crafty.hasClass("org.bukkit.NamespacedKey");
 
     @Override
-    public void play(@NonNull final Player viewer, @NonNull final Sound sound) {
+    public void play(final @NonNull Player viewer, final @NonNull Sound sound) {
       play(viewer, sound, viewer.getLocation());
     }
 
     @Override
-    public void play(@NonNull final Player viewer, @NonNull final Sound sound, final double x, final double y, final double z) {
+    public void play(final @NonNull Player viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
       play(viewer, sound, new Location(viewer.getWorld(), x, y, z));
     }
     
@@ -148,8 +147,8 @@ public class BukkitHandlers {
     }
   }
   
-  static class PlaySound_WithCategory extends PlaySound {
-    static final boolean SOUND_CATEGORY_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class, Crafty.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
+  /* package */ static class PlaySound_WithCategory extends PlaySound {
+    private static final boolean SOUND_CATEGORY_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class, Crafty.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
 
     @Override
     public boolean isAvailable() {
@@ -164,14 +163,14 @@ public class BukkitHandlers {
     }
 
     @Override
-    public void stop(@NonNull final Player viewer, @NonNull final SoundStop stop) {
+    public void stop(final @NonNull Player viewer, final @NonNull SoundStop stop) {
       final String soundName = name(stop.sound());
       final Sound.@Nullable Source source = stop.source();
       final SoundCategory category = source == null ? null : category(source);
       viewer.stopSound(soundName, category);
     }
 
-    static SoundCategory category(final Sound.@NonNull Source source) {
+    private static SoundCategory category(final Sound.@NonNull Source source) {
       switch(source) {
         case MASTER: return SoundCategory.MASTER;
         case MUSIC: return SoundCategory.MUSIC;
@@ -188,8 +187,8 @@ public class BukkitHandlers {
     }
   }
   
-  static class PlaySound_NoCategory extends PlaySound {
-    static final boolean SOUND_STOP_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
+  /* package */ static class PlaySound_NoCategory extends PlaySound {
+    private static final boolean SOUND_STOP_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
 
     @Override
     public boolean isAvailable() {
@@ -202,7 +201,7 @@ public class BukkitHandlers {
     }
 
     @Override
-    public void stop(@NonNull final Player viewer, @NonNull final SoundStop sound) {
+    public void stop(final @NonNull Player viewer, final @NonNull SoundStop sound) {
       if(!SOUND_STOP_SUPPORTED) {
         return;
       }

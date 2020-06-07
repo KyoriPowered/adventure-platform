@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * An audience that wraps a platform viewer.
@@ -35,5 +36,5 @@ public interface PlatformAudience<V> extends Audience {
    *
    * @return the viewer
    */
-  V viewer();
+  @NonNull V viewer();
 }

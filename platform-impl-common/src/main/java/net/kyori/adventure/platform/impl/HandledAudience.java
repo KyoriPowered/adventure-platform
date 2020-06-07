@@ -32,6 +32,8 @@ import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import static java.util.Objects.requireNonNull;
+
 public class HandledAudience<V> implements PlatformAudience<V> {
   private final V viewer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
@@ -40,9 +42,9 @@ public class HandledAudience<V> implements PlatformAudience<V> {
   private final Handler.@Nullable BossBar<? super V> bossBarHandler;
   private final Handler.@Nullable PlaySound<? super V> soundHandler;
 
-  public HandledAudience(final @NonNull V viewer, final HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat, final HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
-                            final HandlerCollection<? super V, ? extends Handler.Title<? super V>> title, final HandlerCollection<? super V, ? extends Handler.BossBar<? super V>> bossBar, final HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound) {
-    this.viewer = viewer;
+  public HandledAudience(final @NonNull V viewer, final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat, final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
+                            final @Nullable HandlerCollection<? super V, ? extends Handler.Title<? super V>> title, final @Nullable HandlerCollection<? super V, ? extends Handler.BossBar<? super V>> bossBar, final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound) {
+    this.viewer = requireNonNull(viewer, "viewer");
     this.chatHandler = chat == null ? null : chat.get(this.viewer);
     this.actionBarHandler = actionBar == null ? null : actionBar.get(this.viewer);
     this.titleHandler = title == null ? null : title.get(this.viewer);
@@ -51,13 +53,13 @@ public class HandledAudience<V> implements PlatformAudience<V> {
   }
 
   @Override
-  public V viewer() {
-    return null;
+  public @NonNull V viewer() {
+    return this.viewer;
   }
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    sendMessage0(this.chatHandler, message);
+    sendMessage0(this.chatHandler, requireNonNull(message, "message"));
   }
 
   private <S> void sendMessage0(final Handler.@Nullable Chat<? super V, S> handler, final @NonNull Component message) {
@@ -69,20 +71,20 @@ public class HandledAudience<V> implements PlatformAudience<V> {
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
     if (this.bossBarHandler != null) {
-      this.bossBarHandler.show(this.viewer, bar);
+      this.bossBarHandler.show(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
     if (this.bossBarHandler != null) {
-      this.bossBarHandler.hide(this.viewer, bar);
+      this.bossBarHandler.hide(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    sendActionBar0(this.actionBarHandler, message);
+    sendActionBar0(this.actionBarHandler, requireNonNull(message, "message"));
   }
 
   private <S> void sendActionBar0(final Handler.@Nullable ActionBar<? super V, S> handler, final @NonNull Component message) {
@@ -94,28 +96,28 @@ public class HandledAudience<V> implements PlatformAudience<V> {
   @Override
   public void playSound(final @NonNull Sound sound) {
     if(this.soundHandler != null) {
-      this.soundHandler.play(this.viewer, sound);
+      this.soundHandler.play(this.viewer, requireNonNull(sound, "sound"));
     }
   }
 
   @Override
   public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
     if(this.soundHandler != null) {
-      this.soundHandler.play(this.viewer, sound, x, y, z);
+      this.soundHandler.play(this.viewer, requireNonNull(sound, "sound"), x, y, z);
     }
   }
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
     if(this.soundHandler != null) {
-      this.soundHandler.stop(this.viewer, stop);
+      this.soundHandler.stop(this.viewer, requireNonNull(stop, "stop"));
     }
   }
 
   @Override
   public void showTitle(final @NonNull Title title) {
     if(this.titleHandler != null) {
-      this.titleHandler.send(this.viewer, title);
+      this.titleHandler.send(this.viewer, requireNonNull(title, "title"));
     }
   }
 

@@ -27,9 +27,11 @@ import net.kyori.adventure.platform.impl.Handler;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class PaperHandlers {
+/* package */ class PaperHandlers {
+  private PaperHandlers() {
+  }
 
-  static class Title implements Handler.Title<Player> {
+  /* package */ static class Title implements Handler.Title<Player> {
 
     @Override
     public boolean isAvailable() {
@@ -37,7 +39,7 @@ public class PaperHandlers {
     }
 
     @Override
-    public void send(@NonNull final Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
+    public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
       final com.destroystokyo.paper.Title paperTitle = com.destroystokyo.paper.Title.builder()
         .title(SpigotHandlers.toBungeeCord(title.title()))
         .subtitle(SpigotHandlers.toBungeeCord(title.subtitle()))
@@ -49,12 +51,12 @@ public class PaperHandlers {
     }
 
     @Override
-    public void clear(@NonNull final Player viewer) {
+    public void clear(final @NonNull Player viewer) {
       viewer.hideTitle();
     }
 
     @Override
-    public void reset(@NonNull final Player viewer) {
+    public void reset(final @NonNull Player viewer) {
       viewer.resetTitle();
     }
   }

@@ -45,7 +45,7 @@ import static java.util.Objects.requireNonNull;
 public final class BukkitPlatform implements AdventurePlatform {
 
   // A derivative of the Gson serializer that will serialize text appropriately based on the server version
-  static final VersionedGsonComponentSerializer GSON_SERIALIZER;
+  /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
 
   static {
     if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE", Integer.MAX_VALUE) != null) { // we are 1.16
@@ -81,11 +81,12 @@ public final class BukkitPlatform implements AdventurePlatform {
   }
 
   // TODO: ugly but it's here to test with until proper solution
-  public static PlatformAudience<Player> audience(final Player player) {
-    return new HandledAudience<>(player, CHAT, ACTION_BAR, TITLE, BOSS_BAR, PLAY_SOUND);
+  public static PlatformAudience<Player> audience(final @NonNull Player player) {
+    return new HandledAudience<>(requireNonNull(player, "player"), CHAT, ACTION_BAR, TITLE, BOSS_BAR, PLAY_SOUND);
   }
 
-  public static PlatformAudience<? extends CommandSender> audience(final CommandSender sender) {
+  public static PlatformAudience<? extends CommandSender> audience(final @NonNull CommandSender sender) {
+    requireNonNull(sender, "sender");
     if(sender instanceof Player) {
       return audience((Player) sender);
     } else {
@@ -95,33 +96,33 @@ public final class BukkitPlatform implements AdventurePlatform {
 
   @Override
   public @NonNull String name() {
-    return server.getBukkitVersion();
+    return this.server.getBukkitVersion();
   }
 
   @Override
   public @NonNull Audience console() {
-    return console;
+    return this.console;
   }
 
   @Override
   public @NonNull Audience players() {
-    return players;
+    return this.players;
   }
 
   @Override
-  public @NonNull Audience player(@NonNull UUID playerId) {
-    final Player player = server.getPlayer(playerId);
+  public @NonNull Audience player(final @NonNull UUID playerId) {
+    final Player player = this.server.getPlayer(playerId);
     if (player == null) return Audience.empty();
     return audience(player);
   }
 
   @Override
   public @NonNull Audience permission(final @NonNull String permission) {
-    return new PermissibleAudience(server, permission);
+    return new PermissibleAudience(this.server, permission);
   }
 
   @Override
   public @NonNull Audience world(final @NonNull UUID worldId) {
-    return new WorldAudience(server, worldId);
+    return new WorldAudience(this.server, worldId);
   }
 }

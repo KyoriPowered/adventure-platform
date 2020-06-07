@@ -37,7 +37,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar.Listener {
+/* package */ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar.Listener {
   private static final int ACTION_CREATE = 0;
   private static final int ACTION_REMOVE = 1;
   private static final int ACTION_PERCENT = 2;
@@ -53,21 +53,21 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
 
   private final Map<BossBar, Instance> bars = new IdentityHashMap<>();
 
-  BungeeBossBarListener() {
+  private BungeeBossBarListener() {
   }
 
   @Override
-  public void bossBarNameChanged(@NonNull final BossBar bar, @NonNull final Component oldName, @NonNull final Component newName) {
+  public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
     bungee(bar).sendToSubscribers(bar, ACTION_TITLE, (adv, pkt) -> pkt.setTitle(GsonComponentSerializer.INSTANCE.serialize(adv.name())));
   }
 
   @Override
-  public void bossBarPercentChanged(@NonNull final BossBar bar, final float oldPercent, final float newPercent) {
+  public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
     bungee(bar).sendToSubscribers(bar, ACTION_PERCENT, (adv, pkt) -> pkt.setHealth(adv.percent()));
   }
 
   @Override
-  public void bossBarColorChanged(@NonNull final BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
+  public void bossBarColorChanged(final @NonNull BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
     bungee(bar).sendToSubscribers(bar, ACTION_STYLE, (adv, pkt) -> {
       pkt.setColor(bungee(adv.color()));
       pkt.setDivision(bungee(adv.overlay()));
@@ -75,7 +75,7 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
   }
 
   @Override
-  public void bossBarOverlayChanged(@NonNull final BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
+  public void bossBarOverlayChanged(final @NonNull BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
     bungee(bar).sendToSubscribers(bar, ACTION_STYLE, (adv, pkt) -> {
       pkt.setColor(bungee(adv.color()));
       pkt.setDivision(bungee(adv.overlay()));
@@ -83,11 +83,11 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
   }
 
   @Override
-  public void bossBarFlagsChanged(@NonNull final BossBar bar, @NonNull final Set<BossBar.Flag> oldFlags, @NonNull final Set<BossBar.Flag> newFlags) {
+  public void bossBarFlagsChanged(final @NonNull BossBar bar, final @NonNull Set<BossBar.Flag> oldFlags, final @NonNull Set<BossBar.Flag> newFlags) {
     bungee(bar).sendToSubscribers(bar, ACTION_FLAGS, (adv, pkt) -> pkt.setFlags(bitmaskFlags(adv.flags())));
   }
 
-  static byte bitmaskFlags(Set<BossBar.Flag> flags) {
+  static byte bitmaskFlags(final @NonNull Set<BossBar.Flag> flags) {
     byte mask = 0;
     for(BossBar.Flag flag : flags) {
       switch(flag) {
@@ -105,7 +105,7 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
     return mask;
   }
 
-  private @NonNull Instance bungee(@NonNull BossBar bar) {
+  private @NonNull Instance bungee(final @NonNull BossBar bar) {
     final Instance ret = this.bars.get(bar);
     if(ret == null) {
       throw new IllegalArgumentException("Unknown boss bar instance " + bar);
@@ -120,15 +120,15 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
     });
   }
 
-  private int bungee(net.kyori.adventure.bossbar.BossBar.@NonNull Color color) {
+  private int bungee(final BossBar.@NonNull Color color) {
     return color.ordinal();
   }
 
-  private int bungee(net.kyori.adventure.bossbar.BossBar.@NonNull Overlay overlay) {
+  private int bungee(final BossBar.@NonNull Overlay overlay) {
     return overlay.ordinal();
   }
 
-  public void subscribe(BossBar bar, ProxiedPlayer player) {
+  public void subscribe(final @NonNull BossBar bar, final @NonNull ProxiedPlayer player) {
     if(canSeeBossBars(player)) {
       final Instance bungee = bungeeCreating(bar);
       if(bungee.subscribers.add(player)) {
@@ -137,7 +137,7 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
     }
   }
 
-  public void unsubscribe(BossBar bar, ProxiedPlayer player) {
+  public void unsubscribe(final @NonNull BossBar bar, final @NonNull ProxiedPlayer player) {
     this.bars.computeIfPresent(bar, (key, instance) -> {
       if(instance.subscribers.remove(player)) {
         player.unsafe().sendPacket(instance.newPacket(ACTION_REMOVE));
@@ -149,7 +149,7 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
     });
   }
 
-  public void subscribeAll(net.kyori.adventure.bossbar.BossBar bar, Iterable<ProxiedPlayer> players) {
+  public void subscribeAll(final @NonNull BossBar bar, final @NonNull Iterable<ProxiedPlayer> players) {
     final Iterator<ProxiedPlayer> it = players.iterator();
     if(!it.hasNext()) {
       return;
@@ -164,7 +164,7 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
     }
   }
 
-  public void unsubscribeAll(BossBar bar, Iterable<ProxiedPlayer> players) {
+  public void unsubscribeAll(final @NonNull BossBar bar, Iterable<ProxiedPlayer> players) {
     final Iterator<ProxiedPlayer> it = players.iterator();
     if(!it.hasNext()) {
       return;
@@ -183,11 +183,11 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
     });
   }
 
-  static class Instance {
+  /* package */ static class Instance {
     private final UUID id = UUID.randomUUID();
     final Set<ProxiedPlayer> subscribers = ConcurrentHashMap.newKeySet();
 
-    net.md_5.bungee.protocol.packet.BossBar newCreatePacket(net.kyori.adventure.bossbar.BossBar bar) {
+    /* package */ net.md_5.bungee.protocol.packet.@NonNull BossBar newCreatePacket(final @NonNull BossBar bar) {
       final net.md_5.bungee.protocol.packet.BossBar packet = newPacket(ACTION_CREATE);
       packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(bar.name()));
       packet.setHealth(bar.percent());
@@ -197,17 +197,17 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
       return packet;
     }
 
-    net.md_5.bungee.protocol.packet.BossBar newPacket(final int action) {
+    /* package */ net.md_5.bungee.protocol.packet.@NonNull BossBar newPacket(final int action) {
       return new net.md_5.bungee.protocol.packet.BossBar(this.id, action);
     }
 
-    void sendToSubscribers(final BossBar bar, final int action, final BiConsumer<BossBar, net.md_5.bungee.protocol.packet.BossBar> packetModifier) {
+    /* package */ void sendToSubscribers(final @NonNull BossBar bar, final int action, final @NonNull BiConsumer<BossBar, net.md_5.bungee.protocol.packet.BossBar> packetModifier) {
       final net.md_5.bungee.protocol.packet.BossBar packet = newPacket(action);
       packetModifier.accept(bar, packet);
       sendToSubscribers(packet);
     }
 
-    void sendToSubscribers(final net.md_5.bungee.protocol.packet.BossBar packet) {
+    /* package */ void sendToSubscribers(final net.md_5.bungee.protocol.packet.@NonNull BossBar packet) {
       for(ProxiedPlayer player : this.subscribers) {
         player.unsafe().sendPacket(packet);
       }
@@ -224,7 +224,7 @@ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar
    * @param player The player to check
    * @return if the player has a client with boss bar support
    */
-  private static boolean canSeeBossBars(@NonNull ProxiedPlayer player) {
+  private static boolean canSeeBossBars(final @NonNull ProxiedPlayer player) {
     return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_9;
   }
 }
