@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -81,11 +80,11 @@ public final class BukkitPlatform implements AdventurePlatform {
   }
 
   // TODO: ugly but it's here to test with until proper solution
-  public static PlatformAudience<Player> audience(final @NonNull Player player) {
+  public static Audience audience(final @NonNull Player player) {
     return new HandledAudience<>(requireNonNull(player, "player"), CHAT, ACTION_BAR, TITLE, BOSS_BAR, PLAY_SOUND);
   }
 
-  public static PlatformAudience<? extends CommandSender> audience(final @NonNull CommandSender sender) {
+  public static Audience audience(final @NonNull CommandSender sender) {
     requireNonNull(sender, "sender");
     if(sender instanceof Player) {
       return audience((Player) sender);

@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.platform.PlatformAudience;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -36,7 +35,7 @@ import static java.util.Objects.requireNonNull;
 
 public class BungeePlatform implements AdventurePlatform {
 
-  public static @NonNull PlatformAudience<ProxiedPlayer> player(final @NonNull ProxiedPlayer player) {
+  public static @NonNull Audience player(final @NonNull ProxiedPlayer player) {
     return new PlayerAudience(requireNonNull(player, "player"));
   }
 

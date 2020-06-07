@@ -23,8 +23,8 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
-public class HandledAudience<V> implements PlatformAudience<V> {
+public class HandledAudience<V> implements Audience {
   private final V viewer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
   private final Handler.@Nullable ActionBar<? super V, ?> actionBarHandler;
@@ -50,11 +50,6 @@ public class HandledAudience<V> implements PlatformAudience<V> {
     this.titleHandler = title == null ? null : title.get(this.viewer);
     this.bossBarHandler = bossBar == null ? null : bossBar.get(this.viewer);
     this.soundHandler = sound == null ? null : sound.get(this.viewer);
-  }
-
-  @Override
-  public @NonNull V viewer() {
-    return this.viewer;
   }
 
   @Override

@@ -23,8 +23,8 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -36,16 +36,11 @@ import org.spongepowered.api.text.chat.ChatTypes;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ class SpongeAudience<M extends MessageReceiver> implements PlatformAudience<M> {
+/* package */ class SpongeAudience<M extends MessageReceiver> implements Audience {
   protected final M receiver;
 
   public SpongeAudience(M viewer) {
     this.receiver = requireNonNull(viewer, "viewer");
-  }
-
-  @Override
-  public M viewer() {
-    return this.receiver;
   }
 
   @Override

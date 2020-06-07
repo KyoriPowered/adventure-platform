@@ -50,23 +50,23 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    if(this.viewer() instanceof Player) {
-      SpongePlatform.BOSS_BAR_LISTENER.subscribe(requireNonNull(bar, "bar"), (Player) this.viewer());
+    if(this.receiver instanceof Player) {
+      SpongePlatform.BOSS_BAR_LISTENER.subscribe(requireNonNull(bar, "bar"), (Player) this.receiver);
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    if(this.viewer() instanceof Player) {
-      SpongePlatform.BOSS_BAR_LISTENER.unsubscribe(requireNonNull(bar, "bar"), (Player) this.viewer());
+    if(this.receiver instanceof Player) {
+      SpongePlatform.BOSS_BAR_LISTENER.unsubscribe(requireNonNull(bar, "bar"), (Player) this.receiver);
     }
   }
 
   @Override
   public void playSound(final @NonNull Sound sound) {
     Vector3d loc = Vector3d.ZERO;
-    if(this.viewer() instanceof Locatable) {
-      loc = ((Locatable) this.viewer()).getLocation().getPosition();
+    if(this.receiver instanceof Locatable) {
+      loc = ((Locatable) this.receiver).getLocation().getPosition();
     }
     playSound(sound, loc);
   }
@@ -80,7 +80,7 @@ import static java.util.Objects.requireNonNull;
     requireNonNull(sound, "sound");
     final SoundType type = sponge(sound.name());
     final SoundCategory category = sponge(sound.source());
-    this.viewer().playSound(type, category, position, sound.volume(), sound.pitch());
+    this.receiver.playSound(type, category, position, sound.volume(), sound.pitch());
   }
 
   @Override
@@ -90,20 +90,20 @@ import static java.util.Objects.requireNonNull;
     final SoundCategory category = sponge(stop.source());
 
     if(type != null && category != null) {
-      this.viewer().stopSounds(type, category);
+      this.receiver.stopSounds(type, category);
     } else if(type != null) {
-      this.viewer().stopSounds(type);
+      this.receiver.stopSounds(type);
     } else if(category != null) {
-      this.viewer().stopSounds(category);
+      this.receiver.stopSounds(category);
     } else {
-      this.viewer().stopSounds();
+      this.receiver.stopSounds();
     }
   }
 
   @Override
   public void showTitle(final @NonNull Title title) {
     requireNonNull(title, "title");
-    this.viewer().sendTitle(org.spongepowered.api.text.title.Title.builder()
+    this.receiver.sendTitle(org.spongepowered.api.text.title.Title.builder()
       .title(SpongePlatform.sponge(title.title()))
       .subtitle(SpongePlatform.sponge(title.subtitle()))
       .fadeIn(ticks(title.fadeInTime()))
@@ -114,12 +114,12 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void clearTitle() {
-    this.viewer().clearTitle();
+    this.receiver.clearTitle();
   }
 
   @Override
   public void resetTitle() {
-    this.viewer().resetTitle();
+    this.receiver.resetTitle();
   }
 
   private static int ticks(final @NonNull Duration duration) {

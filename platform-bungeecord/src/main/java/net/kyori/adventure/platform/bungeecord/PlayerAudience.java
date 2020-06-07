@@ -24,8 +24,9 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import java.time.Duration;
+
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -36,16 +37,11 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class PlayerAudience implements PlatformAudience<ProxiedPlayer> {
+public class PlayerAudience implements Audience {
   private final @NonNull ProxiedPlayer player;
 
   public PlayerAudience(final @NonNull ProxiedPlayer player) {
     this.player = player;
-  }
-
-  @Override
-  public @NonNull ProxiedPlayer viewer() {
-    return this.player;
   }
 
   @Override
