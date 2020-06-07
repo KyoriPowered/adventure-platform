@@ -24,10 +24,11 @@
 package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,6 +42,17 @@ public interface AdventurePlatform {
    * @return the platform name
    */
   @NonNull String name();
+
+  /**
+   * Gets a mutable list of audience renderers.
+   *
+   * <p>Can be used to customize text for audiences, like translating by locale.</p>
+   *
+   * @return a mutable list of audience renderers
+   */
+  default @NonNull List<AudienceRenderer> renderers() {
+    return Collections.emptyList(); // FIXME: remove default, move to a BasePlatform
+  }
 
   /**
    * Gets an audience for all online players, including the server's console.
