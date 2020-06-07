@@ -30,7 +30,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 /**
  * An adapter for converting text {@link Component}s to Spigot (BungeeCord) objects.
  */
-public interface SpigotTextAdapter {
+public interface SpigotPlatform {
   /**
    * Converts {@code component} to the {@link BaseComponent} format used by Spigot (BungeeCord).
    *
