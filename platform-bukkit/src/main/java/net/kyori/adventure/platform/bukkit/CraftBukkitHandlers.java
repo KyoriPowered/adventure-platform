@@ -293,29 +293,35 @@ public class CraftBukkitHandlers {
   }
 
   /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
-    private static final Class<?> CRAFT_BOSS_BAR = Crafty.findCraftClass("boss.CraftBossBar");
+    private static final Class<?> CLASS_CRAFT_BOSS_BAR = Crafty.findCraftClass("boss.CraftBossBar");
+    private static final Class<?> CLASS_BOSS_BAR_ACTION = Crafty.findNmsClass("PacketPlayOutBoss$Action");
+    private static final Object BOSS_BAR_ACTION_TITLE = Crafty.enumValue(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
     private static final MethodHandle CRAFT_BOSS_BAR_HANDLE;
     private static final MethodHandle NMS_BOSS_BATTLE_SET_NAME;
+    private static final MethodHandle NMS_BOSS_BATTLE_SEND_UPDATE;
 
     static {
       MethodHandle craftBossBarHandle = null;
       MethodHandle nmsBossBattleSetName = null;
-      if(CRAFT_BOSS_BAR != null && CLASS_CHAT_COMPONENT != null) {
+      MethodHandle nmsBossBattleSendUpdate = null;
+      if(CLASS_CRAFT_BOSS_BAR != null && CLASS_CHAT_COMPONENT != null && BOSS_BAR_ACTION_TITLE != null) {
         try {
-          final Field craftBossBarHandleField = Crafty.field(CRAFT_BOSS_BAR, "handle");
+          final Field craftBossBarHandleField = Crafty.field(CLASS_CRAFT_BOSS_BAR, "handle");
           craftBossBarHandle = Crafty.LOOKUP.unreflectGetter(craftBossBarHandleField);
           final Class<?> nmsBossBattleType = craftBossBarHandleField.getType();
           nmsBossBattleSetName = Crafty.LOOKUP.findSetter(nmsBossBattleType, "title", CLASS_CHAT_COMPONENT);
-        } catch(NoSuchFieldException | IllegalAccessException ignore) {
+          nmsBossBattleSendUpdate = Crafty.LOOKUP.findVirtual(nmsBossBattleType, "sendUpdate", methodType(void.class, CLASS_BOSS_BAR_ACTION));
+        } catch(NoSuchFieldException | IllegalAccessException | NoSuchMethodException ignore) {
         }
       }
       CRAFT_BOSS_BAR_HANDLE = craftBossBarHandle;
       NMS_BOSS_BATTLE_SET_NAME = nmsBossBattleSetName;
+      NMS_BOSS_BATTLE_SEND_UPDATE = nmsBossBattleSendUpdate;
     }
 
     @Override
     public boolean isAvailable() {
-      return CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null;
+      return CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
     }
 
     @Override
@@ -323,7 +329,9 @@ public class CraftBukkitHandlers {
       try {
         final Object nmsBar = CRAFT_BOSS_BAR_HANDLE.invoke(bar);
         final Object mcText = mcTextFromComponent(name);
+        // Boss bar was introduced MC 1.9, but the name setter method didn't exist until later versions, so for max compatibility we'll do field set and update separately
         NMS_BOSS_BATTLE_SET_NAME.invoke(nmsBar, mcText);
+        NMS_BOSS_BATTLE_SEND_UPDATE.invoke(nmsBar, BOSS_BAR_ACTION_TITLE);
       } catch(final Error err) {
         throw err;
       } catch(final Throwable ignore) {
