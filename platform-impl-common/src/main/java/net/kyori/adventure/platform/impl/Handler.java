@@ -69,14 +69,20 @@ public interface Handler<V> {
   }
 
   interface Title<V> extends Handler<V> {
+    /**
+     * Instruct the client to keep its current value for a duration field on the title
+     */
+    int DURATION_PRESERVE = -1;
+
+
     void send(@NonNull V viewer, net.kyori.adventure.title.@NonNull Title title);
 
     void clear(@NonNull V viewer);
 
     void reset(@NonNull V viewer);
     
-    default int ticks(@NonNull Duration time) {
-      return time.isNegative() ? -1 : (int) Math.ceil(time.toMillis() / 50.0);
+    static int ticks(final @NonNull Duration time) {
+      return time.isNegative() ? DURATION_PRESERVE : (int) Math.ceil(time.toMillis() / 50.0);
     }
   }
 

@@ -40,6 +40,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.impl.Handler.Title.ticks;
 
 public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
 
@@ -126,10 +127,6 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
       .stay(ticks(title.stayTime()));
 
     this.player.sendTitle(bungee);
-  }
-
-  private int ticks(Duration duration) {
-    return duration.getSeconds() == -1 ? -1 : (int) duration.getSeconds() * 20;
   }
 
   @Override

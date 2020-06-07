@@ -41,6 +41,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.world.Locatable;
 
 import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.impl.Handler.Title.ticks;
 
 /* package */ final class SpongeFullAudience<V extends MessageReceiver & Viewer> extends SpongeAudience<V> {
 
@@ -120,10 +121,6 @@ import static java.util.Objects.requireNonNull;
   @Override
   public void resetTitle() {
     this.receiver.resetTitle();
-  }
-
-  private static int ticks(final @NonNull Duration duration) {
-    return duration.getSeconds() == -1 ? -1 : (int) duration.getSeconds() * 20; // TODO: fractions of seconds
   }
 
   private static SoundType sponge(final @Nullable Key sound) {

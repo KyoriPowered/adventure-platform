@@ -23,6 +23,8 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.time.Duration;
+import java.util.function.IntConsumer;
 import net.kyori.adventure.platform.impl.Handler;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -40,14 +42,27 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      final com.destroystokyo.paper.Title paperTitle = com.destroystokyo.paper.Title.builder()
+      final com.destroystokyo.paper.Title.Builder paperTitle = com.destroystokyo.paper.Title.builder()
         .title(SpigotHandlers.toBungeeCord(title.title()))
-        .subtitle(SpigotHandlers.toBungeeCord(title.subtitle()))
-        .fadeIn(ticks(title.fadeInTime()))
-        .stay(ticks(title.stayTime()))
-        .fadeOut(ticks(title.fadeOutTime()))
-        .build();
-      viewer.sendTitle(paperTitle);
+        .subtitle(SpigotHandlers.toBungeeCord(title.subtitle()));
+
+      applyTime(title.fadeInTime(), paperTitle::fadeIn);
+      applyTime(title.stayTime(), paperTitle::stay);
+      applyTime(title.fadeOutTime(), paperTitle::fadeOut);
+
+      viewer.sendTitle(paperTitle.build());
+    }
+
+    /**
+     * Paper will reject negative durations, so we have to resort to every send assigning default times.
+     * @param time The time to send
+     * @param consumer Time builder
+     */
+    private static void applyTime(Duration time, IntConsumer consumer) {
+      final int ticks = Handler.Title.ticks(time);
+      if(ticks != -1) {
+        consumer.accept(ticks);
+      }
     }
 
     @Override

@@ -263,9 +263,9 @@ public class CraftBukkitHandlers {
         final Object subtitlePacket = CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_SUBTITLE, nmsSubtitleText);
         Object timesPacket = null;
 
-        final int fadeIn = ticks(title.fadeInTime());
-        final int stay = ticks(title.stayTime());
-        final int fadeOut = ticks(title.fadeOutTime());
+        final int fadeIn = Handler.Title.ticks(title.fadeInTime());
+        final int stay = Handler.Title.ticks(title.stayTime());
+        final int fadeOut = Handler.Title.ticks(title.fadeOutTime());
 
         if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
           timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(fadeIn, stay, fadeOut);
