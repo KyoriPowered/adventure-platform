@@ -33,6 +33,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -45,6 +46,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class BukkitHandlers {
   private BukkitHandlers() {}
 
+  private static String legacy(final @NonNull Component component) {
+    return LegacyComponentSerializer.legacy().serialize(component);
+  }
+
   static class Chat implements Handler.Chat<CommandSender, String> {
     @Override
     public boolean isAvailable() {
@@ -53,7 +58,7 @@ public class BukkitHandlers {
 
     @Override
     public String initState(final Component component) {
-      return LegacyComponentSerializer.legacy().serialize(component);
+      return legacy(component);
     }
 
     @Override
@@ -101,7 +106,20 @@ public class BukkitHandlers {
       LISTENERS.unsubscribe(viewer, bar);
     }
   }
-  
+
+  static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
+
+    @Override
+    public void setName(final org.bukkit.boss.BossBar bar, final Component name) {
+      bar.setTitle(legacy(name));
+    }
+
+    @Override
+    public boolean isAvailable() {
+      return BukkitHandlers.BossBar.SUPPORTED;
+    }
+  }
+
   static abstract class PlaySound implements Handler.PlaySound<Player> {
     static final boolean IS_AT_LEAST_113 = Crafty.hasClass("org.bukkit.NamespacedKey");
 

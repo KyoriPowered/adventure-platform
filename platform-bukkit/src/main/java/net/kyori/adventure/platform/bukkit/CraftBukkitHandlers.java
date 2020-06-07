@@ -28,7 +28,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.UUID;
@@ -103,6 +102,7 @@ public class CraftBukkitHandlers {
   }
 
   // Components //
+  private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = Crafty.findNmsClass("IChatBaseComponent");
   private static final @Nullable Class<?> CLASS_MESSAGE_TYPE = Crafty.findNmsClass("ChatMessageType");
   private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.enumValue(CLASS_MESSAGE_TYPE, "CHAT", 0);
   private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
@@ -165,41 +165,42 @@ public class CraftBukkitHandlers {
     MethodHandle titlePacketConstructor = null;
 
     try {
-      // Chat packet //
-      final Class<?> baseComponentClass = Crafty.nmsClass("IChatBaseComponent");
-      final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
-      if(CLASS_TITLE_PACKET != null) {
-        titlePacketConstructor = Crafty.LOOKUP.findConstructor(CLASS_TITLE_PACKET, methodType(void.class, CLASS_TITLE_ACTION, baseComponentClass));
-      }
-      // PacketPlayOutChat constructor changed for 1.16
-      chatPacketConstructor = Crafty.optionalConstructor(chatPacketClass, methodType(void.class, baseComponentClass));
-      if(chatPacketConstructor == null) {
-        if(CLASS_MESSAGE_TYPE != null) {
-          chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, baseComponentClass, UUID.class));
+      if(CLASS_CHAT_COMPONENT != null) {
+        // Chat packet //
+        final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
+        if(CLASS_TITLE_PACKET != null) {
+          titlePacketConstructor = Crafty.LOOKUP.findConstructor(CLASS_TITLE_PACKET, methodType(void.class, CLASS_TITLE_ACTION, CLASS_CHAT_COMPONENT));
         }
-      } else {
-        // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
-        chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
-      }
-      legacyChatPacketConstructor = optionalConstructor(chatPacketClass, methodType(void.class, baseComponentClass, byte.class));
+        // PacketPlayOutChat constructor changed for 1.16
+        chatPacketConstructor = Crafty.optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT));
+        if(chatPacketConstructor == null) {
+          if(CLASS_MESSAGE_TYPE != null) {
+            chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, CLASS_CHAT_COMPONENT, UUID.class));
+          }
+        } else {
+          // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
+          chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
+        }
+        legacyChatPacketConstructor = optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT, byte.class));
 
-      // Chat serializer //
-      final Class<?> chatSerializerClass = Arrays.stream(baseComponentClass.getClasses())
-        .filter(JsonDeserializer.class::isAssignableFrom)
-        .findAny()
-        // fallback to the 1.7 class?
-        .orElseGet(() -> {
-          return nmsClass("ChatSerializer");
-        });
-      final Method serialize = Arrays.stream(chatSerializerClass.getMethods())
-        .filter(m -> Modifier.isStatic(m.getModifiers()))
-        .filter(m -> m.getReturnType().equals(baseComponentClass))
-        .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
-        .min(Comparator.comparing(Method::getName)) // prefer the #a method
-        .orElse(null);
+        // Chat serializer //
+        final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
+          .filter(JsonDeserializer.class::isAssignableFrom)
+          .findAny()
+          // fallback to the 1.7 class?
+          .orElseGet(() -> {
+            return nmsClass("ChatSerializer");
+          });
+        final Method serialize = Arrays.stream(chatSerializerClass.getMethods())
+          .filter(m -> Modifier.isStatic(m.getModifiers()))
+          .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
+          .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
+          .min(Comparator.comparing(Method::getName)) // prefer the #a method
+          .orElse(null);
 
-      if(serialize != null) {
-        serializeMethod = Crafty.LOOKUP.unreflect(serialize);
+        if(serialize != null) {
+          serializeMethod = Crafty.LOOKUP.unreflect(serialize);
+        }
       }
     } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     }
@@ -282,6 +283,45 @@ public class CraftBukkitHandlers {
     @Override
     public void reset(@NonNull final Player viewer) {
       viewer.resetTitle();
+    }
+  }
+
+  static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
+    private static final Class<?> CRAFT_BOSS_BAR = Crafty.findCraftClass("boss.CraftBossBar");
+    private static final MethodHandle CRAFT_BOSS_BAR_HANDLE;
+    private static final MethodHandle NMS_BOSS_BATTLE_SET_NAME;
+
+    static {
+      MethodHandle craftBossBarHandle = null;
+      MethodHandle nmsBossBattleSetName = null;
+      if(CRAFT_BOSS_BAR != null && CLASS_CHAT_COMPONENT != null) {
+        try {
+          final Field craftBossBarHandleField = Crafty.field(CRAFT_BOSS_BAR, "handle");
+          craftBossBarHandle = Crafty.LOOKUP.unreflectGetter(craftBossBarHandleField);
+          final Class<?> nmsBossBattleType = craftBossBarHandleField.getType();
+          nmsBossBattleSetName = Crafty.LOOKUP.findSetter(nmsBossBattleType, "name", CLASS_CHAT_COMPONENT);
+        } catch(NoSuchFieldException | IllegalAccessException ignore) {
+        }
+      }
+      CRAFT_BOSS_BAR_HANDLE = craftBossBarHandle;
+      NMS_BOSS_BATTLE_SET_NAME = nmsBossBattleSetName;
+    }
+
+    @Override
+    public boolean isAvailable() {
+      return CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null;
+    }
+
+    @Override
+    public void setName(final org.bukkit.boss.BossBar bar, final Component name) {
+      try {
+        final Object nmsBar = CRAFT_BOSS_BAR_HANDLE.invoke(bar);
+        final Object mcText = mcTextFromComponent(name);
+        NMS_BOSS_BATTLE_SET_NAME.invoke(nmsBar, mcText);
+      } catch(final Error err) {
+        throw err;
+      } catch(final Throwable ignore) {
+      }
     }
   }
 }

@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -40,6 +42,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 /* package */ final class BukkitBossBarListener implements BossBar.Listener {
   private static final BossBar.Flag[] FLAGS = BossBar.Flag.values();
+  private static final HandlerCollection<org.bukkit.boss.BossBar, NameSetter> SET_NAME = new HandlerCollection<>(new CraftBukkitHandlers.BossBarNameSetter(), new BukkitHandlers.BossBarNameSetter());
+
   private final Map<BossBar, org.bukkit.boss.BossBar> bars = new IdentityHashMap<>();
 
   /* package */ BukkitBossBarListener() {
@@ -54,7 +58,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
   @Override
   public void bossBarNameChanged(@NonNull final BossBar bar, @NonNull final Component oldName, @NonNull final Component newName) {
-    this.withBar(bar, bukkit -> bukkit.setTitle(legacy(bar.name())));
+    this.withBar(bar, bukkit -> {
+      final NameSetter setter = SET_NAME.get(bukkit);
+      if(setter != null) {
+        setter.setName(bukkit, bar.name());
+      }
+    });
   }
 
   @Override
@@ -86,11 +95,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       }
     });
   }
-
-  private static String legacy(final @NonNull Component component) {
-    return LegacyComponentSerializer.legacy().serialize(component);
-  }
-
   private static BarColor bukkit(final BossBar.@NonNull Color color) {
     if(color == BossBar.Color.PINK) {
       return BarColor.PINK;
@@ -138,7 +142,11 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
   void subscribe(final @NonNull Player player, final @NonNull BossBar bar) {
     final org.bukkit.boss.BossBar bukkit = this.bars.computeIfAbsent(bar, adventure -> {
-      final org.bukkit.boss.BossBar ret = Bukkit.createBossBar(legacy(adventure.name()), bukkit(adventure.color()), bukkit(adventure.overlay()));
+      final org.bukkit.boss.BossBar ret = Bukkit.createBossBar("", bukkit(adventure.color()), bukkit(adventure.overlay()));
+      final NameSetter nameSetter = SET_NAME.get(ret);
+      if(nameSetter != null) {
+        nameSetter.setName(ret, adventure.name());
+      }
       ret.setProgress(adventure.percent());
       bar.addListener(this);
       return ret;
@@ -166,5 +174,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
         it.remove();
       }
     }
+  }
+
+  /**
+   * Set the name on a Bukkit boss bar.
+   */
+  interface NameSetter extends Handler<org.bukkit.boss.BossBar> {
+    void setName(org.bukkit.boss.BossBar bar, Component name);
   }
 }
