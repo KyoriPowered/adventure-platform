@@ -38,15 +38,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class HandlerCollection<V, H extends Handler<V>> {
   private final @NonNull List<H> activeHandlers;
 
-  @SuppressWarnings("unchecked")
   @SafeVarargs
   public HandlerCollection(final @NonNull H @NonNull... options) {
     this.activeHandlers = Stream.of(options)
       .filter(Handler::isAvailable)
       .collect(Collectors.toList());
-    if (this.activeHandlers.isEmpty()) {
-      throw new UnsupportedOperationException("No handler of " + Arrays.toString(options) + " was available");
-    }
   }
 
   public @Nullable H get(final V viewer) {
