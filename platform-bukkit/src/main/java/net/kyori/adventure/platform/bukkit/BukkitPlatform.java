@@ -24,7 +24,6 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
@@ -70,7 +69,6 @@ public final class BukkitPlatform implements AdventurePlatform {
   private final Server server;
   private final Audience console;
   private final Audience players;
-  private final Audience everyone;
 
   public BukkitPlatform() {
     this(Bukkit.getServer());
@@ -80,7 +78,6 @@ public final class BukkitPlatform implements AdventurePlatform {
     this.server = requireNonNull(server, "bukkit server");
     this.console = audience(server.getConsoleSender());
     this.players = new PlayersAudience(server);
-    this.everyone = MultiAudience.of(console, players);
   }
 
   // TODO: ugly but it's here to test with until proper solution
@@ -99,11 +96,6 @@ public final class BukkitPlatform implements AdventurePlatform {
   @Override
   public @NonNull String name() {
     return server.getBukkitVersion();
-  }
-
-  @Override
-  public @NonNull Audience everyone() {
-    return everyone;
   }
 
   @Override
@@ -131,10 +123,5 @@ public final class BukkitPlatform implements AdventurePlatform {
   @Override
   public @NonNull Audience world(final @NonNull UUID worldId) {
     return new WorldAudience(server, worldId);
-  }
-
-  @Override
-  public @NonNull Audience server(@NonNull String serverName) {
-    return everyone;
   }
 }

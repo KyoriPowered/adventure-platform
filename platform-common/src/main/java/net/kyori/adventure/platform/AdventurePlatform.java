@@ -50,7 +50,7 @@ public interface AdventurePlatform {
    * @return the players' and console audience
    */
   default @NonNull Audience everyone() {
-    return MultiAudience.of(console(), players());
+    return Audience.of(console(), players());
   }
 
   /**
