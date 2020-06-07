@@ -23,7 +23,10 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -109,18 +112,25 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
   private static final UUID NIL_UUID = new UUID(0, 0);
   private static final byte LEGACY_CHAT_POSITION_ACTIONBAR = 2;
+  private static final Gson ADVENTURE_GSON; // TODO: backwards compatibility bits
+  private static final Gson MC_TEXT_GSON;
+
+  static {
+    final GsonBuilder build = new GsonBuilder();
+    GsonComponentSerializer.GSON_BUILDER_CONFIGURER.accept(build);
+    ADVENTURE_GSON = build.create();
+  }
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
   private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
-  private static final @Nullable MethodHandle BASE_COMPONENT_SERIALIZE; // (String) -> IChatBaseComponent
 
   private static Object mcTextFromComponent(Component message) {
-    if(BASE_COMPONENT_SERIALIZE == null) {
+    if(MC_TEXT_GSON == null || CLASS_CHAT_COMPONENT == null) {
       throw new IllegalStateException("Not supported");
     }
-    final String json = GsonComponentSerializer.INSTANCE.serialize(message);
+    final JsonElement json = ADVENTURE_GSON.toJsonTree(message);
     try {
-      return BASE_COMPONENT_SERIALIZE.invoke(json);
+      return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
     } catch(Throwable throwable) {
       return null;
     }
@@ -161,8 +171,8 @@ public class CraftBukkitHandlers {
   static {
     MethodHandle legacyChatPacketConstructor = null;
     MethodHandle chatPacketConstructor = null;
-    MethodHandle serializeMethod = null;
     MethodHandle titlePacketConstructor = null;
+    Gson gson = null;
 
     try {
       if(CLASS_CHAT_COMPONENT != null) {
@@ -191,21 +201,20 @@ public class CraftBukkitHandlers {
           .orElseGet(() -> {
             return nmsClass("ChatSerializer");
           });
-        final Method serialize = Arrays.stream(chatSerializerClass.getMethods())
+        final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
           .filter(m -> Modifier.isStatic(m.getModifiers()))
-          .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
-          .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
-          .min(Comparator.comparing(Method::getName)) // prefer the #a method
+          .filter(m -> m.getType().equals(Gson.class))
+          .findFirst()
           .orElse(null);
-
-        if(serialize != null) {
-          serializeMethod = Crafty.LOOKUP.unreflect(serialize);
+        if(gsonField != null) {
+          gsonField.setAccessible(true);
+          gson = (Gson) gsonField.get(null);
         }
       }
     } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     }
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
-    BASE_COMPONENT_SERIALIZE = serializeMethod;
+    MC_TEXT_GSON = gson;
     CONSTRUCTOR_TITLE_MESSAGE = titlePacketConstructor;
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
