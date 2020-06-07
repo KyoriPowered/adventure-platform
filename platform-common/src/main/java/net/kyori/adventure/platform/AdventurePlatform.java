@@ -110,4 +110,16 @@ public interface AdventurePlatform {
    * @return the world's audience
    */
   @NonNull Audience world(@NonNull UUID worldId);
+
+  /**
+   * Gets an audience for online players on a server, including the server's console.
+   *
+   * <p>If the platform is not a proxy, the audience defaults to everyone.</p>
+   *
+   * @param serverName a server name
+   * @return a server's audience
+   */
+  default @NonNull Audience server(@NonNull String serverName) {
+    return everyone();
+  }
 }

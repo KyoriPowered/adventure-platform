@@ -115,4 +115,16 @@ public final class Adventure {
   public static @NonNull Audience world(@NonNull UUID worldId) {
     return PROVIDER.world(worldId);
   }
+
+  /**
+   * Gets an audience for online players on a server, including the server's console.
+   *
+   * <p>If the platform is not a proxy, the audience defaults to everyone.</p>
+   *
+   * @param serverName a server name
+   * @return a server's audience
+   */
+  public static @NonNull Audience server(@NonNull String serverName) {
+    return PROVIDER.server(serverName);
+  }
 }
