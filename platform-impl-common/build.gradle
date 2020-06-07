@@ -1,3 +1,4 @@
 dependencies {
   api project(':adventure-platform-common')
+  api 'net.kyori:adventure-text-serializer-gson'
 }

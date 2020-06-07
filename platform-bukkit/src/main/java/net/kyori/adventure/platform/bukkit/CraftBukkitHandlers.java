@@ -24,7 +24,6 @@
 package net.kyori.adventure.platform.bukkit;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import java.lang.invoke.MethodHandle;
@@ -32,13 +31,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.UUID;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.TypedHandler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -112,23 +109,62 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
   private static final UUID NIL_UUID = new UUID(0, 0);
   private static final byte LEGACY_CHAT_POSITION_ACTIONBAR = 2;
-  private static final Gson ADVENTURE_GSON; // TODO: backwards compatibility bits
   private static final Gson MC_TEXT_GSON;
-
-  static {
-    final GsonBuilder build = new GsonBuilder();
-    GsonComponentSerializer.GSON_BUILDER_CONFIGURER.accept(build);
-    ADVENTURE_GSON = build.create();
-  }
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
   private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
+
+  static {
+    MethodHandle legacyChatPacketConstructor = null;
+    MethodHandle chatPacketConstructor = null;
+    Gson gson = null;
+
+    try {
+      if(CLASS_CHAT_COMPONENT != null) {
+        // Chat packet //
+        final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
+        // PacketPlayOutChat constructor changed for 1.16
+        chatPacketConstructor = Crafty.optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT));
+        if(chatPacketConstructor == null) {
+          if(CLASS_MESSAGE_TYPE != null) {
+            chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, CLASS_CHAT_COMPONENT, UUID.class));
+          }
+        } else {
+          // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
+          chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
+        }
+        legacyChatPacketConstructor = optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT, byte.class));
+
+        // Chat serializer //
+        final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
+          .filter(JsonDeserializer.class::isAssignableFrom)
+          .findAny()
+          // fallback to the 1.7 class?
+          .orElseGet(() -> {
+            return nmsClass("ChatSerializer");
+          });
+        final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
+          .filter(m -> Modifier.isStatic(m.getModifiers()))
+          .filter(m -> m.getType().equals(Gson.class))
+          .findFirst()
+          .orElse(null);
+        if(gsonField != null) {
+          gsonField.setAccessible(true);
+          gson = (Gson) gsonField.get(null);
+        }
+      }
+    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
+    }
+    CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
+    MC_TEXT_GSON = gson;
+    LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
+  }
 
   private static Object mcTextFromComponent(Component message) {
     if(MC_TEXT_GSON == null || CLASS_CHAT_COMPONENT == null) {
       throw new IllegalStateException("Not supported");
     }
-    final JsonElement json = ADVENTURE_GSON.toJsonTree(message);
+    final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializeToTree(message);
     try {
       return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
     } catch(Throwable throwable) {
@@ -169,54 +205,15 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR", Integer.MAX_VALUE);
 
   static {
-    MethodHandle legacyChatPacketConstructor = null;
-    MethodHandle chatPacketConstructor = null;
     MethodHandle titlePacketConstructor = null;
-    Gson gson = null;
-
-    try {
-      if(CLASS_CHAT_COMPONENT != null) {
-        // Chat packet //
-        final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
-        if(CLASS_TITLE_PACKET != null) {
-          titlePacketConstructor = Crafty.LOOKUP.findConstructor(CLASS_TITLE_PACKET, methodType(void.class, CLASS_TITLE_ACTION, CLASS_CHAT_COMPONENT));
-        }
-        // PacketPlayOutChat constructor changed for 1.16
-        chatPacketConstructor = Crafty.optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT));
-        if(chatPacketConstructor == null) {
-          if(CLASS_MESSAGE_TYPE != null) {
-            chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, CLASS_CHAT_COMPONENT, UUID.class));
-          }
-        } else {
-          // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
-          chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
-        }
-        legacyChatPacketConstructor = optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT, byte.class));
-
-        // Chat serializer //
-        final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
-          .filter(JsonDeserializer.class::isAssignableFrom)
-          .findAny()
-          // fallback to the 1.7 class?
-          .orElseGet(() -> {
-            return nmsClass("ChatSerializer");
-          });
-        final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
-          .filter(m -> Modifier.isStatic(m.getModifiers()))
-          .filter(m -> m.getType().equals(Gson.class))
-          .findFirst()
-          .orElse(null);
-        if(gsonField != null) {
-          gsonField.setAccessible(true);
-          gson = (Gson) gsonField.get(null);
-        }
+    if(CLASS_TITLE_PACKET != null) {
+      try {
+        titlePacketConstructor = Crafty.LOOKUP.findConstructor(CLASS_TITLE_PACKET, methodType(void.class, CLASS_TITLE_ACTION, CLASS_CHAT_COMPONENT));
+      } catch(NoSuchMethodException | IllegalAccessException ignore) {
       }
-    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     }
-    CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
-    MC_TEXT_GSON = gson;
     CONSTRUCTOR_TITLE_MESSAGE = titlePacketConstructor;
-    LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
+
   }
 
   static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
@@ -308,7 +305,7 @@ public class CraftBukkitHandlers {
           final Field craftBossBarHandleField = Crafty.field(CRAFT_BOSS_BAR, "handle");
           craftBossBarHandle = Crafty.LOOKUP.unreflectGetter(craftBossBarHandleField);
           final Class<?> nmsBossBattleType = craftBossBarHandleField.getType();
-          nmsBossBattleSetName = Crafty.LOOKUP.findSetter(nmsBossBattleType, "name", CLASS_CHAT_COMPONENT);
+          nmsBossBattleSetName = Crafty.LOOKUP.findSetter(nmsBossBattleType, "title", CLASS_CHAT_COMPONENT);
         } catch(NoSuchFieldException | IllegalAccessException ignore) {
         }
       }

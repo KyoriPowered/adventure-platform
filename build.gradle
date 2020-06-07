@@ -28,6 +28,10 @@ subprojects {
     options.encoding = 'UTF-8'
   }
 
+  tasks.withType(Test) {
+    useJUnitPlatform()
+  }
+
   license {
     header rootProject.file('header.txt')
     include '**/*.java'

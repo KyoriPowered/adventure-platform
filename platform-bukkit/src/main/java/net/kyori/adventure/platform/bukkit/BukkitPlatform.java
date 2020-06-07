@@ -30,7 +30,9 @@ import net.kyori.adventure.platform.PlatformAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -42,6 +44,19 @@ import static java.util.Objects.requireNonNull;
 
 // TODO: implement Listener and use singletons
 public final class BukkitPlatform implements AdventurePlatform {
+
+  // A derivative of the Gson serializer that will serialize text appropriately based on the server version
+  static final VersionedGsonComponentSerializer GSON_SERIALIZER;
+
+  static {
+    if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE", Integer.MAX_VALUE) != null) { // we are 1.16
+      GSON_SERIALIZER = VersionedGsonComponentSerializer.MODERN;
+    } else {
+      GSON_SERIALIZER = VersionedGsonComponentSerializer.PRE_1_16;
+    }
+  }
+
+  // Type handlers
 
   static HandlerCollection<? super CommandSender, ? extends Handler.Chat<? super CommandSender, ?>> CHAT = new HandlerCollection<>(new SpigotHandlers.Chat(),
     new CraftBukkitHandlers.Chat(), new BukkitHandlers.Chat());

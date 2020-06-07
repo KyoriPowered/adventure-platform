@@ -33,6 +33,7 @@ import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.platform.PlatformAudience;
+import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.util.NameMap;
@@ -107,7 +108,7 @@ public class SpongePlatform implements AdventurePlatform {
    * @return the Text representation of the component
    */
   public static @NonNull Text sponge(final @NonNull Component component) {
-    return TextSerializers.JSON.deserialize(GsonComponentSerializer.INSTANCE.serialize(component));
+    return TextSerializers.JSON.deserialize(VersionedGsonComponentSerializer.PRE_1_16.serialize(component));
   }
 
   /**

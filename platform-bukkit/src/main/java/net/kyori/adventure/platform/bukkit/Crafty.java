@@ -122,6 +122,10 @@ final class Crafty {
     return field;
   }
 
+  static @Nullable Object enumValue(final @Nullable Class<?> klass, String name) {
+    return enumValue(klass, name, Integer.MAX_VALUE);
+  }
+
   @SuppressWarnings("unchecked")
   static @Nullable Object enumValue(final @Nullable Class<?> klass, String name, int ordinal) {
     if(klass == null) {

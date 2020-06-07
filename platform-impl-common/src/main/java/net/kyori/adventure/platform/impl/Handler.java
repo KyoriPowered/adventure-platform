@@ -45,13 +45,15 @@ public interface Handler<V> {
   boolean isAvailable();
 
   /**
-   * Check if this handler can process for a specific viewer
+   * Check if this handler can process for a specific viewer.
+   *
+   * <p>This check will only be performed if {@link #isAvailable()} has already returned true.</p>
    * 
    * @param viewer viewer to check
    * @return availability for this viewer
    */
   default boolean isAvailable(V viewer) {
-    return isAvailable();
+    return true;
   }
 
   interface Chat<V, S> extends Handler<V> {

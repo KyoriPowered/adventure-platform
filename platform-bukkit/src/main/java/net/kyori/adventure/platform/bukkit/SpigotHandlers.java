@@ -31,7 +31,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -48,7 +47,7 @@ public class SpigotHandlers {
     try {
       final Field gsonField = Crafty.field(ComponentSerializer.class, "gson");
       return Crafty.injectGson((Gson) gsonField.get(null), builder -> {
-        GsonComponentSerializer.GSON_BUILDER_CONFIGURER.accept(builder);
+        BukkitPlatform.GSON_SERIALIZER.populator().accept(builder);
         builder.registerTypeAdapter(AdapterComponent.class, new Serializer());
       });
     } catch(NoSuchFieldException | IllegalAccessException ex) {
@@ -106,7 +105,7 @@ public class SpigotHandlers {
     if(BOUND) {
       return new BaseComponent[]{new AdapterComponent(component)};
     } else {
-      return ComponentSerializer.parse(GsonComponentSerializer.INSTANCE.serialize(component));
+      return ComponentSerializer.parse(BukkitPlatform.GSON_SERIALIZER.serialize(component));
     }
   }
 
