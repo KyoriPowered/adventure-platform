@@ -23,9 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.platform.impl.HandledAudience;
+import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
@@ -34,14 +32,17 @@ import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
 // TODO: implement Listener and use singletons
-public final class BukkitPlatform implements AdventurePlatform {
+public final class BukkitPlatform extends AdventurePlatformImpl implements Listener {
 
   // A derivative of the Gson serializer that will serialize text appropriately based on the server version
   /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
@@ -55,6 +56,7 @@ public final class BukkitPlatform implements AdventurePlatform {
   }
 
   // Type handlers
+  // TODO: re-add handlers into Bukkit audiences
 
   static HandlerCollection<? super CommandSender, ? extends Handler.Chat<? super CommandSender, ?>> CHAT = new HandlerCollection<>(new SpigotHandlers.Chat(),
     new CraftBukkitHandlers.Chat(), new BukkitHandlers.Chat());
@@ -66,62 +68,23 @@ public final class BukkitPlatform implements AdventurePlatform {
     new BukkitHandlers.PlaySound_NoCategory());
 
   private final Server server;
-  private final Audience console;
-  private final Audience players;
 
   public BukkitPlatform() {
     this(Bukkit.getServer());
   }
 
   public BukkitPlatform(final @NonNull Server server) {
-    this.server = requireNonNull(server, "bukkit server");
-    this.console = audience(server.getConsoleSender());
-    this.players = new PlayersAudience(server);
+    this.server = requireNonNull(server, "server");
+    // TODO: register as a Listener
   }
 
-  // TODO: ugly but it's here to test with until proper solution
-  public static Audience audience(final @NonNull Player player) {
-    return new HandledAudience<>(requireNonNull(player, "player"), CHAT, ACTION_BAR, TITLE, BOSS_BAR, PLAY_SOUND);
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
+  public void onPlayerLogin(PlayerLoginEvent event) {
+    this.add(new BukkitPlayerAudience(event.getPlayer()));
   }
 
-  public static Audience audience(final @NonNull CommandSender sender) {
-    requireNonNull(sender, "sender");
-    if(sender instanceof Player) {
-      return audience((Player) sender);
-    } else {
-      return new HandledAudience<>(sender, CHAT, null, null, null, null);
-    }
-  }
-
-  @Override
-  public @NonNull String name() {
-    return this.server.getBukkitVersion();
-  }
-
-  @Override
-  public @NonNull Audience console() {
-    return this.console;
-  }
-
-  @Override
-  public @NonNull Audience players() {
-    return this.players;
-  }
-
-  @Override
-  public @NonNull Audience player(final @NonNull UUID playerId) {
-    final Player player = this.server.getPlayer(playerId);
-    if (player == null) return Audience.empty();
-    return audience(player);
-  }
-
-  @Override
-  public @NonNull Audience permission(final @NonNull String permission) {
-    return new PermissibleAudience(this.server, permission);
-  }
-
-  @Override
-  public @NonNull Audience world(final @NonNull UUID worldId) {
-    return new WorldAudience(this.server, worldId);
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+  public void onPlayerQuit(PlayerQuitEvent event) {
+    this.remove(event.getPlayer().getUniqueId());
   }
 }

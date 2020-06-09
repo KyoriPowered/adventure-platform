@@ -23,108 +23,33 @@
  */
 package net.kyori.adventure.platform;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.UUID;
+import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
+
+import static java.util.Objects.requireNonNull;
 
 /**
- * A factory for getting {@link Audience}s.
+ * An entrypoint for getting an adventure platform.
  * @see AdventurePlatform
  */
 public final class Adventure {
   private Adventure() {}
-  private static final AdventurePlatform PROVIDER = AdventureProvider0.provide();
+  private static final Map<Key, AdventurePlatform> PROVIDERS = new ConcurrentSkipListMap<>(Key::compareTo);
 
   /**
-   * Gets an audience for all online players, including the server's console.
+   * Gets or creates an adventure platform.
    *
-   * <p>The audience is dynamically updated as players join and leave.</p>
-   *
-   * @return the players' and console audience
+   * @param key a unique key, typically a plugin name
+   * @return an adventure platform
    */
-  public static @NonNull Audience everyone() {
-    return PROVIDER.everyone();
-  }
-
-  /**
-   * Gets an audience for the server's console.
-   *
-   * @return the console audience
-   */
-  public static @NonNull Audience console() {
-    return PROVIDER.console();
-  }
-
-  /**
-   * Gets an audience for all online players.
-   *
-   * <p>The audience is dynamically updated as players join and leave.</p>
-   *
-   * @return the players' audience
-   */
-  public static @NonNull Audience players() {
-    return PROVIDER.players();
-  }
-
-  /**
-   * Gets an audience for an individual player.
-   *
-   * <p>If the player is not online, messages are silently dropped.</p>
-   *
-   * @param playerId a player uuid
-   * @return a player audience
-   */
-  public static @NonNull Audience player(@NonNull UUID playerId) {
-    return PROVIDER.player(playerId);
-  }
-
-  /**
-   * Gets or creates an audience containing all viewers with the provided permission.
-   *
-   * <p>The audience is dynamically updated as permissions change.</p>
-   *
-   * @param permission the permission to filter sending to
-   * @return a permissible audience
-   */
-  public static @NonNull Audience permission(@NonNull Key permission) {
-    return PROVIDER.permission(permission);
-  }
-
-  /**
-   * Gets or creates an audience containing all viewers with the provided permission.
-   *
-   * <p>The audience is dynamically updated as permissions change.</p>
-   *
-   * @param permission the permission to filter sending to
-   * @return a permissible audience
-   */
-  public static @NonNull Audience permission(@NonNull String permission) {
-    return PROVIDER.permission(permission);
-  }
-
-  /**
-   * Gets an audience for online players in a world, including the server's console.
-   *
-   * <p>The audience is dynamically updated as players join and leave.</p>
-   *
-   * @param worldId a world uuid
-   * @return the world's audience
-   */
-  public static @NonNull Audience world(@NonNull UUID worldId) {
-    return PROVIDER.world(worldId);
-  }
-
-  /**
-   * Gets an audience for online players on a server, including the server's console.
-   *
-   * <p>If the platform is not a proxy, the audience defaults to everyone.</p>
-   *
-   * @param serverName a server name
-   * @return a server's audience
-   */
-  public static @NonNull Audience server(@NonNull String serverName) {
-    return PROVIDER.server(serverName);
+  public static AdventurePlatform of(final @NonNull Key key) {
+    AdventurePlatform platform = PROVIDERS.get(requireNonNull(key, "platform key"));
+    if (platform == null) {
+      platform = PROVIDERS.computeIfAbsent(key, key1 -> AdventureProvider0.provide());
+    }
+    return platform;
   }
 }

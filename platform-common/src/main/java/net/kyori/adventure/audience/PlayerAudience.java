@@ -21,37 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.audience;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
-import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
-import org.bukkit.permissions.Permissible;
-import org.bukkit.plugin.PluginManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static com.google.common.collect.Iterables.transform;
-import static java.util.Objects.requireNonNull;
+import java.util.UUID;
 
-final class PermissibleAudience implements MultiAudience {
-  private final PluginManager pluginManager;
-  private final String permission;
+/**
+ * An audience that represents an individual player.
+ */
+public interface PlayerAudience extends SenderAudience {
+    /**
+     * Gets the player's uuid.
+     *
+     * @return a player uuid
+     */
+    @NonNull UUID getId();
 
-  PermissibleAudience(final @NonNull Server server, final @NonNull String permission) {
-    this.pluginManager = requireNonNull(server, "server").getPluginManager();
-    this.permission = requireNonNull(permission, "permission");
-  }
+    /**
+     * Gets the uuid of the player's world.
+     *
+     * @return a world uuid, or null if unknown
+     */
+    @Nullable UUID getWorldId();
 
-  @Override
-  public @NonNull Iterable<Audience> audiences() {
-    return transform(this.pluginManager.getPermissionSubscriptions(this.permission), this::audience);
-  }
-
-  private Audience audience(final @NonNull Permissible permissible) {
-    if (permissible.hasPermission(this.permission) && permissible instanceof CommandSender) {
-      return BukkitPlatform.audience((CommandSender) permissible);
-    }
-    return Audience.empty();
-  }
+    /**
+     * Gets the name of the player's server.
+     * @return a server name, or null if unknown or not on a proxy
+     */
+    @Nullable String getServerName();
 }

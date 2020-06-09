@@ -24,8 +24,9 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import java.time.Duration;
+import java.util.UUID;
 
-import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.PlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -36,17 +37,36 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class PlayerAudience implements Audience {
-  private final @NonNull ProxiedPlayer player;
+import static java.util.Objects.requireNonNull;
 
-  public PlayerAudience(final @NonNull ProxiedPlayer player) {
+public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
+
+  private final ProxyServer proxy;
+  private final UUID playerId;
+  private final ProxiedPlayer player;
+
+  public BungeePlayerAudience(final @NonNull ProxyServer proxy, final @NonNull ProxiedPlayer player) {
+    super(player, requireNonNull(player, "player").getLocale());
+    this.proxy = requireNonNull(proxy, "proxy");
+    this.playerId = player.getUniqueId();
     this.player = player;
   }
 
   @Override
-  public void sendMessage(final @NonNull Component message) {
-    this.player.sendMessage(ChatMessageType.SYSTEM, TextAdapter.toBungeeCord(message)); // todo: adjust by player protocol version
+  public @NonNull UUID getId() {
+    return playerId;
+  }
+
+  @Override
+  public @Nullable UUID getWorldId() {
+    return null; // Bungee does not know about a player's world
+  }
+
+  @Override
+  public @Nullable String getServerName() {
+    return player.isConnected() ? player.getServer().getInfo().getName() : null;
   }
 
   @Override
@@ -79,7 +99,7 @@ public class PlayerAudience implements Audience {
 
   @Override
   public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
-    // see above
+    // TODO: See above
   }
 
   @Override
@@ -93,7 +113,7 @@ public class PlayerAudience implements Audience {
 
   @Override
   public void showTitle(final @NonNull Title title) {
-    final net.md_5.bungee.api.Title bungee = ProxyServer.getInstance().createTitle();
+    final net.md_5.bungee.api.Title bungee = proxy.createTitle();
     if (!TextComponent.empty().equals(title.title())) {
       bungee.title(TextAdapter.toBungeeCord(title.title()));
     }
@@ -114,11 +134,11 @@ public class PlayerAudience implements Audience {
 
   @Override
   public void clearTitle() {
-    this.player.sendTitle(ProxyServer.getInstance().createTitle().clear());
+    this.player.sendTitle(proxy.createTitle().clear());
   }
 
   @Override
   public void resetTitle() {
-    this.player.sendTitle(ProxyServer.getInstance().createTitle().reset());
+    this.player.sendTitle(proxy.createTitle().reset());
   }
 }

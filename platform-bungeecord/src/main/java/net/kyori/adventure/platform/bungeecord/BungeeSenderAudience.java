@@ -24,21 +24,46 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.SenderAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.Connection;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-public class ConsoleAudience implements Audience {
-  private final @NonNull CommandSender sender;
+public class BungeeSenderAudience implements SenderAudience {
 
-  public ConsoleAudience(final @NonNull CommandSender sender) {
-    this.sender = sender;
+  private final CommandSender sender;
+  private final Locale locale;
+  private final boolean console;
+
+  public BungeeSenderAudience(final @NonNull CommandSender sender, final @Nullable Locale locale) {
+    this.sender = requireNonNull(sender, "command sender");
+    this.locale = locale;
+    this.console = !(sender instanceof Connection);
+  }
+
+  @Override
+  public @Nullable Locale getLocale() {
+    return locale;
+  }
+
+  @Override
+  public boolean hasPermission(@NonNull String permission) {
+    return this.sender.hasPermission(requireNonNull(permission, "permission"));
+  }
+
+  @Override
+  public boolean isConsole() {
+    return console;
   }
 
   @Override
@@ -47,32 +72,47 @@ public class ConsoleAudience implements Audience {
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) { }
+  public void showBossBar(final @NonNull BossBar bar) {
+    // No-op
+  }
 
   @Override
-  public void hideBossBar(final @NonNull BossBar bar) { }
+  public void hideBossBar(final @NonNull BossBar bar) {
+    // No-op
+  }
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    sendMessage(message);
+    // No-op
   }
 
   @Override
-  public void playSound(final @NonNull Sound sound) { }
+  public void playSound(final @NonNull Sound sound) {
+    // No-op
+  }
 
   @Override
   public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
+    // No-op
   }
 
   @Override
-  public void stopSound(final @NonNull SoundStop stop) { }
+  public void stopSound(final @NonNull SoundStop stop) {
+    // No-op
+  }
 
   @Override
-  public void showTitle(final @NonNull Title title) { }
+  public void showTitle(final @NonNull Title title) {
+    // No-op
+  }
 
   @Override
-  public void clearTitle() { }
+  public void clearTitle() {
+    // No-op
+  }
 
   @Override
-  public void resetTitle() { }
+  public void resetTitle() {
+    // No-op
+  }
 }

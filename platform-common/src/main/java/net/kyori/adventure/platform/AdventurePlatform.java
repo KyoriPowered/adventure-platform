@@ -27,8 +27,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -37,33 +35,13 @@ import java.util.UUID;
 public interface AdventurePlatform {
 
   /**
-   * Gets the name of the platform.
-   *
-   * @return the platform name
-   */
-  @NonNull String name();
-
-  /**
-   * Gets a mutable list of audience renderers.
-   *
-   * <p>Can be used to customize text for audiences, like translating by locale.</p>
-   *
-   * @return a mutable list of audience renderers
-   */
-  default @NonNull List<AudienceRenderer> renderers() {
-    return Collections.emptyList(); // FIXME: remove default, move to a BasePlatform
-  }
-
-  /**
    * Gets an audience for all online players, including the server's console.
    *
    * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' and console audience
    */
-  default @NonNull Audience everyone() {
-    return Audience.of(console(), players());
-  }
+  @NonNull Audience all();
 
   /**
    * Gets an audience for the server's console.
@@ -131,7 +109,5 @@ public interface AdventurePlatform {
    * @param serverName a server name
    * @return a server's audience
    */
-  default @NonNull Audience server(@NonNull String serverName) {
-    return everyone();
-  }
+  @NonNull Audience server(@NonNull String serverName);
 }

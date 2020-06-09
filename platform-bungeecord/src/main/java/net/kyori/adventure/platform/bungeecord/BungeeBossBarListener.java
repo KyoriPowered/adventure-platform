@@ -37,7 +37,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class BungeeBossBarListener implements net.kyori.adventure.bossbar.BossBar.Listener {
+/* package */ final class BungeeBossBarListener implements BossBar.Listener {
   private static final int ACTION_CREATE = 0;
   private static final int ACTION_REMOVE = 1;
   private static final int ACTION_PERCENT = 2;

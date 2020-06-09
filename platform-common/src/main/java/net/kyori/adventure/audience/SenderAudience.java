@@ -21,25 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.audience;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
-import org.bukkit.Server;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static com.google.common.collect.Iterables.transform;
-import static java.util.Objects.requireNonNull;
+import java.util.Locale;
 
-final class PlayersAudience implements MultiAudience {
-  private final Server server;
+/**
+ * An audience that represents a "command sender."
+ */
+public interface SenderAudience extends Audience {
+    /**
+     * Gets the locale of the audience.
+     *
+     * @return a locale, or null if unknown
+     */
+    @Nullable Locale getLocale();
 
-  public PlayersAudience(final @NonNull Server server) {
-    this.server = requireNonNull(server, "server");
-  }
+    /**
+     * Gets if the audience has permission for a permission node.
+     *
+     * @param permission a permission node
+     * @return if the audience has permission
+     */
+    boolean hasPermission(final @NonNull String permission);
 
-  @Override
-  public @NonNull Iterable<Audience> audiences() {
-    return transform(this.server.getOnlinePlayers(), BukkitPlatform::audience);
-  }
+    /**
+     * Gets if the audience is a "console."
+     *
+     * @return if the audience is console.
+     */
+    boolean isConsole();
 }

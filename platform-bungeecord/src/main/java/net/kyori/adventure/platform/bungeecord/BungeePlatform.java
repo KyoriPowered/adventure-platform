@@ -23,66 +23,31 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.event.EventHandler;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
-public class BungeePlatform implements AdventurePlatform {
-
-  public static @NonNull Audience player(final @NonNull ProxiedPlayer player) {
-    return new PlayerAudience(requireNonNull(player, "player"));
-  }
+public class BungeePlatform extends AdventurePlatformImpl {
 
   private final ProxyServer proxy;
-  private final Audience console;
-  private final Audience players;
 
   public BungeePlatform(final @NonNull ProxyServer proxy) {
     this.proxy = requireNonNull(proxy, "proxy");
-    this.console = new ConsoleAudience(proxy.getConsole());
-    this.players = new PlayersAudience(proxy);
+    // TODO: register as a Listener
   }
 
-  @Override
-  public @NonNull String name() {
-    return proxy.getName() + " " + proxy.getVersion();
+  @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
+  public void onLogin(PostLoginEvent event) {
+    this.add(new BungeePlayerAudience(proxy, event.getPlayer()));
   }
 
-  @Override
-  public @NonNull Audience console() {
-    return console;
-  }
-
-  @Override
-  public @NonNull Audience players() {
-    return players;
-  }
-
-  @Override
-  public @NonNull Audience player(final @NonNull UUID playerId) {
-    final ProxiedPlayer player = proxy.getPlayer(playerId);
-    if (player == null) return Audience.empty();
-    return new PlayerAudience(player);
-  }
-
-  @Override
-  public @NonNull Audience permission(final @NonNull String permission) {
-    return Audience.empty(); // TODO
-  }
-
-  @Override
-  public @NonNull Audience server(final @NonNull String serverName) {
-    return new PlayersAudience(proxy, requireNonNull(serverName, "server name"));
-  }
-
-  @Override
-  public @NonNull Audience world(final @NonNull UUID worldId) {
-    return Audience.empty(); // Bungee has no concept of worlds, so silently fail
+  @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
+  public void onQuit(PlayerDisconnectEvent event) {
+    this.remove(event.getPlayer().getUniqueId());
   }
 }

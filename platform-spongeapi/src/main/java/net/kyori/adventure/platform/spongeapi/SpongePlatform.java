@@ -125,8 +125,8 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull String name() {
-    return Sponge.getPlatform().toString();
+  public @NonNull Audience all() {
+    return Audience.empty(); // TODO
   }
 
   @Override
@@ -136,7 +136,7 @@ public class SpongePlatform implements AdventurePlatform {
 
   @Override
   public @NonNull Audience players() {
-    return null;
+    return Audience.empty(); // TODO
   }
 
   @Override
@@ -155,5 +155,10 @@ public class SpongePlatform implements AdventurePlatform {
   @Override
   public @NonNull Audience world(final @NonNull UUID worldId) {
     return Audience.empty(); // TODO
+  }
+
+  @Override
+  public @NonNull Audience server(@NonNull String serverName) {
+    return Audience.empty();
   }
 }
