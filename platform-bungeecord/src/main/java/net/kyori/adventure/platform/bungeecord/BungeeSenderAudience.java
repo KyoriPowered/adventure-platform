@@ -28,6 +28,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.BungeeComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.Connection;
@@ -67,7 +68,7 @@ public class BungeeSenderAudience implements SenderAudience {
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    this.sender.sendMessage(TextAdapter.toBungeeCord(requireNonNull(message, "message")));
+    this.sender.sendMessage(BungeeComponentSerializer.INSTANCE.serialize(requireNonNull(message, "message")));
   }
 
   @Override

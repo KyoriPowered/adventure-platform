@@ -28,6 +28,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
@@ -45,7 +46,7 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    this.receiver.sendMessage(SpongePlatform.sponge(message));
+    this.receiver.sendMessage(SpongeComponentSerializer.INSTANCE.serialize(message));
   }
 
   @Override
@@ -57,7 +58,7 @@ import static java.util.Objects.requireNonNull;
   @Override
   public void sendActionBar(final @NonNull Component message) {
     if(this.receiver instanceof ChatTypeMessageReceiver) {
-      ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, SpongePlatform.sponge(message));
+      ((ChatTypeMessageReceiver) this.receiver).sendMessage(ChatTypes.ACTION_BAR, SpongeComponentSerializer.INSTANCE.serialize(message));
     } else {
       sendMessage(message);
     }

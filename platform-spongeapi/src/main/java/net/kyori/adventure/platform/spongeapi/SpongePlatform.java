@@ -32,7 +32,8 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
+import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
+import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.util.NameMap;
@@ -92,37 +93,6 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   private SpongePlatform() { }
-
-  /**
-   * Converts {@code component} to the {@link Text} format used by Sponge.
-   *
-   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
-   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
-   * {@link org.spongepowered.api.text.LiteralText}.</p>
-   *
-   * <p>The {@code sendComponent} methods should be used instead of this method when possible.</p>
-   *
-   * @param component the component
-   * @return the Text representation of the component
-   */
-  public static @NonNull Text sponge(final @NonNull Component component) {
-    return TextSerializers.JSON.deserialize(VersionedGsonComponentSerializer.PRE_1_16.serialize(requireNonNull(component, "component")));
-  }
-
-  /**
-   * Converts {@code text} to Adventure's own {@link Component} format
-   *
-   * <p>The adapter makes no guarantees about the underlying structure/type of the components.
-   * i.e. is it not guaranteed that a {@link net.kyori.adventure.text.TextComponent} will map to a
-   * {@link org.spongepowered.api.text.LiteralText}.</p>
-   *
-   *
-   * @param text the Sponge text
-   * @return the Component representation of the text
-   */
-  public static @NonNull Component adventure(final @NonNull Text text) {
-    return GsonComponentSerializer.INSTANCE.deserialize(TextSerializers.JSON.serialize(requireNonNull(text, "text")));
-  }
 
   @Override
   public @NonNull Audience all() {

@@ -26,7 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
+import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;

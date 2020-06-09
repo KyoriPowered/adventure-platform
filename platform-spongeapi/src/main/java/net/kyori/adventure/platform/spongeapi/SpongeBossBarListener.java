@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ import org.spongepowered.api.entity.living.player.Player;
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    updateBar(bar, newName, (val, sponge) -> sponge.setName(SpongePlatform.sponge(val)));
+    updateBar(bar, newName, (val, sponge) -> sponge.setName(SpongeComponentSerializer.INSTANCE.serialize(val)));
   }
 
   @Override
@@ -88,7 +89,7 @@ import org.spongepowered.api.entity.living.player.Player;
     this.bars.computeIfAbsent(adventure, key -> {
       key.addListener(this);
       return ServerBossBar.builder()
-        .name(SpongePlatform.sponge(key.name()))
+        .name(SpongeComponentSerializer.INSTANCE.serialize(key.name()))
         .percent(key.percent())
         .color(SpongePlatform.sponge(BossBarColor.class, key.color(), BossBar.Color.NAMES))
         .overlay(SpongePlatform.sponge(BossBarOverlay.class, key.overlay(), BossBar.Overlay.NAMES))

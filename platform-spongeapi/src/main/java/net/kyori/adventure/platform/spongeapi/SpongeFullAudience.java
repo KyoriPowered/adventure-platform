@@ -30,6 +30,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -105,8 +106,8 @@ import static net.kyori.adventure.platform.impl.Handler.Title.ticks;
   public void showTitle(final @NonNull Title title) {
     requireNonNull(title, "title");
     this.receiver.sendTitle(org.spongepowered.api.text.title.Title.builder()
-      .title(SpongePlatform.sponge(title.title()))
-      .subtitle(SpongePlatform.sponge(title.subtitle()))
+      .title(SpongeComponentSerializer.INSTANCE.serialize(title.title()))
+      .subtitle(SpongeComponentSerializer.INSTANCE.serialize(title.subtitle()))
       .fadeIn(ticks(title.fadeInTime()))
       .fadeOut(ticks(title.fadeOutTime()))
       .stay(ticks(title.stayTime()))

@@ -32,6 +32,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.BungeeComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.ProxyServer;
@@ -82,7 +83,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    this.player.sendMessage(ChatMessageType.ACTION_BAR, TextAdapter.toBungeeCord(message));
+    this.player.sendMessage(ChatMessageType.ACTION_BAR, BungeeComponentSerializer.INSTANCE.serialize(message));
   }
 
   @Override
@@ -116,10 +117,10 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
   public void showTitle(final @NonNull Title title) {
     final net.md_5.bungee.api.Title bungee = proxy.createTitle();
     if (!TextComponent.empty().equals(title.title())) {
-      bungee.title(TextAdapter.toBungeeCord(title.title()));
+      bungee.title(BungeeComponentSerializer.INSTANCE.serialize(title.title()));
     }
     if (!TextComponent.empty().equals(title.subtitle())) {
-      bungee.subTitle(TextAdapter.toBungeeCord(title.subtitle()));
+      bungee.subTitle(BungeeComponentSerializer.INSTANCE.serialize(title.subtitle()));
     }
 
     bungee.fadeIn(ticks(title.fadeInTime()))
