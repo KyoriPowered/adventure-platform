@@ -12,5 +12,6 @@ dependencies {
   api 'net.kyori:adventure-text-serializer-gson'
   api 'net.kyori:adventure-text-serializer-legacy'
   implementation project(":adventure-platform-impl-common")
+  implementation project(":adventure-platform-viaversion")
   compileOnly 'com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT'
 }

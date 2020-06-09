@@ -69,25 +69,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   /* package */ static class BossBar implements Handler.BossBar<Player> {
     /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
     private static final BukkitBossBarListener LISTENERS = new BukkitBossBarListener();
-    
-    /* package */ BossBar() {
-      final Plugin fakePlugin = (Plugin) Proxy.newProxyInstance(BukkitPlatform.class.getClassLoader(), new Class<?>[] {Plugin.class}, (proxy, method, args) -> {
-        switch(method.getName()) {
-          case "isEnabled":
-            return true;
-          case "equals":
-            return proxy == args[0];
-          default:
-            return null; // yeet
-        }
-      });
-      final Listener holder = new Listener() {};
 
-      // Remove players from boss bars
-      Bukkit.getPluginManager().registerEvent(PlayerQuitEvent.class, holder, EventPriority.NORMAL, (listener, event) -> {
-        LISTENERS.unsubscribeFromAll(((PlayerQuitEvent) event).getPlayer());
-      }, fakePlugin, false);
-      
+    static void handleQuit(final @NonNull Player player) {
+      if(SUPPORTED) {
+        LISTENERS.unsubscribeFromAll(player);
+      }
     }
 
     @Override

@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nonnegative;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.qual.ForName;
@@ -275,4 +279,18 @@ import static java.util.Objects.requireNonNull;
     }
     return 0;
   }
+
+  // Events //
+  private static final Listener EVENT_LISTENER = new Listener() {};
+
+  static <T extends Event> void registerEvent(final @NonNull Plugin owner, final Class<T> type, final Consumer<T> handler) {
+    registerEvent(owner, type, EventPriority.NORMAL, true, handler);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T extends Event> void registerEvent(final @NonNull Plugin owner, final Class<T> type, final EventPriority priority, final boolean ignoreCancelled, final Consumer<T> handler) {
+    requireNonNull(handler, "handler");
+    Bukkit.getServer().getPluginManager().registerEvent(type, EVENT_LISTENER, priority, (listener, event) -> handler.accept((T) event), owner, ignoreCancelled);
+  }
+
 }

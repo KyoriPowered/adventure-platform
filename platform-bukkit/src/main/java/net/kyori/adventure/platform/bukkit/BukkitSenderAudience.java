@@ -24,11 +24,9 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.platform.audience.SenderAudience;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.title.Title;
+import net.kyori.adventure.platform.impl.HandledAudience;
+import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -38,14 +36,18 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-class BukkitSenderAudience implements SenderAudience {
+class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements SenderAudience {
 
-    private final CommandSender sender;
     private final Locale locale;
     private final boolean console;
 
-    BukkitSenderAudience(final @NonNull CommandSender sender, final @Nullable Locale locale) {
-        this.sender = requireNonNull(sender, "command sender");
+    BukkitSenderAudience(final @NonNull S sender, final @Nullable Locale locale,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.Title<? super S>> title,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.BossBar<? super S>> bossBar,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound) {
+        super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound);
         this.locale = locale;
         this.console = sender instanceof ConsoleCommandSender;
     }
@@ -57,7 +59,7 @@ class BukkitSenderAudience implements SenderAudience {
 
     @Override
     public boolean hasPermission(final @NonNull String permission) {
-        return sender.hasPermission(requireNonNull(permission, "permission"));
+        return this.viewer.hasPermission(requireNonNull(permission, "permission"));
     }
 
     @Override
@@ -65,53 +67,4 @@ class BukkitSenderAudience implements SenderAudience {
         return console;
     }
 
-    @Override
-    public void sendMessage(@NonNull Component message) {
-        // TODO
-    }
-
-    @Override
-    public void sendActionBar(@NonNull Component message) {
-        // No-op
-    }
-
-    @Override
-    public void showTitle(@NonNull Title title) {
-        // No-op
-    }
-
-    @Override
-    public void clearTitle() {
-        // No-op
-    }
-
-    @Override
-    public void resetTitle() {
-        // No-op
-    }
-
-    @Override
-    public void showBossBar(@NonNull BossBar bar) {
-        // No-op
-    }
-
-    @Override
-    public void hideBossBar(@NonNull BossBar bar) {
-        // No-op
-    }
-
-    @Override
-    public void playSound(@NonNull Sound sound) {
-        // No-op
-    }
-
-    @Override
-    public void playSound(@NonNull Sound sound, double x, double y, double z) {
-        // No-op
-    }
-
-    @Override
-    public void stopSound(@NonNull SoundStop stop) {
-        // No-op
-    }
 }

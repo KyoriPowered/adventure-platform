@@ -44,6 +44,13 @@ subprojects {
     maven {
       url 'https://oss.sonatype.org/content/groups/public/'
     }
+    maven {
+      name = 'viaversion'
+      url = 'https://repo.viaversion.com'
+      /*content { // when we get newer gradle
+        includeGroup "us.myles"
+      }*/
+    }
   }
 
   dependencies {

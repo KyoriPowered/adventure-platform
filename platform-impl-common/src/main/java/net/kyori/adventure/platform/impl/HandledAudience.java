@@ -35,7 +35,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import static java.util.Objects.requireNonNull;
 
 public class HandledAudience<V> implements Audience {
-  private final V viewer;
+  protected final V viewer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
   private final Handler.@Nullable ActionBar<? super V, ?> actionBarHandler;
   private final Handler.@Nullable Title<? super V> titleHandler;
