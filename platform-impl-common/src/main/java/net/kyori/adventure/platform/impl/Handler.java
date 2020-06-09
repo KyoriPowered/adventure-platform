@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.impl;
 
 import java.time.Duration;
+import java.util.UUID;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -57,6 +58,8 @@ public interface Handler<V> {
   }
 
   interface Chat<V, S> extends Handler<V> {
+    UUID NIL_UUID = new UUID(0, 0);
+
     S initState(@NonNull Component component);
     
     void send(@NonNull V target, @NonNull S message);

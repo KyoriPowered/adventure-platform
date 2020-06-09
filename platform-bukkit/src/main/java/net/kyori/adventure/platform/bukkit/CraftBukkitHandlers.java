@@ -107,7 +107,6 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.enumValue(CLASS_MESSAGE_TYPE, "CHAT", 0);
   private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
-  private static final UUID NIL_UUID = new UUID(0, 0);
   private static final byte LEGACY_CHAT_POSITION_ACTIONBAR = 2;
   private static final Gson MC_TEXT_GSON;
 
