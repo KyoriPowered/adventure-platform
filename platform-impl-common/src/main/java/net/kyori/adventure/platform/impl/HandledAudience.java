@@ -42,48 +42,58 @@ public class HandledAudience<V> implements Audience {
   private final Handler.@Nullable BossBar<? super V> bossBarHandler;
   private final Handler.@Nullable PlaySound<? super V> soundHandler;
 
-  public HandledAudience(final @NonNull V viewer, final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat, final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
-                            final @Nullable HandlerCollection<? super V, ? extends Handler.Title<? super V>> title, final @Nullable HandlerCollection<? super V, ? extends Handler.BossBar<? super V>> bossBar, final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound) {
+  public HandledAudience(
+    final @NonNull V viewer,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.Title<? super V>> title,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.BossBar<? super V>> bossBar,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound
+  ) {
     this.viewer = requireNonNull(viewer, "viewer");
-    this.chatHandler = chat == null ? null : chat.get(this.viewer);
-    this.actionBarHandler = actionBar == null ? null : actionBar.get(this.viewer);
-    this.titleHandler = title == null ? null : title.get(this.viewer);
-    this.bossBarHandler = bossBar == null ? null : bossBar.get(this.viewer);
-    this.soundHandler = sound == null ? null : sound.get(this.viewer);
+    this.chatHandler = handler(chat, viewer);
+    this.actionBarHandler = handler(actionBar, viewer);
+    this.titleHandler = handler(title, viewer);
+    this.bossBarHandler = handler(bossBar, viewer);
+    this.soundHandler = handler(sound, viewer);
+  }
+
+  private static <V, H extends Handler<? super V>> H handler(final HandlerCollection<? super V, H> collection, final V viewer) {
+    return collection != null ? collection.get(viewer) : null;
   }
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    sendMessage0(this.chatHandler, requireNonNull(message, "message"));
+    this.sendMessage0(this.chatHandler, requireNonNull(message, "message"));
   }
 
   private <S> void sendMessage0(final Handler.@Nullable Chat<? super V, S> handler, final @NonNull Component message) {
-    if (handler != null) {
+    if(handler != null) {
       handler.send(this.viewer, handler.initState(message));
     }
   }
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    if (this.bossBarHandler != null) {
+    if(this.bossBarHandler != null) {
       this.bossBarHandler.show(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    if (this.bossBarHandler != null) {
+    if(this.bossBarHandler != null) {
       this.bossBarHandler.hide(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    sendActionBar0(this.actionBarHandler, requireNonNull(message, "message"));
+    this.sendActionBar0(this.actionBarHandler, requireNonNull(message, "message"));
   }
 
   private <S> void sendActionBar0(final Handler.@Nullable ActionBar<? super V, S> handler, final @NonNull Component message) {
-    if (handler != null) {
+    if(handler != null) {
       handler.send(this.viewer, handler.initState(message));
     }
   }

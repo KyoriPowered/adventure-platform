@@ -58,9 +58,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
      * @param time The time to send
      * @param consumer Time builder
      */
-    private static void applyTime(Duration time, IntConsumer consumer) {
+    private static void applyTime(final Duration time, final IntConsumer consumer) {
       final int ticks = Handler.Title.ticks(time);
-      if(ticks != -1) {
+      if(ticks != Title.DURATION_PRESERVE) {
         consumer.accept(ticks);
       }
     }

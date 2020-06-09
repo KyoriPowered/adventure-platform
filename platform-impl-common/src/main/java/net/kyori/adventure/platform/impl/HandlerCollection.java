@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.impl;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,22 +35,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @param <H> handler type
  */
 public class HandlerCollection<V, H extends Handler<V>> {
-  private final @NonNull List<H> activeHandlers;
+  private final @NonNull List<H> handlers;
 
   @SafeVarargs
-  public HandlerCollection(final @NonNull H @NonNull... options) {
-    this.activeHandlers = Stream.of(options)
+  public HandlerCollection(final @NonNull H@NonNull... handlers) {
+    this.handlers = Stream.of(handlers)
       .filter(Handler::isAvailable)
       .collect(Collectors.toList());
   }
 
   public @Nullable H get(final V viewer) {
-    for (H handler : activeHandlers) {
-      if (handler.isAvailable(viewer)) {
+    for(final H handler : this.handlers) {
+      if(handler.isAvailable(viewer)) {
         return handler;
       }
     }
     return null;
   }
-  
 }

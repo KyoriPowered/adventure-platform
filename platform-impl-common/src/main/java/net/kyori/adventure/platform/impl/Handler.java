@@ -53,22 +53,22 @@ public interface Handler<V> {
    * @param viewer viewer to check
    * @return availability for this viewer
    */
-  default boolean isAvailable(@NonNull V viewer) {
+  default boolean isAvailable(final @NonNull V viewer) {
     return true;
   }
 
   interface Chat<V, S> extends Handler<V> {
     UUID NIL_UUID = new UUID(0, 0);
 
-    S initState(@NonNull Component component);
+    S initState(final @NonNull Component component);
     
-    void send(@NonNull V target, @NonNull S message);
+    void send(final @NonNull V target, final @NonNull S message);
   }
 
   interface ActionBar<V, S> extends Handler<V> {
-    S initState(@NonNull Component message);
+    S initState(final @NonNull Component message);
     
-    void send(@NonNull V viewer, @NonNull S message);
+    void send(final @NonNull V viewer, final @NonNull S message);
   }
 
   interface Title<V> extends Handler<V> {
@@ -77,12 +77,11 @@ public interface Handler<V> {
      */
     int DURATION_PRESERVE = -1;
 
+    void send(final @NonNull V viewer, final net.kyori.adventure.title.@NonNull Title title);
 
-    void send(@NonNull V viewer, net.kyori.adventure.title.@NonNull Title title);
+    void clear(final @NonNull V viewer);
 
-    void clear(@NonNull V viewer);
-
-    void reset(@NonNull V viewer);
+    void reset(final @NonNull V viewer);
     
     static int ticks(final @NonNull Duration time) {
       return time.isNegative() ? DURATION_PRESERVE : (int) Math.ceil(time.toMillis() / 50.0);
@@ -90,16 +89,15 @@ public interface Handler<V> {
   }
 
   interface BossBar<V> extends Handler<V> {
-    void show(@NonNull V viewer, net.kyori.adventure.bossbar.@NonNull BossBar bar);
-    void hide(@NonNull V viewer, net.kyori.adventure.bossbar.@NonNull BossBar bar);
+    void show(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar);
+    void hide(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar);
   }
   
   interface PlaySound<V> extends Handler<V> {
-    void play(@NonNull V viewer, @NonNull Sound sound);
+    void play(final @NonNull V viewer, final @NonNull Sound sound);
     
-    void play(@NonNull V viewer, @NonNull Sound sound, double x, double y, double z);
+    void play(final @NonNull V viewer, final @NonNull Sound sound, final double x, final double y, final double z);
     
-    void stop(@NonNull V viewer, @NonNull SoundStop sound);
+    void stop(final @NonNull V viewer, final @NonNull SoundStop sound);
   }
-
 }
