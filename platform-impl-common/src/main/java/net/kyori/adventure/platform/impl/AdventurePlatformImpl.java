@@ -25,8 +25,8 @@ package net.kyori.adventure.platform.impl;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.audience.PlayerAudience;
-import net.kyori.adventure.audience.SenderAudience;
+import net.kyori.adventure.platform.audience.PlayerAudience;
+import net.kyori.adventure.platform.audience.SenderAudience;
 import net.kyori.adventure.platform.AdventurePlatform;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

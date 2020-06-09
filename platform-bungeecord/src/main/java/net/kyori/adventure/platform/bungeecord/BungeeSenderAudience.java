@@ -23,8 +23,7 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.SenderAudience;
+import net.kyori.adventure.platform.audience.SenderAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;

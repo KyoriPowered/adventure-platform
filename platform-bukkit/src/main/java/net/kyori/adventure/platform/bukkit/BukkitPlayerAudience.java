@@ -23,7 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.audience.PlayerAudience;
+import net.kyori.adventure.platform.audience.PlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;

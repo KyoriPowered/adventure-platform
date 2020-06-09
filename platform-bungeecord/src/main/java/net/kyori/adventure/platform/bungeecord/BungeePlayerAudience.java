@@ -26,7 +26,7 @@ package net.kyori.adventure.platform.bungeecord;
 import java.time.Duration;
 import java.util.UUID;
 
-import net.kyori.adventure.audience.PlayerAudience;
+import net.kyori.adventure.platform.audience.PlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
