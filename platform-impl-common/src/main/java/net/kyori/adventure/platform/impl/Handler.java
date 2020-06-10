@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.impl;
 
 import java.time.Duration;
+import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -59,6 +60,9 @@ public interface Handler<V> {
 
   interface Chat<V, S> extends Handler<V> {
     UUID NIL_UUID = new UUID(0, 0);
+    byte TYPE_CHAT = 0;
+    byte TYPE_SYSTEM = 1;
+    byte TYPE_ACTIONBAR = 2;
 
     S initState(final @NonNull Component component);
     
@@ -89,6 +93,57 @@ public interface Handler<V> {
   }
 
   interface BossBar<V> extends Handler<V> {
+    // backet actions
+    int ACTION_ADD = 0; // (name: String, percent: float, color: varint, overlay: varint, flags: ubyte)
+    int ACTION_REMOVE = 1; // ()
+    int ACTION_PERCENT = 2; // (float)
+    int ACTION_NAME = 3; // (String)
+    int ACTION_STYLE = 4; // (color: varint, overlay: varint)
+    int ACTION_FLAGS = 5; // (thickenFog | dragonMusic | darkenSky): ubyte
+
+    // flags
+    byte FLAG_DARKEN_SCREEN = 1;
+    byte FLAG_BOSS_MUSIC = 1 << 1;
+    byte FLAG_CREATE_WORLD_FOG = 1 << 2;
+
+    static byte bitmaskFlags(final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flags) {
+      byte ret = 0;
+      if(flags.contains(net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN)) {
+        ret |= FLAG_DARKEN_SCREEN;
+      }
+      if(flags.contains(net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC)) {
+        ret |= FLAG_BOSS_MUSIC;
+      }
+      if(flags.contains(net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG)) {
+        ret |= FLAG_CREATE_WORLD_FOG;
+      }
+      return ret;
+    }
+
+    static int color(final net.kyori.adventure.bossbar.BossBar.Color color) {
+      switch(color) {
+        case PINK: return 0;
+        case BLUE: return 1;
+        case RED: return 2;
+        case GREEN: return 3;
+        case YELLOW: return 4;
+        case WHITE: return 6;
+        case PURPLE: /* fall-through, out of order */
+        default: return 5;
+      }
+    }
+
+    static int overlay(final net.kyori.adventure.bossbar.BossBar.Overlay overlay) {
+      switch(overlay) {
+        case NOTCHED_6: return 1;
+        case NOTCHED_10: return 2;
+        case NOTCHED_12: return 3;
+        case NOTCHED_20: return 4;
+        case PROGRESS: /* fall-through */
+        default: return 0;
+      }
+    }
+
     void show(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar);
     void hide(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar);
   }

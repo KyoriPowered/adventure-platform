@@ -40,8 +40,6 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.PacketWrapper;
-import us.myles.ViaVersion.api.boss.BossColor;
-import us.myles.ViaVersion.api.boss.BossStyle;
 import us.myles.ViaVersion.api.data.UserConnection;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
 import us.myles.ViaVersion.api.protocol.ProtocolRegistry;
@@ -144,17 +142,13 @@ public final class ViaVersionHandlers {
   }
 
   public static class Chat<V> extends ConnectionBased<V> implements Handler.Chat<V, String> {
-    protected static final byte CHAT_TYPE_CHAT = 0;
-    protected static final byte CHAT_TYPE_SYSTEM = 1;
-    protected static final byte CHAT_TYPE_ACTIONBAR = 2;
-
     private final byte chatType;
 
     public Chat(final ViaAPIProvider<? super V> provider) {
-      this(provider, CHAT_TYPE_SYSTEM);
+      this(provider, TYPE_SYSTEM);
     }
 
-    protected Chat(final ViaAPIProvider<? super V> provider, byte chatType) {
+    /* package */ Chat(final ViaAPIProvider<? super V> provider, byte chatType) {
       super(provider);
       this.chatType = chatType;
     }
@@ -176,7 +170,7 @@ public final class ViaVersionHandlers {
 
   public static final class ActionBar<V> extends Chat<V> implements Handler.ActionBar<V, String> {
     public ActionBar(final ViaAPIProvider<? super V> provider) {
-      super(provider, CHAT_TYPE_ACTIONBAR);
+      super(provider, TYPE_ACTIONBAR);
     }
   }
 
@@ -239,17 +233,6 @@ public final class ViaVersionHandlers {
   }
 
   public static final class BossBar<V> extends ConnectionBased<V> implements Handler.BossBar<V>, net.kyori.adventure.bossbar.BossBar.Listener {
-    protected static final int ACTION_ADD = 0; // (name: String, percent: float, color: varint, overlay: varint, flags: ubyte)
-    protected static final int ACTION_REMOVE = 1; // ()
-    protected static final int ACTION_PERCENT = 2; // (float)
-    protected static final int ACTION_NAME = 3; // (String)
-    protected static final int ACTION_STYLE = 4; // (color: varint, overlay: varint)
-    protected static final int ACTION_FLAGS = 5; // (thickenFog | dragonMusic | darkenSky): ubyte
-
-    private static final byte FLAG_DARKEN_SCREEN = 1;
-    private static final byte FLAG_BOSS_MUSIC = 1 << 1;
-    private static final byte FLAG_CREATE_WORLD_FOG = 1 << 2;
-
     private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = new IdentityHashMap<>();
 
     public BossBar(final ViaAPIProvider<? super V> via) {
@@ -267,9 +250,9 @@ public final class ViaVersionHandlers {
         final PacketWrapper addPkt = barInstance.make(connection(viewer), ACTION_ADD);
         addPkt.write(Type.STRING, GsonComponentSerializer.INSTANCE.serialize(bar.name()));
         addPkt.write(Type.FLOAT, bar.percent());
-        addPkt.write(Type.VAR_INT, color(bar.color()).getId());
-        addPkt.write(Type.VAR_INT, overlay(bar.overlay()).getId());
-        addPkt.write(Type.BYTE, flagBits(bar.flags()));
+        addPkt.write(Type.VAR_INT, BossBar.color(bar.color()));
+        addPkt.write(Type.VAR_INT, BossBar.overlay(bar.overlay()));
+        addPkt.write(Type.BYTE, BossBar.bitmaskFlags(bar.flags()));
         send(addPkt);
       }
     }
@@ -325,8 +308,8 @@ public final class ViaVersionHandlers {
       final Instance instance = this.bars.get(bar);
       if(instance != null) {
         instance.sendToSubscribers(bar, ACTION_STYLE, (pkt, adv) -> {
-          pkt.write(Type.VAR_INT, color(adv.color()).getId());
-          pkt.write(Type.VAR_INT, overlay(adv.overlay()).getId());
+          pkt.write(Type.VAR_INT, BossBar.color(adv.color()));
+          pkt.write(Type.VAR_INT, BossBar.overlay(adv.overlay()));
         });
       }
     }
@@ -336,46 +319,8 @@ public final class ViaVersionHandlers {
       final Instance instance = this.bars.get(bar);
       if(instance != null) {
         instance.sendToSubscribers(bar, ACTION_FLAGS, (pkt, adv) -> {
-          pkt.write(Type.BYTE, flagBits(adv.flags()));
+          pkt.write(Type.BYTE, BossBar.bitmaskFlags(adv.flags()));
         });
-      }
-    }
-
-    private static byte flagBits(final Set<net.kyori.adventure.bossbar.BossBar.Flag> flags) {
-      byte ret = 0;
-      if(flags.contains(net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN)) {
-        ret |= FLAG_DARKEN_SCREEN;
-      }
-      if(flags.contains(net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC)) {
-        ret |= FLAG_BOSS_MUSIC;
-      }
-      if(flags.contains(net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG)) {
-        ret |= FLAG_CREATE_WORLD_FOG;
-      }
-      return ret;
-    }
-
-    private static BossColor color(final net.kyori.adventure.bossbar.BossBar.Color color) {
-      switch(color) {
-        case PINK: return BossColor.PINK;
-        case BLUE: return BossColor.BLUE;
-        case RED: return BossColor.RED;
-        case GREEN: return BossColor.GREEN;
-        case YELLOW: return BossColor.YELLOW;
-        case WHITE: return BossColor.WHITE;
-        case PURPLE: /* fall-through */
-        default: return BossColor.PURPLE;
-      }
-    }
-
-    private static BossStyle overlay(final net.kyori.adventure.bossbar.BossBar.Overlay overlay) {
-      switch(overlay) {
-        case NOTCHED_6: return BossStyle.SEGMENTED_6;
-        case NOTCHED_10: return BossStyle.SEGMENTED_10;
-        case NOTCHED_12: return BossStyle.SEGMENTED_12;
-        case NOTCHED_20: return BossStyle.SEGMENTED_20;
-        case PROGRESS: /* fall-through */
-        default: return BossStyle.SOLID;
       }
     }
 

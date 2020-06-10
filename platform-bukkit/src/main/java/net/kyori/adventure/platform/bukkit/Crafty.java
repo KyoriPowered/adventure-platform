@@ -121,6 +121,14 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
+  /**
+   * Get a field from {@code klass} and make it accessible .
+   * 
+   * @param klass containing class
+   * @param name field name
+   * @return the field
+   * @throws NoSuchFieldException when thrown by {@link Class#getDeclaredField(String)}
+   */
   /* package */ static Field field(final @NonNull Class<?> klass, final @NonNull String name) throws NoSuchFieldException {
     final Field field = klass.getDeclaredField(name);
     field.setAccessible(true);

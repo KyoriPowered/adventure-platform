@@ -43,7 +43,6 @@ import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -58,8 +57,8 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
 
-// TODO: implement Listener and use singletons
-public final class BukkitPlatform extends AdventurePlatformImpl implements Listener {
+// TODO: use singletons
+public final class BukkitPlatform extends AdventurePlatformImpl {
 
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
 
@@ -69,7 +68,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
   /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
 
   static {
-    if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE", Integer.MAX_VALUE) != null) { // we are 1.16
+    if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null) { // we are 1.16
       GSON_SERIALIZER = VersionedGsonComponentSerializer.MODERN;
     } else {
       GSON_SERIALIZER = VersionedGsonComponentSerializer.PRE_1_16;

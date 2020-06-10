@@ -107,7 +107,6 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.enumValue(CLASS_MESSAGE_TYPE, "CHAT", 0);
   private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
-  private static final byte LEGACY_CHAT_POSITION_ACTIONBAR = 2;
   private static final Gson MC_TEXT_GSON;
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
@@ -201,7 +200,7 @@ public class CraftBukkitHandlers {
   private static final @Nullable MethodHandle CONSTRUCTOR_TITLE_TIMES = Crafty.optionalConstructor(CLASS_TITLE_PACKET, methodType(int.class, int.class, int.class));
   private static final @Nullable Object TITLE_ACTION_TITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "TITLE", 0);
   private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "SUBTITLE", 1);
-  private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR", Integer.MAX_VALUE);
+  private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR");
 
   static {
     MethodHandle titlePacketConstructor = null;
@@ -239,7 +238,7 @@ public class CraftBukkitHandlers {
       // Action bar through the chat packet doesn't properly support formatting
       final TextComponent legacyMessage = TextComponent.of(LegacyComponentSerializer.legacy().serialize(message));
       try {
-        return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), LEGACY_CHAT_POSITION_ACTIONBAR);
+        return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), Chat.TYPE_ACTIONBAR);
       } catch(Throwable throwable) {
         return null;
       }
