@@ -63,13 +63,17 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Playe
      * @param mcLocale The locale string, in the format provided by the Minecraft client
      * @return A Locale object matching the provided locale string
      */
-    private static @NonNull Locale toLocale(final @Nullable String mcLocale) {
+    /* package */ static @NonNull Locale toLocale(final @Nullable String mcLocale) {
         if(mcLocale == null) return Locale.getDefault();
 
         final String[] parts = mcLocale.split("_", 3);
         switch(parts.length) {
             case 0: return Locale.getDefault();
-            case 1: return new Locale(parts[0]);
+            case 1:
+                if (parts[0].isEmpty()) {
+                    return Locale.getDefault();
+                }
+                return new Locale(parts[0]);
             case 2: return new Locale(parts[0], parts[1]);
             case 3: return new Locale(parts[0], parts[1], parts[2]);
             default: throw new IllegalArgumentException("Provided locale '" + mcLocale + "' was not in a valid format!");
