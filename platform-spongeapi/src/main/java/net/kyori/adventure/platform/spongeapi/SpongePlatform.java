@@ -23,16 +23,9 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
-
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.platform.impl.HandledAudience;
+import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
@@ -44,42 +37,18 @@ import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
 
-public class SpongePlatform implements AdventurePlatform {
+public class SpongePlatform extends AdventurePlatformImpl {
   
   static { // init
     Knobs.logger(new Slf4jLogHandler());
-  }
-
-  private static final SpongePlatform INSTANCE = new SpongePlatform();
-
-  public static AdventurePlatform provider() {
-    return INSTANCE;
-  }
-  
-  public static Audience audience(MessageReceiver receiver) {
-    final SpongePlatform p = INSTANCE; // todo: integrate
-    if(receiver instanceof Player) {
-      return new HandledAudience<>((Player) receiver, p.chat, p.actionBar, p.title, p.bossBar, p.sound);
-    } else if(receiver instanceof Viewer) {
-      return new HandledAudience<>((Viewer & MessageReceiver) receiver, p.chat, p.actionBar, p.title, null, p.sound);
-    } else {
-      return new HandledAudience<>(receiver, p.chat, p.actionBar, null, null, null);
-    }
-  }
-
-  public static MultiAudience audience(MessageReceiver... receiver) {
-    final List<MessageReceiver> receivers = Arrays.asList(receiver);
-    return new SpongeMultiAudience(() -> receivers);
-  }
-
-  public static MultiAudience audience(Collection<MessageReceiver> receivers) {
-    return new SpongeMultiAudience(() -> receivers);
   }
 
   /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull NameMap<K> elements)  {
@@ -103,54 +72,33 @@ public class SpongePlatform implements AdventurePlatform {
   private final HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
   private final HandlerCollection<Viewer, Handler.PlaySound<Viewer>> sound;
 
-  private SpongePlatform() { 
+  public SpongePlatform() { 
     final SpongeViaProvider via = new SpongeViaProvider();
     this.chat = new HandlerCollection<>(new ViaVersionHandlers.Chat<>(via), new SpongeHandlers.Chat());
     this.actionBar = new HandlerCollection<>(new ViaVersionHandlers.ActionBar<>(via), new SpongeHandlers.ActionBar());
     this.title = new HandlerCollection<>(new ViaVersionHandlers.Titles<>(via), new SpongeHandlers.Titles());
     this.bossBar = new HandlerCollection<>(new ViaVersionHandlers.BossBars<>(via), new SpongeBossBarListener());
     this.sound = new HandlerCollection<>(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
+    
+    final PluginContainer instance = () -> "adventure";
+    Sponge.getEventManager().registerListeners(instance, this);
+    
+    add(new SpongeSenderAudience<>(Sponge.getServer().getConsole(), this.chat, this.actionBar, null, null, null));
   }
-
-  @Override
-  public @NonNull Audience all() {
-    return Audience.empty(); // TODO
+  
+  @Listener
+  public void join(final ClientConnectionEvent.@NonNull Join event) {
+    this.add(new SpongePlayerAudience(event.getTargetEntity(), this.chat, this.actionBar, this.title, this.bossBar, this.sound));
   }
-
-  @Override
-  public @NonNull Audience console() {
-    return new SpongeAudience<>(Sponge.getGame().getServer().getConsole());
-  }
-
-  @Override
-  public @NonNull Audience players() {
-    return Audience.empty(); // TODO
-  }
-
-  @Override
-  public @NonNull Audience player(final @NonNull UUID playerId) {
-    return null;
-  }
-
-  @Override
-  public @NonNull Audience permission(final @NonNull String permission) {
-    /*return new SpongeMultiAudience(() -> Sponge.getGame().getServiceManager().provide(PermissionService.class)
-      .orElseThrow(() -> new IllegalArgumentException("Sponge must have a permissions service"))
-      .getUserSubjects().getLoadedWithPermission(spongePerm).keySet());*/
-    return Audience.empty(); // TODO
-  }
-
-  @Override
-  public @NonNull Audience world(final @NonNull UUID worldId) {
-    return Audience.empty(); // TODO
-  }
-
-  @Override
-  public @NonNull Audience server(@NonNull String serverName) {
-    return all();
+  
+  @Listener
+  public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
+   this.remove(event.getTargetEntity().getUniqueId());
   }
   
   /* package */ static class SpongeViaProvider implements ViaVersionHandlers.ViaAPIProvider<Object> { // too many interfaces :(
+    
+    private volatile ViaPlatform<?> platform = null;
 
     @Override
     public boolean isAvailable() {
@@ -162,9 +110,13 @@ public class SpongePlatform implements AdventurePlatform {
       if(!isAvailable()) {
         return null;
       }
-      final PluginContainer container = Sponge.getPluginManager().getPlugin("viaversion").orElse(null);
-      if(container == null) return null;
-      return (ViaPlatform<?>) container.getInstance().orElse(null);
+      ViaPlatform<?> platform = this.platform;
+      if(platform == null) {
+        final PluginContainer container = Sponge.getPluginManager().getPlugin("viaversion").orElse(null);
+        if(container == null) return null;
+        this.platform = platform = (ViaPlatform<?>) container.getInstance().orElse(null);
+      }
+      return platform;
     }
 
     @Override

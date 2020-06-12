@@ -41,7 +41,9 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.Locatable;
 
-/* package */ class SpongeHandlers {
+/* package */ final class SpongeHandlers {
+  
+  private SpongeHandlers() {}
   
   /* package */ static class Chat implements Handler.Chat<MessageReceiver, Text> {
 
