@@ -40,7 +40,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   private BukkitHandlers() {}
 
   private static String legacy(final @NonNull Component component) {
-    return LegacyComponentSerializer.legacy().serialize(component);
+      return LegacyComponentSerializer.legacy().serialize(component);
   }
 
   /* package */ static class Chat implements Handler.Chat<CommandSender, String> {

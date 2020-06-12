@@ -29,11 +29,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.platform.impl.JdkLogHandler;
+import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
 import org.bukkit.Bukkit;
@@ -52,7 +52,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
@@ -68,6 +67,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
   /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
 
   static {
+    Knobs.logger(new JdkLogHandler());
     if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null) { // we are 1.16
       GSON_SERIALIZER = VersionedGsonComponentSerializer.MODERN;
     } else {
@@ -105,9 +105,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
    */
   @SuppressWarnings("unchecked")
   private static void injectSoftdepend(String pluginName) { // begone, warnings!
-    JavaPlugin plugin = null;
     try {
-      plugin = JavaPlugin.getProvidingPlugin(BukkitPlatform.class);
+      final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitPlatform.class);
 
       PluginDescriptionFile pdf = plugin.getDescription();
       if(pdf.getName().equals(pluginName)) return; // don't depend on ourselves?
@@ -126,15 +125,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
       final Field dependencyGraphField = Crafty.field(manager.getClass(), "dependencyGraph");
       final MutableGraph<String> graph = (MutableGraph<String>) dependencyGraphField.get(manager);
       graph.putEdge(pdf.getName(), pluginName);
-    } catch(Throwable ignore) { // fail silently
-      if(plugin != null) {
-        final @Nullable Logger pluginLog = plugin.getLogger();
-        if (pluginLog != null) {
-          if(pluginLog.isLoggable(Level.FINEST)) {
-            plugin.getLogger().log(Level.FINEST, "Unable to add " + pluginName + " as a soft depend during Adventure injection", ignore);
-          }
-        }
-      }
+    } catch(Throwable error) { // fail silently
+      Knobs.logError("injecting soft-dependency", error);
     }
   }
 
@@ -190,6 +182,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
       this.remove(event.getPlayer().getUniqueId());
       BukkitHandlers.BossBar.handleQuit(event.getPlayer());
     });
+    
+    // ViaVersion
     Crafty.registerEvent(PLUGIN_SELF, PluginEnableEvent.class, event -> {
       if(event.getPlugin().getName().equals(PLUGIN_VIAVERSION)) {
         this.viaProvider.platform(); // init
@@ -218,7 +212,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
         if(owningPlugin != null && owningPlugin.getName().equals(PLUGIN_VIAVERSION)) {
           return true;
         }
-      } catch(Exception ignore) {
+      } catch(Exception error) {
+        Knobs.logError("detecting ViaVersion", error);
       }
       return false;
     }

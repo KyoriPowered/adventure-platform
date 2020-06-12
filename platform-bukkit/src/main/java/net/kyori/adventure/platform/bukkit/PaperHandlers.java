@@ -26,10 +26,15 @@ package net.kyori.adventure.platform.bukkit;
 import java.time.Duration;
 import java.util.function.IntConsumer;
 import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.Knobs;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /* package */ class PaperHandlers {
+  
+  private static final boolean ENABLED = Knobs.enabled("paper");
+  
+  
   private PaperHandlers() {
   }
 
@@ -37,7 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public boolean isAvailable() {
-      return Crafty.hasClass("com.destroystokyo.paper.Title");
+      return SpigotHandlers.BOUND && ENABLED && Crafty.hasClass("com.destroystokyo.paper.Title");
     }
 
     @Override

@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,7 +44,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   private static final BossBar.Flag[] FLAGS = BossBar.Flag.values();
   private static final HandlerCollection<org.bukkit.boss.BossBar, NameSetter> SET_NAME = new HandlerCollection<>(new CraftBukkitHandlers.BossBarNameSetter(), new BukkitHandlers.BossBarNameSetter());
 
-  private final Map<BossBar, org.bukkit.boss.BossBar> bars = new IdentityHashMap<>();
+  private final Map<BossBar, org.bukkit.boss.BossBar> bars = Collections.synchronizedMap(new IdentityHashMap<>());
 
   /* package */ BukkitBossBarListener() {
   }

@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nonnegative;
+import net.kyori.adventure.platform.impl.Knobs;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
@@ -66,6 +67,7 @@ import static java.util.Objects.requireNonNull;
   static {
     Class<?> serverClass = Bukkit.getServer().getClass();
     if(!serverClass.getSimpleName().equals(CRAFT_SERVER)) {
+      Knobs.logError("finding CraftServer", null);
       VERSION = null;
     } else if(serverClass.getName().equals(PREFIX_CRAFTBUKKIT + "." + CRAFT_SERVER)) {
       VERSION = ".";

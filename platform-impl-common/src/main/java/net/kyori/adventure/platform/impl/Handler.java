@@ -93,7 +93,7 @@ public interface Handler<V> {
   }
 
   interface BossBar<V> extends Handler<V> {
-    // backet actions
+    // packet actions
     int ACTION_ADD = 0; // (name: String, percent: float, color: varint, overlay: varint, flags: ubyte)
     int ACTION_REMOVE = 1; // ()
     int ACTION_PERCENT = 2; // (float)

@@ -30,6 +30,7 @@ import com.google.gson.JsonSerializer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
@@ -43,7 +44,7 @@ import static java.util.Objects.requireNonNull;
 
 /* package */ class SpigotHandlers {
 
-  private static final boolean BOUND = System.getProperty("adventure.noSpigot", "false").equals("false") && bind();
+  /* package */ static final boolean BOUND = Knobs.enabled("spigot") && bind();
   
   private static boolean bind() {
     try {

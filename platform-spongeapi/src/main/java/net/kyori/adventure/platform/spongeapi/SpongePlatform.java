@@ -32,22 +32,21 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
-import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
-import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.util.NameMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.Viewer;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
-import org.spongepowered.api.text.serializer.TextSerializers;
 
 import static java.util.Objects.requireNonNull;
 
 public class SpongePlatform implements AdventurePlatform {
+  
+  static { // init
+    Knobs.logger(new Slf4jLogHandler());
+  }
 
   private static final SpongePlatform INSTANCE = new SpongePlatform();
   static final SpongeBossBarListener BOSS_BAR_LISTENER = new SpongeBossBarListener();

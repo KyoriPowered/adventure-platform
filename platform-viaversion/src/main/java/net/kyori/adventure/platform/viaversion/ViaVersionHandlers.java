@@ -32,6 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -51,6 +52,7 @@ import us.myles.ViaVersion.protocols.protocol1_16to1_15_2.Protocol1_16To1_15_2;
 import us.myles.ViaVersion.protocols.protocol1_9_3to1_9_1_2.ClientboundPackets1_9_3;
 
 public final class ViaVersionHandlers {
+  private static final String ID = "viaversion";
 
   private ViaVersionHandlers() {}
 
@@ -104,6 +106,7 @@ public final class ViaVersionHandlers {
 
     @Override
     public boolean isAvailable() {
+      if(!Knobs.enabled(ID)) return false;
       if(!via.isAvailable()) return false;
       if(ProtocolRegistry.SERVER_PROTOCOL >= version().getId()) return false; // using the protocol of this version, only adapt for older servers
 
@@ -111,6 +114,7 @@ public final class ViaVersionHandlers {
         Class.forName("us.myles.ViaVersion.protocols.protocol1_16to1_15_2.Protocol1_16To1_15_2"); // make sure we're on a new version
         return true;
       } catch(ClassNotFoundException e) {
+        Knobs.logError("finding 1.16 ViaVersion protocol", e);
         return false;
       }
     }
@@ -136,7 +140,8 @@ public final class ViaVersionHandlers {
     protected void send(final @NonNull PacketWrapper wrapper) {
       try {
         wrapper.send(Protocol1_16To1_15_2.class);
-      } catch(Exception ignore) {
+      } catch(Exception ex) {
+        Knobs.logError("sending ViaVersion packet", ex);
       }
     }
   }
@@ -419,7 +424,8 @@ public final class ViaVersionHandlers {
     protected void send(final @NonNull PacketWrapper wrapper) {
       try {
         wrapper.send(Protocol1_11To1_10.class);
-      } catch(Exception ignore) {
+      } catch(final Exception ex) {
+        Knobs.logError("sending sound packet", ex);
       }
     }
 

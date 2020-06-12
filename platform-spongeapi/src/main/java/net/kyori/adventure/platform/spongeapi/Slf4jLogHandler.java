@@ -21,37 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.impl;
+package net.kyori.adventure.platform.spongeapi;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import net.kyori.adventure.platform.impl.Knobs;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
-/**
- * Collection, that exposes the first available handler
- *
- * @param <H> handler type
- */
-public class HandlerCollection<V, H extends Handler<V>> {
-  private final @NonNull List<H> handlers;
-
-  @SafeVarargs
-  public HandlerCollection(final @NonNull H@NonNull... handlers) {
-    this.handlers = Stream.of(handlers)
-      .filter(Handler::isAvailable)
-      .collect(Collectors.toList());
+public class Slf4jLogHandler implements Knobs.LogHandler {
+  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
+  
+  @Override
+  public void info(final @NonNull String message, @NonNull final Object... params) {
+    logger.info(message, params);
   }
 
-  public @Nullable H get(final V viewer) {
-    for(final H handler : this.handlers) {
-      if(handler.isAvailable(viewer)) {
-        Knobs.logChosenHandler(viewer, handler);
-        return handler;
-      }
+  @Override
+  public void error(final @NonNull Throwable exc, final @NonNull String message, @NonNull final Object... params) {
+    if(logger.isErrorEnabled()) {
+      logger.error(MessageFormatter.arrayFormat(message, params, exc).getMessage(), exc);
     }
-    Knobs.logChosenHandler(viewer, null);
-    return null;
   }
 }

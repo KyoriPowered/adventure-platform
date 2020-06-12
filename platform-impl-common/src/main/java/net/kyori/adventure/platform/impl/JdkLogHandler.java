@@ -23,35 +23,25 @@
  */
 package net.kyori.adventure.platform.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/**
- * Collection, that exposes the first available handler
- *
- * @param <H> handler type
- */
-public class HandlerCollection<V, H extends Handler<V>> {
-  private final @NonNull List<H> handlers;
-
-  @SafeVarargs
-  public HandlerCollection(final @NonNull H@NonNull... handlers) {
-    this.handlers = Stream.of(handlers)
-      .filter(Handler::isAvailable)
-      .collect(Collectors.toList());
+public final class JdkLogHandler implements Knobs.LogHandler {
+  private final Logger logger = Logger.getLogger("net.kyori.adventure");
+  @Override
+  public void info(final @NonNull String message, final Object@NonNull... params) {
+    if(logger.isLoggable(Level.INFO)) {
+      logger.log(Level.INFO, MessageFormat.format(message, params));
+    }
   }
 
-  public @Nullable H get(final V viewer) {
-    for(final H handler : this.handlers) {
-      if(handler.isAvailable(viewer)) {
-        Knobs.logChosenHandler(viewer, handler);
-        return handler;
-      }
+  @Override
+  public void error(final @Nullable Throwable exc, final @NonNull String message, final Object@NonNull... params) {
+    if(logger.isLoggable(Level.SEVERE)) {
+      logger.log(Level.SEVERE, MessageFormat.format(message, params), exc);
     }
-    Knobs.logChosenHandler(viewer, null);
-    return null;
   }
 }

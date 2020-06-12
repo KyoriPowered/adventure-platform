@@ -33,6 +33,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.UUID;
 import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.impl.TypedHandler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -44,11 +45,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
-import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
 import static net.kyori.adventure.platform.bukkit.Crafty.optionalConstructor;
 
 public class CraftBukkitHandlers {
+  
+  private static final boolean ENABLED = Knobs.enabled("craftbukkit");
+  
   private static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = Crafty.findCraftClass("entity.CraftPlayer", Player.class);
 
   // Packets //
@@ -72,7 +75,8 @@ public class CraftBukkitHandlers {
         entityPlayerGetConnection = Crafty.LOOKUP.unreflectGetter(playerConnectionField);
         final Class<?> playerConnectionClass = playerConnectionField.getType();
         playerConnectionSendPacket = Crafty.LOOKUP.findVirtual(playerConnectionClass, "sendPacket", methodType(void.class, packetClass));
-      } catch(NoSuchMethodException | IllegalAccessException | NoSuchFieldException ignore) {
+      } catch(NoSuchMethodException | IllegalAccessException | NoSuchFieldException ex) {
+        Knobs.logError("finding packet send methods", ex);
       }
     }
     CRAFT_PLAYER_GET_HANDLE = craftPlayerGetHandle;
@@ -89,14 +93,18 @@ public class CraftBukkitHandlers {
 
     @Override
     public boolean isAvailable() {
-      return super.isAvailable() && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
+      return ENABLED && super.isAvailable() && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
     }
 
-    public void send(final @NonNull V player, final @NonNull Object packet) {
+    public void send(final @NonNull V player, final @Nullable Object packet) {
+      if(packet == null) {
+        return;
+      }
+
       try {
-        PLAYER_CONNECTION_SEND_PACKET.invoke(ENTITY_PLAYER_GET_CONNECTION.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(player)), requireNonNull(packet, "packet"));
+        PLAYER_CONNECTION_SEND_PACKET.invoke(ENTITY_PLAYER_GET_CONNECTION.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(player)));
       } catch(Throwable throwable) {
-        throw new RuntimeException(throwable);
+        Knobs.logError("sending packet to user", throwable);
       }
     }
   }
@@ -151,7 +159,8 @@ public class CraftBukkitHandlers {
           gson = (Gson) gsonField.get(null);
         }
       }
-    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException ignore) {
+    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException ex) {
+      Knobs.logError("finding chat serializer", ex);
     }
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
     MC_TEXT_GSON = gson;
@@ -165,7 +174,8 @@ public class CraftBukkitHandlers {
     final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializeToTree(message);
     try {
       return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
-    } catch(Throwable throwable) {
+    } catch(Throwable error) {
+      Knobs.logError("converting adventure Component to MC Component", error);
       return null;
     }
   }
@@ -187,6 +197,7 @@ public class CraftBukkitHandlers {
       try {
         return CHAT_PACKET_CONSTRUCTOR.invoke(nmsMessage, MESSAGE_TYPE_SYSTEM, NIL_UUID);
       } catch(Throwable throwable) {
+        Knobs.logError("constructing MC chat packet", throwable);
         return null;
       }
     }
@@ -226,6 +237,7 @@ public class CraftBukkitHandlers {
       try {
         return CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_ACTIONBAR, mcTextFromComponent(message));
       } catch(Throwable throwable) {
+        Knobs.logError("constructing MC action bar packet", throwable);
         return null;
       }
     }
@@ -240,6 +252,7 @@ public class CraftBukkitHandlers {
       try {
         return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), Chat.TYPE_ACTIONBAR);
       } catch(Throwable throwable) {
+        Knobs.logError("constructing legacy MC action bar packet", throwable);
         return null;
       }
     }
@@ -275,7 +288,7 @@ public class CraftBukkitHandlers {
         }
         send(viewer, titlePacket);
       } catch(Throwable throwable) {
-        throwable.printStackTrace();
+        Knobs.logError("constructing legacy MC title packet", throwable);
       }
     }
 
@@ -309,7 +322,8 @@ public class CraftBukkitHandlers {
           final Class<?> nmsBossBattleType = craftBossBarHandleField.getType();
           nmsBossBattleSetName = Crafty.LOOKUP.findSetter(nmsBossBattleType, "title", CLASS_CHAT_COMPONENT);
           nmsBossBattleSendUpdate = Crafty.LOOKUP.findVirtual(nmsBossBattleType, "sendUpdate", methodType(void.class, CLASS_BOSS_BAR_ACTION));
-        } catch(NoSuchFieldException | IllegalAccessException | NoSuchMethodException ignore) {
+        } catch(NoSuchFieldException | IllegalAccessException | NoSuchMethodException ex) {
+          Knobs.logError("finding boss bar name operations", ex);
         }
       }
       CRAFT_BOSS_BAR_HANDLE = craftBossBarHandle;
@@ -319,7 +333,7 @@ public class CraftBukkitHandlers {
 
     @Override
     public boolean isAvailable() {
-      return CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
+      return ENABLED && CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
     }
 
     @Override
@@ -332,7 +346,8 @@ public class CraftBukkitHandlers {
         NMS_BOSS_BATTLE_SEND_UPDATE.invoke(nmsBar, BOSS_BAR_ACTION_TITLE);
       } catch(final Error err) {
         throw err;
-      } catch(final Throwable ignore) {
+      } catch(final Throwable ex) {
+        Knobs.logError("sending boss bar name change", ex);
       }
     }
   }

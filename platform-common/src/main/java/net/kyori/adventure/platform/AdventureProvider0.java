@@ -28,7 +28,9 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 final class AdventureProvider0 {
-  private AdventureProvider0() {}
+  private AdventureProvider0() {
+  }
+
   private static AdventurePlatform provider;
 
   /**
@@ -38,26 +40,25 @@ final class AdventureProvider0 {
    */
   public static AdventurePlatform provide() {
     AdventurePlatform result = provider;
-    if (result != null) {
+    if(result != null) {
       return result;
     }
-      final ServiceLoader<AdventurePlatform> loader  = ServiceLoader.load(AdventurePlatform.class, AdventureProvider0.class.getClassLoader());
-      final Iterator<AdventurePlatform> it = loader.iterator();
-      while (it.hasNext()) {
-        try {
-          AdventurePlatform prov = it.next();
-          if (result == null) {
-            result = prov;
-            break;
-          }
-        } catch(ServiceConfigurationError ex) {
-          ex.printStackTrace();
-          continue;
+    final ServiceLoader<AdventurePlatform> loader = ServiceLoader.load(AdventurePlatform.class, AdventureProvider0.class.getClassLoader());
+    final Iterator<AdventurePlatform> it = loader.iterator();
+    while(it.hasNext()) {
+      try {
+        AdventurePlatform prov = it.next();
+        if(result == null) {
+          result = prov;
+          break;
         }
+      } catch(ServiceConfigurationError ex) {
+        continue;
       }
-      if (result == null) {
-        throw new UnsupportedOperationException("Could not find Adventure provider");
-      }
-      return provider = result;
+    }
+    if(result == null) {
+      throw new UnsupportedOperationException("Could not find Adventure provider");
+    }
+    return provider = result;
   }
 }
