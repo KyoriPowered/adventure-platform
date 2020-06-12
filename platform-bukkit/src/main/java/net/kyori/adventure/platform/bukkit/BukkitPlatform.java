@@ -134,8 +134,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
   private final BukkitViaProvider viaProvider;
   private final HandlerCollection<? super CommandSender, ? extends Handler.Chat<? super CommandSender, ?>> chat;
   private final HandlerCollection<Player, Handler.ActionBar<Player, ?>> actionBar;
-  private final HandlerCollection<Player, Handler.Title<Player>> title;
-  private final HandlerCollection<Player, Handler.BossBar<Player>> bossBar;
+  private final HandlerCollection<Player, Handler.Titles<Player>> title;
+  private final HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
 
   public BukkitPlatform() {
@@ -159,12 +159,12 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
       new CraftBukkitHandlers.ActionBarModern(),
       new CraftBukkitHandlers.ActionBar1_8thru1_11());
     this.title = new HandlerCollection<>(
-      new ViaVersionHandlers.Title<>(this.viaProvider),
-      new PaperHandlers.Title(),
-      new CraftBukkitHandlers.Title());
+      new ViaVersionHandlers.Titles<>(this.viaProvider),
+      new PaperHandlers.Titles(),
+      new CraftBukkitHandlers.Titles());
     this.bossBar = new HandlerCollection<>(
-      new ViaVersionHandlers.BossBar<>(this.viaProvider),
-      new BukkitHandlers.BossBar());
+      new ViaVersionHandlers.BossBars<>(this.viaProvider),
+      new BukkitHandlers.BossBars());
     this.playSound = new HandlerCollection<>(
       new BukkitHandlers.PlaySound_WithCategory(),
       new ViaVersionHandlers.PlaySound<>(this.viaProvider, player -> {
@@ -180,7 +180,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
     });
     Crafty.registerEvent(PLUGIN_SELF, PlayerQuitEvent.class, EventPriority.MONITOR, false, event -> {
       this.remove(event.getPlayer().getUniqueId());
-      BukkitHandlers.BossBar.handleQuit(event.getPlayer());
+      BukkitHandlers.BossBars.handleQuit(event.getPlayer());
     });
     
     // ViaVersion

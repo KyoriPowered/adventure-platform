@@ -36,7 +36,7 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Playe
 
     private final UUID id;
 
-    BukkitPlayerAudience(final @NonNull Player sender, final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.Title<? super Player>> title, final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBar<? super Player>> bossBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound) {
+    BukkitPlayerAudience(final @NonNull Player sender, final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title, final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound) {
         super(sender, toLocale(sender.getLocale()), chat, actionBar, title, bossBar, sound);
         this.id = sender.getUniqueId();
     }

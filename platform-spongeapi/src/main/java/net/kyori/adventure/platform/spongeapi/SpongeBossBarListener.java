@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -39,7 +40,7 @@ import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.entity.living.player.Player;
 
-/* package */ class SpongeBossBarListener implements BossBar.Listener {
+/* package */ class SpongeBossBarListener implements BossBar.Listener, Handler.BossBars<Player> {
   private static final Logger LOGGER = LoggerFactory.getLogger(SpongeBossBarListener.class);
 
   private final Map<BossBar, ServerBossBar> bars = new IdentityHashMap<>();
@@ -85,7 +86,8 @@ import org.spongepowered.api.entity.living.player.Player;
     applicator.accept(change, sponge);
   }
 
-  /* package */ void subscribe(final @NonNull BossBar adventure, final @NonNull Player player) {
+  @Override
+  public void show(final @NonNull Player viewer, final @NonNull BossBar adventure) {
     this.bars.computeIfAbsent(adventure, key -> {
       key.addListener(this);
       return ServerBossBar.builder()
@@ -97,10 +99,11 @@ import org.spongepowered.api.entity.living.player.Player;
         .darkenSky(key.flags().contains(BossBar.Flag.DARKEN_SCREEN))
         .playEndBossMusic(key.flags().contains(BossBar.Flag.PLAY_BOSS_MUSIC))
         .build();
-    }).addPlayer(player);
+    }).addPlayer(viewer);
   }
 
-  /* package */ void unsubscribe(final @NonNull BossBar adventure, final @NonNull Player player) {
+  @Override
+  public void hide(final @NonNull Player player, final @NonNull BossBar adventure) {
     this.bars.computeIfPresent(adventure, (key, existing) -> {
       existing.removePlayer(player);
       if(existing.getPlayers().isEmpty()) {
@@ -110,5 +113,10 @@ import org.spongepowered.api.entity.living.player.Player;
         return existing;
       }
     });
+  }
+
+  @Override
+  public boolean isAvailable() {
+    return true;
   }
 }

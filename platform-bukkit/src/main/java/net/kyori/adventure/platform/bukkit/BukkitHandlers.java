@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.sound.Sound;
@@ -60,7 +61,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
   }
 
-  /* package */ static class BossBar implements Handler.BossBar<Player> {
+  /* package */ static class BossBars implements Handler.BossBars<Player> {
     /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
     private static final BukkitBossBarListener LISTENERS = new BukkitBossBarListener();
 
@@ -76,12 +77,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @Override
-    public void show(final @NonNull Player viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void show(final @NonNull Player viewer, final @NonNull BossBar bar) {
       LISTENERS.subscribe(viewer, bar);
     }
 
     @Override
-    public void hide(final @NonNull Player viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void hide(final @NonNull Player viewer, final @NonNull BossBar bar) {
       LISTENERS.unsubscribe(viewer, bar);
     }
   }
@@ -95,7 +96,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     @Override
     public boolean isAvailable() {
-      return BukkitHandlers.BossBar.SUPPORTED;
+      return BukkitHandlers.BossBars.SUPPORTED;
     }
   }
 

@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
 /* package */ final class SpongeMultiAudience implements MultiAudience {
@@ -42,12 +41,6 @@ import org.spongepowered.api.text.channel.MessageReceiver;
   @Override
   public @NonNull Iterable<Audience> audiences() {
     return viewers.get().stream()
-      .map(viewer -> {
-        if(viewer instanceof Viewer) {
-          return new SpongeFullAudience<>((Viewer & MessageReceiver) viewer);
-        } else {
-          return new SpongeAudience<>(viewer);
-        }
-      }).collect(Collectors.toList());
+      .map(SpongePlatform::audience).collect(Collectors.toList());
   }
 }

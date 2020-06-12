@@ -44,8 +44,8 @@ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> i
     BukkitSenderAudience(final @NonNull S sender, final @Nullable Locale locale,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.Title<? super S>> title,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.BossBar<? super S>> bossBar,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.Titles<? super S>> title,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.BossBars<? super S>> bossBar,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound) {
         super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound);
         this.locale = locale;

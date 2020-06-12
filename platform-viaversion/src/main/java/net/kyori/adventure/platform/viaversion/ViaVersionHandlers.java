@@ -179,7 +179,7 @@ public final class ViaVersionHandlers {
     }
   }
 
-  public static final class Title<V> extends ConnectionBased<V> implements Handler.Title<V> {
+  public static final class Titles<V> extends ConnectionBased<V> implements Handler.Titles<V> {
     protected static final int ACTION_TITLE = 0;
     protected static final int ACTION_SUBTITLE = 1;
     protected static final int ACTION_ACTIONBAR = 2;
@@ -187,7 +187,7 @@ public final class ViaVersionHandlers {
     protected static final int ACTION_CLEAR = 4;
     protected static final int ACTION_RESET = 5;
 
-    public Title(final ViaAPIProvider<? super V> via) {
+    public Titles(final ViaAPIProvider<? super V> via) {
       super(via);
     }
 
@@ -199,9 +199,9 @@ public final class ViaVersionHandlers {
 
     @Override
     public void send(final @NonNull V viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      final int fadeIn = Title.ticks(title.fadeInTime());
-      final int stay = Title.ticks(title.stayTime());
-      final int fadeOut = Title.ticks(title.fadeOutTime());
+      final int fadeIn = Titles.ticks(title.fadeInTime());
+      final int stay = Titles.ticks(title.stayTime());
+      final int fadeOut = Titles.ticks(title.fadeOutTime());
       if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
         final PacketWrapper wrapper = make(viewer, ACTION_TIMES);
         wrapper.write(Type.INT, fadeIn);
@@ -237,10 +237,10 @@ public final class ViaVersionHandlers {
     }
   }
 
-  public static final class BossBar<V> extends ConnectionBased<V> implements Handler.BossBar<V>, net.kyori.adventure.bossbar.BossBar.Listener {
+  public static final class BossBars<V> extends ConnectionBased<V> implements Handler.BossBars<V>, net.kyori.adventure.bossbar.BossBar.Listener {
     private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = new IdentityHashMap<>();
 
-    public BossBar(final ViaAPIProvider<? super V> via) {
+    public BossBars(final ViaAPIProvider<? super V> via) {
       super(via);
     }
 
@@ -255,9 +255,9 @@ public final class ViaVersionHandlers {
         final PacketWrapper addPkt = barInstance.make(connection(viewer), ACTION_ADD);
         addPkt.write(Type.STRING, GsonComponentSerializer.INSTANCE.serialize(bar.name()));
         addPkt.write(Type.FLOAT, bar.percent());
-        addPkt.write(Type.VAR_INT, BossBar.color(bar.color()));
-        addPkt.write(Type.VAR_INT, BossBar.overlay(bar.overlay()));
-        addPkt.write(Type.BYTE, BossBar.bitmaskFlags(bar.flags()));
+        addPkt.write(Type.VAR_INT, BossBars.color(bar.color()));
+        addPkt.write(Type.VAR_INT, BossBars.overlay(bar.overlay()));
+        addPkt.write(Type.BYTE, BossBars.bitmaskFlags(bar.flags()));
         send(addPkt);
       }
     }
@@ -313,8 +313,8 @@ public final class ViaVersionHandlers {
       final Instance instance = this.bars.get(bar);
       if(instance != null) {
         instance.sendToSubscribers(bar, ACTION_STYLE, (pkt, adv) -> {
-          pkt.write(Type.VAR_INT, BossBar.color(adv.color()));
-          pkt.write(Type.VAR_INT, BossBar.overlay(adv.overlay()));
+          pkt.write(Type.VAR_INT, BossBars.color(adv.color()));
+          pkt.write(Type.VAR_INT, BossBars.overlay(adv.overlay()));
         });
       }
     }
@@ -324,7 +324,7 @@ public final class ViaVersionHandlers {
       final Instance instance = this.bars.get(bar);
       if(instance != null) {
         instance.sendToSubscribers(bar, ACTION_FLAGS, (pkt, adv) -> {
-          pkt.write(Type.BYTE, BossBar.bitmaskFlags(adv.flags()));
+          pkt.write(Type.BYTE, BossBars.bitmaskFlags(adv.flags()));
         });
       }
     }
@@ -345,7 +345,7 @@ public final class ViaVersionHandlers {
 
       /* package */ void sendToSubscribers(final net.kyori.adventure.bossbar.BossBar adventure, final int action, final BiConsumer<PacketWrapper, net.kyori.adventure.bossbar.BossBar> populator) {
         for(UUID id : this.subscribedPlayers) {
-          final UserConnection conn = ViaVersionHandlers.BossBar.this.via.platform().getConnectionManager().getConnectedClient(id);
+          final UserConnection conn = ViaVersionHandlers.BossBars.this.via.platform().getConnectionManager().getConnectedClient(id);
           if(conn != null) {
             final PacketWrapper wrapper = make(conn, action);
             populator.accept(wrapper, adventure);

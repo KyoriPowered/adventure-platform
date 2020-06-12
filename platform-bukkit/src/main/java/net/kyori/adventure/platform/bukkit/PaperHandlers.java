@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import com.destroystokyo.paper.Title;
 import java.time.Duration;
 import java.util.function.IntConsumer;
 import net.kyori.adventure.platform.impl.Handler;
@@ -38,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   private PaperHandlers() {
   }
 
-  /* package */ static class Title implements Handler.Title<Player> {
+  /* package */ static class Titles implements Handler.Titles<Player> {
 
     @Override
     public boolean isAvailable() {
@@ -47,7 +48,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      final com.destroystokyo.paper.Title.Builder paperTitle = com.destroystokyo.paper.Title.builder()
+      final Title.Builder paperTitle = Title.builder()
         .title(SpigotHandlers.toBungeeCord(title.title()))
         .subtitle(SpigotHandlers.toBungeeCord(title.subtitle()));
 
@@ -64,8 +65,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
      * @param consumer Time builder
      */
     private static void applyTime(final Duration time, final IntConsumer consumer) {
-      final int ticks = Handler.Title.ticks(time);
-      if(ticks != Title.DURATION_PRESERVE) {
+      final int ticks = Titles.ticks(time);
+      if(ticks != Titles.DURATION_PRESERVE) {
         consumer.accept(ticks);
       }
     }

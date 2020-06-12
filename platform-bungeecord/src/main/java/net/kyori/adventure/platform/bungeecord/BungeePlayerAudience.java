@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import java.time.Duration;
 import java.util.UUID;
 
 import net.kyori.adventure.platform.audience.PlayerAudience;
@@ -41,7 +40,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
-import static net.kyori.adventure.platform.impl.Handler.Title.ticks;
+import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
 public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
 

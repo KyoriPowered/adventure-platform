@@ -32,13 +32,21 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.impl.HandledAudience;
+import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
 import net.kyori.adventure.util.NameMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.Viewer;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.channel.MessageReceiver;
+import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
 
@@ -49,21 +57,19 @@ public class SpongePlatform implements AdventurePlatform {
   }
 
   private static final SpongePlatform INSTANCE = new SpongePlatform();
-  static final SpongeBossBarListener BOSS_BAR_LISTENER = new SpongeBossBarListener();
 
   public static AdventurePlatform provider() {
     return INSTANCE;
   }
-
-  public static <V extends Viewer & MessageReceiver> Audience audience(final @NonNull V player) {
-    return new SpongeFullAudience<>(player);
-  }
-
+  
   public static Audience audience(MessageReceiver receiver) {
-    if(receiver instanceof Viewer) {
-      return new SpongeFullAudience<>((MessageReceiver & Viewer) receiver);
+    final SpongePlatform p = INSTANCE; // todo: integrate
+    if(receiver instanceof Player) {
+      return new HandledAudience<>((Player) receiver, p.chat, p.actionBar, p.title, p.bossBar, p.sound);
+    } else if(receiver instanceof Viewer) {
+      return new HandledAudience<>((Viewer & MessageReceiver) receiver, p.chat, p.actionBar, p.title, null, p.sound);
     } else {
-      return new SpongeAudience<>(receiver);
+      return new HandledAudience<>(receiver, p.chat, p.actionBar, null, null, null);
     }
   }
 
@@ -90,8 +96,21 @@ public class SpongePlatform implements AdventurePlatform {
     return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
+  
+  private final HandlerCollection<MessageReceiver, Handler.Chat<MessageReceiver, ?>> chat;
+  private final HandlerCollection<MessageReceiver, Handler.ActionBar<MessageReceiver, ?>> actionBar;
+  private final HandlerCollection<Viewer, Handler.Titles<Viewer>> title;
+  private final HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
+  private final HandlerCollection<Viewer, Handler.PlaySound<Viewer>> sound;
 
-  private SpongePlatform() { }
+  private SpongePlatform() { 
+    final SpongeViaProvider via = new SpongeViaProvider();
+    this.chat = new HandlerCollection<>(new ViaVersionHandlers.Chat<>(via), new SpongeHandlers.Chat());
+    this.actionBar = new HandlerCollection<>(new ViaVersionHandlers.ActionBar<>(via), new SpongeHandlers.ActionBar());
+    this.title = new HandlerCollection<>(new ViaVersionHandlers.Titles<>(via), new SpongeHandlers.Titles());
+    this.bossBar = new HandlerCollection<>(new ViaVersionHandlers.BossBars<>(via), new SpongeBossBarListener());
+    this.sound = new HandlerCollection<>(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
+  }
 
   @Override
   public @NonNull Audience all() {
@@ -128,6 +147,31 @@ public class SpongePlatform implements AdventurePlatform {
 
   @Override
   public @NonNull Audience server(@NonNull String serverName) {
-    return Audience.empty();
+    return all();
+  }
+  
+  /* package */ static class SpongeViaProvider implements ViaVersionHandlers.ViaAPIProvider<Object> { // too many interfaces :(
+
+    @Override
+    public boolean isAvailable() {
+      return Sponge.getPluginManager().isLoaded("viaversion");
+    }
+
+    @Override
+    public ViaPlatform<?> platform() {
+      if(!isAvailable()) {
+        return null;
+      }
+      final PluginContainer container = Sponge.getPluginManager().getPlugin("viaversion").orElse(null);
+      if(container == null) return null;
+      return (ViaPlatform<?>) container.getInstance().orElse(null);
+    }
+
+    @Override
+    public @Nullable UUID id(final Object viewer) {
+      if(!(viewer instanceof Player)) return null;
+      
+      return ((Player) viewer).getUniqueId();
+    }
   }
 }

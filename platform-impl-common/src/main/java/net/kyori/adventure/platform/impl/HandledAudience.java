@@ -38,16 +38,16 @@ public class HandledAudience<V> implements Audience {
   protected final V viewer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
   private final Handler.@Nullable ActionBar<? super V, ?> actionBarHandler;
-  private final Handler.@Nullable Title<? super V> titleHandler;
-  private final Handler.@Nullable BossBar<? super V> bossBarHandler;
+  private final Handler.Titles<? super V> titleHandler;
+  private final Handler.BossBars<? super V> bossBarHandler;
   private final Handler.@Nullable PlaySound<? super V> soundHandler;
 
   public HandledAudience(
     final @NonNull V viewer,
     final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat,
     final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
-    final @Nullable HandlerCollection<? super V, ? extends Handler.Title<? super V>> title,
-    final @Nullable HandlerCollection<? super V, ? extends Handler.BossBar<? super V>> bossBar,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.BossBars<? super V>> bossBar,
     final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound
   ) {
     this.viewer = requireNonNull(viewer, "viewer");

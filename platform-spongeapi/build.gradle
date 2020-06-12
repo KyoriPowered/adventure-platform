@@ -8,5 +8,6 @@ dependencies {
   api project(":adventure-platform-common")
   api 'net.kyori:adventure-text-serializer-gson'
   implementation project(":adventure-platform-impl-common")
+  implementation project(":adventure-platform-viaversion")
   compileOnly 'org.spongepowered:spongeapi:7.1.0'
 }

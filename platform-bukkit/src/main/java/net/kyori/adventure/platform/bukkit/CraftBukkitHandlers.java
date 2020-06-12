@@ -38,6 +38,7 @@ import net.kyori.adventure.platform.impl.TypedHandler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -258,7 +259,7 @@ public class CraftBukkitHandlers {
     }
   }
 
-  /* package */ static class Title extends PacketSendingHandler<Player> implements Handler.Title<Player> {
+  /* package */ static class Titles extends PacketSendingHandler<Player> implements Handler.Titles<Player> {
 
     @Override
     public boolean isAvailable() {
@@ -266,7 +267,7 @@ public class CraftBukkitHandlers {
     }
 
     @Override
-    public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
+    public void send(final @NonNull Player viewer, final @NonNull Title title) {
       final Object nmsTitleText = mcTextFromComponent(title.title());
       final Object nmsSubtitleText = mcTextFromComponent(title.subtitle());
       try {
@@ -274,9 +275,9 @@ public class CraftBukkitHandlers {
         final Object subtitlePacket = CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_SUBTITLE, nmsSubtitleText);
         Object timesPacket = null;
 
-        final int fadeIn = Handler.Title.ticks(title.fadeInTime());
-        final int stay = Handler.Title.ticks(title.stayTime());
-        final int fadeOut = Handler.Title.ticks(title.fadeOutTime());
+        final int fadeIn = Titles.ticks(title.fadeInTime());
+        final int stay = Titles.ticks(title.stayTime());
+        final int fadeOut = Titles.ticks(title.fadeOutTime());
 
         if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
           timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(fadeIn, stay, fadeOut);
