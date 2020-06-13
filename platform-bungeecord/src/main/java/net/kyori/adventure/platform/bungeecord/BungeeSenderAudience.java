@@ -42,18 +42,14 @@ import static java.util.Objects.requireNonNull;
 public class BungeeSenderAudience implements SenderAudience {
 
   private final CommandSender sender;
-  private final Locale locale;
-  private final boolean console;
 
   public BungeeSenderAudience(final @NonNull CommandSender sender, final @Nullable Locale locale) {
     this.sender = requireNonNull(sender, "command sender");
-    this.locale = locale;
-    this.console = !(sender instanceof Connection);
   }
 
   @Override
   public @Nullable Locale getLocale() {
-    return locale;
+    return null;
   }
 
   @Override
@@ -63,7 +59,7 @@ public class BungeeSenderAudience implements SenderAudience {
 
   @Override
   public boolean isConsole() {
-    return console;
+    return !(this.sender instanceof Connection);
   }
 
   @Override

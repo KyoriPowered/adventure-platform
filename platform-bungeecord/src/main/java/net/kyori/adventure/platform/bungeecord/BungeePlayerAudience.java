@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import net.kyori.adventure.platform.audience.PlayerAudience;
@@ -44,20 +45,17 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
 public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
 
-  private final ProxyServer proxy;
-  private final UUID playerId;
+  private final static ProxyServer PROXY = ProxyServer.getInstance();
   private final ProxiedPlayer player;
 
   public BungeePlayerAudience(final @NonNull ProxyServer proxy, final @NonNull ProxiedPlayer player) {
     super(player, requireNonNull(player, "player").getLocale());
-    this.proxy = requireNonNull(proxy, "proxy");
-    this.playerId = player.getUniqueId();
     this.player = player;
   }
 
   @Override
   public @NonNull UUID getId() {
-    return playerId;
+    return this.player.getUniqueId();
   }
 
   @Override
@@ -67,7 +65,12 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public @Nullable String getServerName() {
-    return player.isConnected() ? player.getServer().getInfo().getName() : null;
+    return this.player.isConnected() ? this.player.getServer().getInfo().getName() : null;
+  }
+
+  @Override
+  public @Nullable Locale getLocale() {
+    return this.player.getLocale();
   }
 
   @Override
@@ -114,7 +117,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void showTitle(final @NonNull Title title) {
-    final net.md_5.bungee.api.Title bungee = proxy.createTitle();
+    final net.md_5.bungee.api.Title bungee = PROXY.createTitle();
     if (!TextComponent.empty().equals(title.title())) {
       bungee.title(BungeeComponentSerializer.INSTANCE.serialize(title.title()));
     }
@@ -131,11 +134,11 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void clearTitle() {
-    this.player.sendTitle(proxy.createTitle().clear());
+    this.player.sendTitle(PROXY.createTitle().clear());
   }
 
   @Override
   public void resetTitle() {
-    this.player.sendTitle(proxy.createTitle().reset());
+    this.player.sendTitle(PROXY.createTitle().reset());
   }
 }

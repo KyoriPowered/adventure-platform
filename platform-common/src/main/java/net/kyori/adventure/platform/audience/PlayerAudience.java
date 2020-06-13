@@ -48,6 +48,7 @@ public interface PlayerAudience extends SenderAudience {
 
     /**
      * Gets the name of the player's server.
+     *
      * @return a server name, or null if unknown or not on a proxy
      */
     @Nullable String getServerName();

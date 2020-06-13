@@ -33,7 +33,6 @@ import java.util.UUID;
  * A platform for implementing Adventure.
  */
 public interface AdventurePlatform {
-
   /**
    * Gets an audience for all online players, including the server's console.
    *

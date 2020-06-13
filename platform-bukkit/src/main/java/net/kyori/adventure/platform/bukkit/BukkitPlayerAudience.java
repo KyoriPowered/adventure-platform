@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.bukkit;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import net.kyori.adventure.platform.audience.PlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
@@ -34,16 +35,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements PlayerAudience {
 
-    private final UUID id;
+    private Locale locale;
+    private String localeRaw;
 
     BukkitPlayerAudience(final @NonNull Player sender, final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title, final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound) {
-        super(sender, toLocale(sender.getLocale()), chat, actionBar, title, bossBar, sound);
-        this.id = sender.getUniqueId();
+        super(sender, chat, actionBar, title, bossBar, sound);
     }
 
     @Override
     public @NonNull UUID getId() {
-        return this.id;
+        return this.viewer.getUniqueId();
     }
 
     @Override
@@ -53,7 +54,17 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Playe
 
     @Override
     public @Nullable String getServerName() {
-        return this.viewer.getServer().getName();
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Locale getLocale() {
+        final String newLocaleRaw = this.viewer.getLocale();
+        if (!Objects.equals(localeRaw, newLocaleRaw)) {
+            locale = toLocale(localeRaw = newLocaleRaw);
+        }
+        return locale;
     }
 
     /**
@@ -63,20 +74,16 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Playe
      * @param mcLocale The locale string, in the format provided by the Minecraft client
      * @return A Locale object matching the provided locale string
      */
-    /* package */ static @NonNull Locale toLocale(final @Nullable String mcLocale) {
-        if(mcLocale == null) return Locale.getDefault();
+    /* package */ static @Nullable Locale toLocale(final @Nullable String mcLocale) {
+        if(mcLocale == null) return null;
 
         final String[] parts = mcLocale.split("_", 3);
         switch(parts.length) {
-            case 0: return Locale.getDefault();
-            case 1:
-                if (parts[0].isEmpty()) {
-                    return Locale.getDefault();
-                }
-                return new Locale(parts[0]);
+            case 0: return null;
+            case 1: return parts[0].isEmpty() ? null : new Locale(parts[0]);
             case 2: return new Locale(parts[0], parts[1]);
             case 3: return new Locale(parts[0], parts[1], parts[2]);
-            default: throw new IllegalArgumentException("Provided locale '" + mcLocale + "' was not in a valid format!");
+            default: return null;
         }
     }
 }

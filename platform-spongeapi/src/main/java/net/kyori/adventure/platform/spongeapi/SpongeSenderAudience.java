@@ -48,7 +48,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 
   @Override
   public @Nullable Locale getLocale() {
-    return this.viewer instanceof CommandSource ? ((CommandSource) viewer).getLocale() : Locale.getDefault();
+    return this.viewer instanceof CommandSource ? ((CommandSource) viewer).getLocale() : null;
   }
 
   @Override

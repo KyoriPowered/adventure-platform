@@ -38,23 +38,18 @@ import static java.util.Objects.requireNonNull;
 
 class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements SenderAudience {
 
-    private final Locale locale;
-    private final boolean console;
-
-    BukkitSenderAudience(final @NonNull S sender, final @Nullable Locale locale,
+    BukkitSenderAudience(final @NonNull S sender,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Titles<? super S>> title,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.BossBars<? super S>> bossBar,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound) {
         super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound);
-        this.locale = locale;
-        this.console = sender instanceof ConsoleCommandSender;
     }
 
     @Override
     public @Nullable Locale getLocale() {
-        return locale;
+        return null;
     }
 
     @Override
@@ -64,7 +59,7 @@ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> i
 
     @Override
     public boolean isConsole() {
-        return console;
+        return this.viewer instanceof ConsoleCommandSender;
     }
 
 }
