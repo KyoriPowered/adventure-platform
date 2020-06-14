@@ -71,6 +71,13 @@ import static java.util.Objects.requireNonNull;
   }
 
   /* package */ static final class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+    private static final boolean HAS_COMMANDSENDER_SPIGOT = Crafty.hasClass("org.bukkit.command.CommandSender$Spigot");
+
+    @Override
+    public boolean isAvailable(final @NonNull CommandSender viewer) {
+      return HAS_COMMANDSENDER_SPIGOT || viewer instanceof Player;
+    }
+
     @Override
     public void send(@NonNull final CommandSender target, final BaseComponent @NonNull [] message) {
       target.spigot().sendMessage(message);
