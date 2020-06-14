@@ -23,30 +23,39 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
-import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
+import net.kyori.adventure.platform.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
 import net.kyori.adventure.util.NameMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.CatalogType;
-import org.spongepowered.api.Platform;
+import org.spongepowered.api.Game;
+import org.spongepowered.api.GameState;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.EventManager;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
+import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartingServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.plugin.PluginManager;
 import org.spongepowered.api.text.channel.MessageReceiver;
-import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
 
-public class SpongePlatform extends AdventurePlatformImpl {
+@Singleton // one instance per plugin module
+public final class SpongePlatform extends AdventurePlatformImpl {
   
   static { // init
     Knobs.logger(new Slf4jLogHandler());
@@ -66,65 +75,106 @@ public class SpongePlatform extends AdventurePlatformImpl {
     return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
-  
-  private final HandlerCollection<MessageReceiver, Handler.Chat<MessageReceiver, ?>> chat;
-  private final HandlerCollection<MessageReceiver, Handler.ActionBar<MessageReceiver, ?>> actionBar;
-  private final HandlerCollection<Viewer, Handler.Titles<Viewer>> title;
-  private final HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
-  private final HandlerCollection<Viewer, Handler.PlaySound<Viewer>> sound;
 
-  public SpongePlatform() { 
-    final SpongeViaProvider via = new SpongeViaProvider();
+  /**
+   * Create a new platform for a plugin. A guice-created instance should be preferred.
+   *
+   * @param container plugin requesting this platform instance
+   * @param game the game
+   * @return platform
+   */
+  public static SpongePlatform of(final @NonNull PluginContainer container, final Game game) {
+    final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
+    platform.init(container);
+    return platform;
+  }
+
+  private final EventManager eventManager;
+  private final Events events;
+  private final PluginManager plugins;
+
+  private HandlerCollection<MessageReceiver, Handler.Chat<MessageReceiver, ?>> chat;
+  private HandlerCollection<MessageReceiver, Handler.ActionBar<MessageReceiver, ?>> actionBar;
+  private HandlerCollection<Viewer, Handler.Titles<Viewer>> title;
+  private HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
+  private HandlerCollection<Viewer, Handler.PlaySound<Viewer>> sound;
+
+  @Inject
+  /* package */ SpongePlatform(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
+    this.eventManager = eventManager;
+    this.plugins = plugins;
+    this.events = new Events(game);
+    if(Sponge.getGame().getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
+      setupHandlers();
+    }
+  }
+
+  @Inject
+  void init(final PluginContainer container) {
+    this.eventManager.registerListeners(container, this.events);
+  }
+
+  /* package */ void setupHandlers() {
+    final SpongeViaProvider via = new SpongeViaProvider(this.plugins);
+
     this.chat = new HandlerCollection<>(new ViaVersionHandlers.Chat<>(via), new SpongeHandlers.Chat());
     this.actionBar = new HandlerCollection<>(new ViaVersionHandlers.ActionBar<>(via), new SpongeHandlers.ActionBar());
     this.title = new HandlerCollection<>(new ViaVersionHandlers.Titles<>(via), new SpongeHandlers.Titles());
     this.bossBar = new HandlerCollection<>(new ViaVersionHandlers.BossBars<>(via), new SpongeBossBarListener());
     this.sound = new HandlerCollection<>(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
-    
-    final PluginContainer instance = Sponge.getPlatform().getContainer(Platform.Component.GAME); // todo: yikes, how do we work around?
-    Sponge.getEventManager().registerListeners(instance, this);
-    
-    add(new SpongeSenderAudience<>(Sponge.getServer().getConsole(), this.chat, this.actionBar, null, null, null));
   }
-  
-  @Listener
-  public void join(final ClientConnectionEvent.@NonNull Join event) {
-    this.add(new SpongePlayerAudience(event.getTargetEntity(), this.chat, this.actionBar, this.title, this.bossBar, this.sound));
-  }
-  
-  @Listener
-  public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
-   this.remove(event.getTargetEntity().getUniqueId());
-  }
-  
-  /* package */ static class SpongeViaProvider implements ViaVersionHandlers.ViaAPIProvider<Object> { // too many interfaces :(
-    
-    private volatile ViaPlatform<?> platform = null;
 
-    @Override
-    public boolean isAvailable() {
-      return Sponge.getPluginManager().isLoaded("viaversion");
+  /**
+   * Internal event wrapper class, do not use.
+   */
+  public class Events {
+
+    private final Game game;
+
+    Events(final @NonNull Game game) {
+      this.game = game;
     }
 
-    @Override
-    public ViaPlatform<?> platform() {
-      if(!isAvailable()) {
-        return null;
-      }
-      ViaPlatform<?> platform = this.platform;
-      if(platform == null) {
-        final PluginContainer container = Sponge.getPluginManager().getPlugin("viaversion").orElse(null);
-        if(container == null) return null;
-        this.platform = platform = (ViaPlatform<?>) container.getInstance().orElse(null);
-      }
-      return platform;
+    @Listener
+    public void setupHandlers(final @NonNull GamePostInitializationEvent event) { // set up handlers so that we don't start too early for ViaVersion
+      SpongePlatform.this.setupHandlers();
     }
 
-    @Override
-    public @Nullable UUID id(final Object viewer) {
-      if(!(viewer instanceof Player)) return null;
-      
-      return ((Player) viewer).getUniqueId();
+    @Listener(order = Order.FIRST)
+    public void join(final ClientConnectionEvent.@NonNull Join event) {
+      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), chat, actionBar, title, bossBar, sound));
     }
+
+    @Listener(order = Order.LAST)
+    public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
+      SpongePlatform.this.remove(event.getTargetEntity().getUniqueId());
+    }
+
+    @Listener
+    public void serverStart(final @NonNull GameStartingServerEvent event) {
+      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), chat, actionBar, null, null, null));
+    }
+
+    @Listener
+    public void serverStop(final @NonNull GameStoppedServerEvent event) {
+      // todo: remove server
+    }
+  }
+
+  public @NonNull Audience audience(final @NonNull MessageReceiver source) {
+    if(source instanceof Player) {
+      return player(((Player) source).getUniqueId());
+    } else if(source instanceof ConsoleSource) {
+      return console();
+    } else if(source instanceof Viewer) {
+      return new SpongeSenderAudience<>((Viewer & MessageReceiver) source, this.chat, this.actionBar, this.title, null, this.sound);
+    } else {
+      return new SpongeSenderAudience<>(source, this.chat, this.actionBar, null, null, null);
+    }
+  }
+
+  @Override
+  public void close() {
+    this.eventManager.unregisterListeners(this.events);
   }
 }

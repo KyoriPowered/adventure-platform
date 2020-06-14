@@ -26,23 +26,29 @@ package net.kyori.adventure.platform.bukkit;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.MutableGraph;
 import java.lang.reflect.Field;
-import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
-import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JdkLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -56,12 +62,11 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
 
-// TODO: use singletons
-public final class BukkitPlatform extends AdventurePlatformImpl {
+public final class BukkitPlatform extends AdventurePlatformImpl implements Listener {
 
+  private static final Map<String, BukkitPlatform> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
 
-  private static final Plugin PLUGIN_SELF;
 
   // A derivative of the Gson serializer that will serialize text appropriately based on the server version
   /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
@@ -73,20 +78,6 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
     } else {
       GSON_SERIALIZER = VersionedGsonComponentSerializer.PRE_1_16;
     }
-    PLUGIN_SELF = (Plugin) Proxy.newProxyInstance(BukkitPlatform.class.getClassLoader(), new Class<?>[] {Plugin.class}, (proxy, method, args) -> {
-      switch(method.getName()) {
-        case "isEnabled":
-          return true;
-        case "getServer":
-          return Bukkit.getServer();
-        case "equals":
-          return proxy == args[0];
-        default:
-          return null;
-      }
-    });
-
-    injectSoftdepend("ViaVersion");
   }
 
   /**
@@ -104,9 +95,9 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
    * @param pluginName plugin to add
    */
   @SuppressWarnings("unchecked")
-  private static void injectSoftdepend(String pluginName) { // begone, warnings!
+  private static void injectSoftdepend(final @NonNull Plugin plugin, final @NonNull String pluginName) { // begone, warnings!
     try {
-      final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitPlatform.class);
+      //final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitPlatform.class);
 
       PluginDescriptionFile pdf = plugin.getDescription();
       if(pdf.getName().equals(pluginName)) return; // don't depend on ourselves?
@@ -130,7 +121,21 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
     }
   }
 
-  private final Server server;
+  public static BukkitPlatform of(final @NonNull Plugin plugin) {
+    final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
+    BukkitPlatform platform = INSTANCES.get(key);
+    if(platform == null) {
+      platform = new BukkitPlatform(plugin);
+      final BukkitPlatform existing = INSTANCES.putIfAbsent(key, platform);
+      if(existing != null) {
+        return existing;
+      }
+      platform.init();
+    }
+    return platform;
+  }
+
+  private final Plugin plugin;
   private final BukkitViaProvider viaProvider;
   private final HandlerCollection<? super CommandSender, ? extends Handler.Chat<? super CommandSender, ?>> chat;
   private final HandlerCollection<Player, Handler.ActionBar<Player, ?>> actionBar;
@@ -138,15 +143,10 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
   private final HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
 
-  public BukkitPlatform() {
-    this(Bukkit.getServer());
-  }
-
-  public BukkitPlatform(final @NonNull Server server) {
-    this.server = requireNonNull(server, "server");
-    this.viaProvider = new BukkitViaProvider();
-
-    this.registerEvents();
+  public BukkitPlatform(final @NonNull Plugin plugin) {
+    this.plugin = requireNonNull(plugin, "plugin");
+    injectSoftdepend(this.plugin, "ViaVersion");
+    this.viaProvider = new BukkitViaProvider(this.plugin.getServer().getPluginManager());
 
     this.chat = new HandlerCollection<>(
       new ViaVersionHandlers.Chat<>(this.viaProvider),
@@ -174,32 +174,66 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
       new BukkitHandlers.PlaySound_NoCategory());
   }
 
-  private void registerEvents() {
-    Crafty.registerEvent(PLUGIN_SELF, PlayerJoinEvent.class, EventPriority.LOWEST, false, event -> {
+  @SuppressWarnings("unchecked")
+  private <T extends Event> void registerEvent(final Class<T> type, final EventPriority priority, final Consumer<T> handler) {
+    requireNonNull(handler, "handler");
+    this.plugin.getServer().getPluginManager().registerEvent(type, this, priority, (listener, event) -> handler.accept((T) event), this.plugin, true);
+  }
+
+  private void init() {
+    registerEvent(PlayerJoinEvent.class, EventPriority.LOWEST, event -> {
       this.add(new BukkitPlayerAudience(event.getPlayer(), chat, actionBar, title, bossBar, playSound));
     });
-    Crafty.registerEvent(PLUGIN_SELF, PlayerQuitEvent.class, EventPriority.MONITOR, false, event -> {
+    registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
       BukkitHandlers.BossBars.handleQuit(event.getPlayer());
     });
     
     // ViaVersion
-    Crafty.registerEvent(PLUGIN_SELF, PluginEnableEvent.class, event -> {
+    registerEvent(PluginEnableEvent.class, EventPriority.NORMAL, event -> {
       if(event.getPlugin().getName().equals(PLUGIN_VIAVERSION)) {
         this.viaProvider.platform(); // init
       }
     });
-    Crafty.registerEvent(PLUGIN_SELF, PluginDisableEvent.class, event -> {
+    registerEvent(PluginDisableEvent.class, EventPriority.NORMAL, event -> {
       if(event.getPlugin().getName().equals(PLUGIN_VIAVERSION)) {
         this.viaProvider.dirtyVia();
       }
     });
 
+    this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.chat, null, null, null, null));
+  }
+
+  public @NonNull Audience player(final @NonNull Player player) {
+    return player(requireNonNull(player, "player").getUniqueId());
+  }
+
+  public @NonNull Audience audience(final @NonNull CommandSender sender) {
+    requireNonNull(sender, "sender");
+
+    if(sender instanceof Player) {
+      return player(((Player) sender).getUniqueId());
+    } else if(sender instanceof ConsoleCommandSender) {
+      return console();
+    } else {
+      return new BukkitSenderAudience<>(sender, this.chat, null, null, null, null);
+    }
+  }
+
+  @Override
+  public void close() {
+    HandlerList.unregisterAll(this);
+    // todo: boss bars
   }
 
   /* package */ static class BukkitViaProvider implements ViaVersionHandlers.ViaAPIProvider<CommandSender> {
 
+    private final PluginManager plugins;
     private volatile ViaPlatform<Player> platform = null;
+
+    /* package */ BukkitViaProvider(final @NonNull PluginManager plugins) {
+      this.plugins = plugins;
+    }
 
     @Override
     public boolean isAvailable() {
@@ -223,7 +257,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl {
     public ViaPlatform<Player> platform() {
       ViaPlatform<Player> platform = this.platform;
       if(platform == null) {
-        this.platform = platform = (ViaPlatform<Player>) Bukkit.getServer().getPluginManager().getPlugin(PLUGIN_VIAVERSION);
+        this.platform = platform = (ViaPlatform<Player>) this.plugins.getPlugin(PLUGIN_VIAVERSION);
       }
       return platform;
     }

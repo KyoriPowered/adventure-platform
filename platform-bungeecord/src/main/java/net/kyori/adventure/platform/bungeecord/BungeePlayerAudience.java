@@ -40,16 +40,16 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
 public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
 
-  private final static ProxyServer PROXY = ProxyServer.getInstance();
+  private final ProxyServer proxy;
   private final ProxiedPlayer player;
 
   public BungeePlayerAudience(final @NonNull ProxyServer proxy, final @NonNull ProxiedPlayer player) {
-    super(player, requireNonNull(player, "player").getLocale());
+    super(player);
+    this.proxy = proxy;
     this.player = player;
   }
 
@@ -117,7 +117,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void showTitle(final @NonNull Title title) {
-    final net.md_5.bungee.api.Title bungee = PROXY.createTitle();
+    final net.md_5.bungee.api.Title bungee = this.proxy.createTitle();
     if (!TextComponent.empty().equals(title.title())) {
       bungee.title(BungeeComponentSerializer.INSTANCE.serialize(title.title()));
     }
@@ -134,11 +134,11 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void clearTitle() {
-    this.player.sendTitle(PROXY.createTitle().clear());
+    this.player.sendTitle(this.proxy.createTitle().clear());
   }
 
   @Override
   public void resetTitle() {
-    this.player.sendTitle(PROXY.createTitle().reset());
+    this.player.sendTitle(this.proxy.createTitle().reset());
   }
 }

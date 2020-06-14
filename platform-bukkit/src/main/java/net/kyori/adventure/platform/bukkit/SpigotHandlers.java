@@ -45,7 +45,7 @@ import static java.util.Objects.requireNonNull;
 /* package */ class SpigotHandlers {
 
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && bind();
-  
+
   private static boolean bind() {
     try {
       final Field gsonField = Crafty.field(ComponentSerializer.class, "gson");

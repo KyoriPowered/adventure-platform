@@ -43,7 +43,7 @@ public class BungeeSenderAudience implements SenderAudience {
 
   private final CommandSender sender;
 
-  public BungeeSenderAudience(final @NonNull CommandSender sender, final @Nullable Locale locale) {
+  public BungeeSenderAudience(final @NonNull CommandSender sender) {
     this.sender = requireNonNull(sender, "command sender");
   }
 

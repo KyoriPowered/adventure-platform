@@ -38,6 +38,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import static net.kyori.adventure.platform.impl.Handler.BossBars.ACTION_REMOVE;
 import static net.kyori.adventure.platform.impl.Handler.BossBars.color;
 import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
 
@@ -108,8 +109,9 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
   public void unsubscribe(final @NonNull BossBar bar, final @NonNull ProxiedPlayer player) {
     this.bars.computeIfPresent(bar, (key, instance) -> {
       if(instance.subscribers.remove(player)) {
-        player.unsafe().sendPacket(instance.newPacket(Handler.BossBars.ACTION_REMOVE));
+        player.unsafe().sendPacket(instance.newPacket(ACTION_REMOVE));
         if(instance.isEmpty()) {
+          bar.removeListener(this);
           return null;
         }
       }
@@ -117,38 +119,28 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
     });
   }
 
-  public void subscribeAll(final @NonNull BossBar bar, final @NonNull Iterable<ProxiedPlayer> players) {
-    final Iterator<ProxiedPlayer> it = players.iterator();
-    if(!it.hasNext()) {
-      return;
-    }
-    final Instance bungee = bungeeCreating(bar);
-    final net.md_5.bungee.protocol.packet.BossBar packet = bungee.newCreatePacket(bar);
-    while(it.hasNext()) {
-      final ProxiedPlayer ply = it.next();
-      if(canSeeBossBars(ply) && bungee.subscribers.add(ply)) {
-        ply.unsafe().sendPacket(packet);
+  public void unsubscribeAll(final @NonNull ProxiedPlayer player) {
+    for(Iterator<Map.Entry<BossBar, Instance>> it = this.bars.entrySet().iterator(); it.hasNext();) {
+      final Map.Entry<BossBar, Instance> entry = it.next();
+      if(entry.getValue().subscribers.remove(player)) {
+        player.unsafe().sendPacket(entry.getValue().newPacket(ACTION_REMOVE));
+        if(entry.getValue().subscribers.isEmpty()) {
+          it.remove();
+          entry.getKey().removeListener(this);
+        }
       }
     }
   }
 
-  public void unsubscribeAll(final @NonNull BossBar bar, Iterable<ProxiedPlayer> players) {
-    final Iterator<ProxiedPlayer> it = players.iterator();
-    if(!it.hasNext()) {
-      return;
+  /**
+   * Unsubscribe ever listener controlled by this listener
+   */
+  public void unsubscribeAll() {
+    for(Map.Entry<BossBar, Instance> entry : this.bars.entrySet()) {
+      entry.getKey().removeListener(this);
+      entry.getValue().sendToSubscribers(entry.getValue().newPacket(ACTION_REMOVE));
     }
-    this.bars.computeIfPresent(bar, (key, instance) -> {
-      while(it.hasNext()) {
-        final ProxiedPlayer player = it.next();
-        if(instance.subscribers.remove(player)) {
-          player.unsafe().sendPacket(instance.newPacket(Handler.BossBars.ACTION_REMOVE));
-        }
-      }
-      if(instance.isEmpty()) {
-        return null;
-      }
-      return instance;
-    });
+    this.bars.clear();
   }
 
   /* package */ static class Instance {

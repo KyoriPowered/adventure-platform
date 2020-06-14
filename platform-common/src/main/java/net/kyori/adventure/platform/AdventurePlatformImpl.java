@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.impl;
+package net.kyori.adventure.platform;
 
+import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.platform.audience.PlayerAudience;
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -42,7 +42,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * A base implementation of adventure platform.
  */
-public class AdventurePlatformImpl implements AdventurePlatform {
+public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     private final Audience all;
     private final Audience console;
@@ -56,8 +56,8 @@ public class AdventurePlatformImpl implements AdventurePlatform {
     public AdventurePlatformImpl() {
         this.console = new ConsoleAudience();
         this.players = new PlayersAudience();
-        this.all = Audience.of(console, players);
-        this.senderSet = new CopyOnWriteArraySet<>();
+        this.senderSet = ConcurrentHashMap.newKeySet();
+        this.all = (MultiAudience) () -> this.senderSet;
         this.playerMap = new ConcurrentSkipListMap<>(UUID::compareTo);
         this.permissionMap = new ConcurrentSkipListMap<>(String::compareTo);
         this.worldMap = new ConcurrentSkipListMap<>(UUID::compareTo);

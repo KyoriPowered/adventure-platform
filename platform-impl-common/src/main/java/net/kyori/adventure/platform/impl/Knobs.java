@@ -38,22 +38,6 @@ public final class Knobs {
   private Knobs() {
   }
 
-  /**
-   * A set of names of providers that should be disabled. Default: empty list
-   */
-  private static final Set<String> DISABLED_PROVIDERS = set("disabled");
-
-  /**
-   * Set to true to print out errors that occur when trying to enable providers.
-   * Errors that are printed would generally be expected
-   */
-  private static final boolean PRINT_ERRORS = bool("printErrors", false);
-
-  /**
-   * Log the handlers chosen for any single audience created
-   */
-  private static final boolean PRINT_CHOSEN_HANDLER = bool("printChosenHandler", false);
-
   private static final String PROPERTY_PREFIX = "net.kyori.adventure.";
   private static final @NonNull Pattern COMMA_SPLIT = Pattern.compile(",");
 
@@ -72,7 +56,7 @@ public final class Knobs {
 
   /**
    * Get a property that is a set, from a comma-separated string.
-   * 
+   *
    * @param key property key, will be appended to adventure namespace
    * @return property value, or empty set if unset.
    */
@@ -81,12 +65,28 @@ public final class Knobs {
     if(prop == null || prop.isEmpty()) {
       return Collections.emptySet();
     }
-    assert COMMA_SPLIT != null; // why intellij?
 
     return Collections.unmodifiableSet(COMMA_SPLIT.splitAsStream(prop)
       .map(String::toLowerCase)
       .collect(Collectors.toSet()));
   }
+
+  /**
+   * A set of names of providers that should be disabled. Default: empty list
+   */
+  private static final Set<String> DISABLED_PROVIDERS = set("disabled");
+
+  /**
+   * Set to true to print out errors that occur when trying to enable providers.
+   * Errors that are printed would generally be expected
+   */
+  private static final boolean PRINT_ERRORS = bool("printErrors", false);
+
+  /**
+   * Log the handlers chosen for any single audience created
+   */
+  private static final boolean PRINT_CHOSEN_HANDLER = bool("printChosenHandler", false);
+
 
   /**
    *

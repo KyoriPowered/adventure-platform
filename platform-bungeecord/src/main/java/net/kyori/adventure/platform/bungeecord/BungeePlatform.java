@@ -23,75 +23,91 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import java.lang.reflect.Field;
-import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.JdkLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
-import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.PluginManager;
-import net.md_5.bungee.event.EventBus;
 import net.md_5.bungee.event.EventHandler;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 public class BungeePlatform extends AdventurePlatformImpl implements Listener {
+
+  private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
   
   static {
     Knobs.logger(new JdkLogHandler());
   }
 
-  private final ProxyServer proxy;
+  public static BungeePlatform of(final @NonNull Plugin plugin) {
+    requireNonNull(plugin, "A plugin instance is required");
 
-  public BungeePlatform() {
-    this(ProxyServer.getInstance());
+    final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
+    BungeePlatform platform = INSTANCES.get(key);
+    if(platform == null) {
+      platform = new BungeePlatform(key, plugin);
+      final BungeePlatform existing = INSTANCES.putIfAbsent(key, platform);
+      if(existing != null) {
+        return existing;
+      }
+      platform.init();
+    }
+    return platform;
   }
 
-  BungeePlatform(final @NonNull ProxyServer proxy) {
-    this.proxy = requireNonNull(proxy, "proxy");
-    
-    final EventBus bus = eventBus(proxy);
-    if(bus != null) {
-      bus.register(this);
-    } else {
-      try {
-        this.proxy.getPluginManager().registerListener(new Plugin() {}, this);
-      } catch(Exception ex) {
-        Knobs.logError("registering events with fake plugin", ex);
-      }
+  private final String key;
+  private final Plugin plugin;
+
+  BungeePlatform(final String key, final Plugin plugin) {
+    this.key = requireNonNull(key, "key");
+    this.plugin = requireNonNull(plugin, "plugin");
+  }
+
+  private void init() {
+    try {
+      this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this);
+    } catch(Exception ex) {
+      Knobs.logError("registering events with plugin", ex);
     }
+    add(new BungeeSenderAudience(this.plugin.getProxy().getConsole()));
   }
 
   @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
   public void onLogin(PostLoginEvent event) {
-    this.add(new BungeePlayerAudience(proxy, event.getPlayer()));
+    this.add(new BungeePlayerAudience(this.plugin.getProxy(), event.getPlayer()));
   }
 
   @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
   public void onQuit(PlayerDisconnectEvent event) {
     this.remove(event.getPlayer().getUniqueId());
+    BungeeBossBarListener.INSTANCE.unsubscribeAll(event.getPlayer());
   }
 
-  /**
-   * Attempt to access the server's event bus, so we can register events without a Plugin instance
-   * @param server server to get bus from
-   * @return the event bus, or null if unable to retrieve
-   */
-  private static @Nullable EventBus eventBus(final @NonNull ProxyServer server) {
-    final PluginManager mgr = server.getPluginManager();
-    try {
-      final Field eventBusField = mgr.getClass().getDeclaredField("eventBus");
-      eventBusField.setAccessible(true);
-      return (EventBus) eventBusField.get(mgr);
-    } catch(NoSuchFieldException | IllegalAccessException ex) {
-      Knobs.logError("getting Bungee event bus", ex);
-      return null;
+  public Audience audience(final @NonNull CommandSender sender)  {
+    requireNonNull(sender, "sender");
+    if(sender instanceof ProxiedPlayer) {
+      return player(((ProxiedPlayer) sender).getUniqueId());
+    } else if(sender == this.plugin.getProxy().getConsole()) {
+      return console();
+    } else {
+      return new BungeeSenderAudience(sender);
     }
   }
-  
+
+  @Override
+  public void close() {
+    INSTANCES.remove(this.key);
+    this.plugin.getProxy().getPluginManager().unregisterListener(this);
+    BungeeBossBarListener.INSTANCE.unsubscribeAll();
+  }
 }

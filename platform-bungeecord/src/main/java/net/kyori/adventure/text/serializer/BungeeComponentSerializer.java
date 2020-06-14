@@ -29,10 +29,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -93,7 +97,26 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
                 modifiedFactories.add(index, newFactory);
             }
 
-            modifiedFactories.add(index, TreeTypeAdapter.newFactoryWithMatchRawType(TypeToken.get(AdapterComponent.class), new Serializer()));
+            modifiedFactories.add(index, new TypeAdapterFactory() {
+                @Override
+                public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
+                    if(!AdapterComponent.class.equals(type.getRawType())) {
+                        return null;
+                    }
+                    final TypeAdapter<Component> ret = gson.getAdapter(Component.class);
+                    return new TypeAdapter<T>() {
+                        @Override
+                        public void write(final JsonWriter out, final T value) throws IOException {
+                            ret.write(out, (Component) value);
+                        }
+
+                        @Override
+                        public T read(final JsonReader in) throws IOException {
+                            return (T) ret.read(in);
+                        }
+                    }.nullSafe();
+                }
+            });
 
             factoriesField.set(gson, modifiedFactories);
             return true;
@@ -137,13 +160,6 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
         @Override
         public BaseComponent duplicate() {
             return this;
-        }
-    }
-
-    private static final class Serializer implements JsonSerializer<AdapterComponent> {
-        @Override
-        public JsonElement serialize(final AdapterComponent src, final Type typeOfSrc, final JsonSerializationContext context) {
-            return context.serialize(src.component);
         }
     }
 }
