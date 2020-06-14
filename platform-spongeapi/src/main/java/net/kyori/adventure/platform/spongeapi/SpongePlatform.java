@@ -34,6 +34,7 @@ import net.kyori.adventure.util.NameMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.CatalogType;
+import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.entity.living.player.Player;
@@ -80,7 +81,7 @@ public class SpongePlatform extends AdventurePlatformImpl {
     this.bossBar = new HandlerCollection<>(new ViaVersionHandlers.BossBars<>(via), new SpongeBossBarListener());
     this.sound = new HandlerCollection<>(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
     
-    final PluginContainer instance = () -> "adventure";
+    final PluginContainer instance = Sponge.getPlatform().getContainer(Platform.Component.GAME); // todo: yikes, how do we work around?
     Sponge.getEventManager().registerListeners(instance, this);
     
     add(new SpongeSenderAudience<>(Sponge.getServer().getConsole(), this.chat, this.actionBar, null, null, null));

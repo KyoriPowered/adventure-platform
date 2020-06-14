@@ -108,8 +108,6 @@ public final class ViaVersionHandlers {
     public boolean isAvailable() {
       if(!Knobs.enabled(ID)) return false;
       if(!via.isAvailable()) return false;
-      if(ProtocolRegistry.SERVER_PROTOCOL >= version().getId()) return false; // using the protocol of this version, only adapt for older servers
-
       try {
         Class.forName("us.myles.ViaVersion.protocols.protocol1_16to1_15_2.Protocol1_16To1_15_2"); // make sure we're on a new version
         return true;
@@ -122,13 +120,13 @@ public final class ViaVersionHandlers {
     @Override
     public boolean isAvailable(final @NonNull V viewer) {
       final ViaPlatform<?> platform = this.via.platform();
-      if(platform == null) {
-        return false;
-      }
+      if(platform == null) return false;
       final UUID viewerId = this.via.id(viewer);
       if(viewerId == null) {
         return false;
       }
+
+      if(ProtocolRegistry.SERVER_PROTOCOL >= version().getId()) return false;
 
       return platform.getApi().getPlayerVersion(viewerId) >= version().getId();
     }
