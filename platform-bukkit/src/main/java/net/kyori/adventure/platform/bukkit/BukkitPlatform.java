@@ -148,24 +148,24 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     injectSoftdepend(this.plugin, "ViaVersion");
     this.viaProvider = new BukkitViaProvider(this.plugin.getServer().getPluginManager());
 
-    this.chat = new HandlerCollection<>(
+    this.chat = HandlerCollection.of(
       new ViaVersionHandlers.Chat<>(this.viaProvider),
       new SpigotHandlers.Chat(),
       new CraftBukkitHandlers.Chat(),
       new BukkitHandlers.Chat());
-    this.actionBar = new HandlerCollection<>(
+    this.actionBar = HandlerCollection.of(
       new ViaVersionHandlers.ActionBar<>(this.viaProvider),
       new SpigotHandlers.ActionBar(),
       new CraftBukkitHandlers.ActionBarModern(),
       new CraftBukkitHandlers.ActionBar1_8thru1_11());
-    this.title = new HandlerCollection<>(
+    this.title = HandlerCollection.of(
       new ViaVersionHandlers.Titles<>(this.viaProvider),
       new PaperHandlers.Titles(),
       new CraftBukkitHandlers.Titles());
-    this.bossBar = new HandlerCollection<>(
+    this.bossBar = HandlerCollection.of(
       new ViaVersionHandlers.BossBars<>(this.viaProvider),
       new BukkitHandlers.BossBars());
-    this.playSound = new HandlerCollection<>(
+    this.playSound = HandlerCollection.of(
       new BukkitHandlers.PlaySound_WithCategory(),
       new ViaVersionHandlers.PlaySound<>(this.viaProvider, player -> {
         final Location pos = player.getLocation();

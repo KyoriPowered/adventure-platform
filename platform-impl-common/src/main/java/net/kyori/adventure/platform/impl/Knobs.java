@@ -49,7 +49,7 @@ public final class Knobs {
    * @return property value
    */
   private static boolean bool(final @NonNull String key, final boolean def) {
-    final String property = System.getProperty(key);
+    final String property = System.getProperty(PROPERTY_PREFIX + key);
     if(property == null || property.isEmpty()) return def;
     return Boolean.parseBoolean(property);
   }

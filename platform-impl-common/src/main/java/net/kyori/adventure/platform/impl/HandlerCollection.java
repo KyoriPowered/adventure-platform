@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
@@ -33,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Collection, that exposes the first available handler
+ * Collection, that exposes the first available handler.
  *
  * @param <H> handler type
  */
@@ -41,10 +42,21 @@ public class HandlerCollection<V, H extends Handler<V>> implements Iterable<H> {
   private final @NonNull List<H> handlers;
 
   @SafeVarargs
-  public HandlerCollection(final @NonNull H@NonNull... handlers) {
-    this.handlers = Stream.of(handlers)
-      .filter(Handler::isAvailable)
-      .collect(Collectors.toList());
+  public static <V, H extends Handler<V>> HandlerCollection<V, H> of(final @NonNull H@NonNull... handlers) {
+    final List<H> handlerList = Stream.of(handlers)
+    .filter(Handler::isAvailable)
+    .collect(Collectors.toList());
+    if(handlerList.isEmpty()) {
+      return new HandlerCollection<>(Collections.emptyList());
+    } else if(handlerList.size() == 1) {
+      return new HandlerCollection<>(Collections.singletonList(handlerList.get(0)));
+    } else {
+      return new HandlerCollection<>(Collections.unmodifiableList(handlerList));
+    }
+  }
+
+  private HandlerCollection(final @NonNull List<H> handlers) {
+    this.handlers = handlers;
   }
 
   public @Nullable H get(final V viewer) {
