@@ -116,6 +116,20 @@ import org.spongepowered.api.entity.living.player.Player;
   }
 
   @Override
+  public void hideAll(final @NonNull Player viewer) {
+    for(Map.Entry<BossBar, ServerBossBar> entry : this.bars.entrySet()) {
+      entry.getValue().removePlayers(entry.getValue().getPlayers());
+      entry.getKey().removeListener(this);
+    }
+    this.bars.clear();
+  }
+
+  @Override
+  public void hideAll() {
+
+  }
+
+  @Override
   public boolean isAvailable() {
     return true;
   }

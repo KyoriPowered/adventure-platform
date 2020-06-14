@@ -23,7 +23,10 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -34,7 +37,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @param <H> handler type
  */
-public class HandlerCollection<V, H extends Handler<V>> {
+public class HandlerCollection<V, H extends Handler<V>> implements Iterable<H> {
   private final @NonNull List<H> handlers;
 
   @SafeVarargs
@@ -53,5 +56,20 @@ public class HandlerCollection<V, H extends Handler<V>> {
     }
     Knobs.logChosenHandler(viewer, null);
     return null;
+  }
+
+  @Override
+  public @NonNull Iterator<H> iterator() {
+    return this.handlers.iterator();
+  }
+
+  @Override
+  public void forEach(final Consumer<? super H> action) {
+    this.handlers.forEach(action);
+  }
+
+  @Override
+  public Spliterator<H> spliterator() {
+    return this.handlers.spliterator();
   }
 }

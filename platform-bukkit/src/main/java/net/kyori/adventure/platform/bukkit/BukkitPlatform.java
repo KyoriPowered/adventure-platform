@@ -186,7 +186,9 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     });
     registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
-      BukkitHandlers.BossBars.handleQuit(event.getPlayer());
+      for(Handler.BossBars<Player> handler : this.bossBar) {
+        handler.hideAll(event.getPlayer());
+      }
     });
     
     // ViaVersion
@@ -223,7 +225,9 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
   @Override
   public void close() {
     HandlerList.unregisterAll(this);
-    // todo: boss bars
+    for(Handler.BossBars<Player> handler : this.bossBar) {
+      handler.hideAll();
+    }
   }
 
   /* package */ static class BukkitViaProvider implements ViaVersionHandlers.ViaAPIProvider<CommandSender> {

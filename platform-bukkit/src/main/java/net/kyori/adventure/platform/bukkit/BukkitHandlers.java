@@ -65,12 +65,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
     private static final BukkitBossBarListener LISTENERS = new BukkitBossBarListener();
 
-    static void handleQuit(final @NonNull Player player) {
-      if(SUPPORTED) {
-        LISTENERS.unsubscribeFromAll(player);
-      }
-    }
-
     @Override
     public boolean isAvailable() {
       return SUPPORTED;
@@ -84,6 +78,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     @Override
     public void hide(final @NonNull Player viewer, final @NonNull BossBar bar) {
       LISTENERS.unsubscribe(viewer, bar);
+    }
+
+    @Override
+    public void hideAll(final @NonNull Player viewer) {
+      LISTENERS.unsubscribeFromAll(viewer);
+    }
+
+    @Override
+    public void hideAll() {
+      LISTENERS.unsubscribeAll();
     }
   }
 

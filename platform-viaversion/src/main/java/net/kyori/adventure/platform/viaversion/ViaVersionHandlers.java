@@ -24,12 +24,14 @@
 package net.kyori.adventure.platform.viaversion;
 
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
@@ -275,6 +277,32 @@ public final class ViaVersionHandlers {
       if(barInstance != null) {
         send(barInstance.make(connection(viewer), ACTION_REMOVE));
       }
+    }
+
+    @Override
+    public void hideAll(@NonNull final V viewer) {
+      final UUID id = this.via.id(viewer);
+      for(Iterator<Map.Entry<BossBar, Instance>> it = this.bars.entrySet().iterator(); it.hasNext();) {
+        final Map.Entry<BossBar, Instance> entry = it.next();
+        if(entry.getValue().subscribedPlayers.remove(id)) {
+          this.send(entry.getValue().make(this.via.connection(viewer), ACTION_REMOVE));
+          if(entry.getValue().subscribedPlayers.isEmpty()) {
+            it.remove();
+            entry.getKey().removeListener(this);
+          }
+        }
+
+      }
+
+    }
+
+    @Override
+    public void hideAll() {
+      for(Map.Entry<BossBar, Instance> entry : this.bars.entrySet()) {
+        entry.getValue().sendToSubscribers(entry.getKey(), ACTION_REMOVE, (pkt, bar) -> {});
+        entry.getKey().removeListener(this);
+      }
+      this.bars.clear();
     }
 
     @Override

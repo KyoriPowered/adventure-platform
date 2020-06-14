@@ -176,6 +176,14 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
   }
 
+  void unsubscribeAll() {
+    for(Map.Entry<BossBar, org.bukkit.boss.BossBar> entry : this.bars.entrySet()) {
+      entry.getValue().removeAll();
+      entry.getKey().removeListener(this);
+    }
+    this.bars.clear();
+  }
+
   /**
    * Set the name on a Bukkit boss bar.
    */

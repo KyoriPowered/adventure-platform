@@ -148,6 +148,11 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     @Listener(order = Order.LAST)
     public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
       SpongePlatform.this.remove(event.getTargetEntity().getUniqueId());
+      if(bossBar != null) {
+        for(Handler.BossBars<Player> handler : bossBar) {
+          handler.hideAll(event.getTargetEntity());
+        }
+      }
     }
 
     @Listener
@@ -176,5 +181,8 @@ public final class SpongePlatform extends AdventurePlatformImpl {
   @Override
   public void close() {
     this.eventManager.unregisterListeners(this.events);
+    for(Handler.BossBars<Player> handler : this.bossBar) {
+      handler.hideAll();
+    }
   }
 }

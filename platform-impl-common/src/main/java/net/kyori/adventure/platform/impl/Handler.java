@@ -148,6 +148,18 @@ public interface Handler<V> {
 
     void show(final @NonNull V viewer, final @NonNull BossBar bar);
     void hide(final @NonNull V viewer, final @NonNull BossBar bar);
+
+    /**
+     * Remove the viewer from all handled boss bars
+     *
+     * @param viewer viewer to hide all boss bars for.
+     */
+    void hideAll(final @NonNull V viewer);
+
+    /**
+     * Hide every boss bar from every associated viewer
+     */
+    void hideAll();
   }
   
   interface PlaySound<V> extends Handler<V> {
