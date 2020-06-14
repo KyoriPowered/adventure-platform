@@ -27,13 +27,14 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 import static net.kyori.adventure.platform.bukkit.BukkitPlayerAudience.toLocale;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BukkitPlayerAudienceTest {
   @Test
-  public void testLocaleFromEmptyStringOrNullIsDefault() {
-    assertEquals(Locale.getDefault(), toLocale(""));
-    assertEquals(Locale.getDefault(), toLocale(null));
+  public void testLocaleFromEmptyStringOrNullIsNull() {
+    assertNull(toLocale(""));
+    assertNull(toLocale(null));
   }
 
   @Test
