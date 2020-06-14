@@ -47,8 +47,12 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
   }
 
   private final ProxyServer proxy;
-  
-  public BungeePlatform(final @NonNull ProxyServer proxy) {
+
+  public BungeePlatform() {
+    this(ProxyServer.getInstance());
+  }
+
+  BungeePlatform(final @NonNull ProxyServer proxy) {
     this.proxy = requireNonNull(proxy, "proxy");
     
     final EventBus bus = eventBus(proxy);
