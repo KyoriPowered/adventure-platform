@@ -23,110 +23,85 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.spongepowered.api.boss.BossBarColor;
 import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.entity.living.player.Player;
 
-/* package */ class SpongeBossBarListener implements BossBar.Listener, Handler.BossBars<Player> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SpongeBossBarListener.class);
-
-  private final Map<BossBar, ServerBossBar> bars = new IdentityHashMap<>();
+/* package */ class SpongeBossBarListener extends AbstractBossBarListener<Player, ServerBossBar> {
 
   SpongeBossBarListener() {
   }
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    updateBar(bar, newName, (val, sponge) -> sponge.setName(SpongeComponentSerializer.INSTANCE.serialize(val)));
+    handle(bar, newName, (val, sponge) -> sponge.setName(SpongeComponentSerializer.INSTANCE.serialize(val)));
   }
 
   @Override
   public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
-    updateBar(bar, newPercent, (val, sponge) -> sponge.setPercent(val));
+    handle(bar, newPercent, (val, sponge) -> sponge.setPercent(val));
   }
 
   @Override
   public void bossBarColorChanged(final @NonNull BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
-    updateBar(bar, newColor, (val, sponge) -> sponge.setColor(SpongePlatform.sponge(BossBarColor.class, val, BossBar.Color.NAMES)));
+    handle(bar, newColor, (val, sponge) -> sponge.setColor(SpongePlatform.sponge(BossBarColor.class, val, BossBar.Color.NAMES)));
   }
 
   @Override
   public void bossBarOverlayChanged(final @NonNull BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
-    updateBar(bar, newOverlay, (val, sponge) -> sponge.setOverlay(SpongePlatform.sponge(BossBarOverlay.class, val, BossBar.Overlay.NAMES)));
+    handle(bar, newOverlay, (val, sponge) -> sponge.setOverlay(SpongePlatform.sponge(BossBarOverlay.class, val, BossBar.Overlay.NAMES)));
   }
 
   @Override
   public void bossBarFlagsChanged(final @NonNull BossBar bar, final @NonNull Set<BossBar.Flag> oldFlags, final @NonNull Set<BossBar.Flag> newFlags) {
-    updateBar(bar, newFlags, (flags, sponge) -> {
+    handle(bar, newFlags, (flags, sponge) -> {
       sponge.setCreateFog(flags.contains(BossBar.Flag.CREATE_WORLD_FOG));
       sponge.setDarkenSky(flags.contains(BossBar.Flag.DARKEN_SCREEN));
       sponge.setPlayEndBossMusic(flags.contains(BossBar.Flag.PLAY_BOSS_MUSIC));
     });
   }
 
-  private <T> void updateBar(final @NonNull BossBar bar, final @Nullable T change, final @NonNull BiConsumer<T, ServerBossBar> applicator) {
-    final ServerBossBar sponge = this.bars.get(bar);
-    if(sponge == null) {
-      LOGGER.warn("Attached to Adventure BossBar {} but did not have an associated Sponge bar. Ignoring change.", bar);
-      return;
-    }
-    applicator.accept(change, sponge);
+  @NonNull
+  @Override
+  protected ServerBossBar newInstance(final @NonNull BossBar adventure) {
+    return ServerBossBar.builder()
+      .name(SpongeComponentSerializer.INSTANCE.serialize(adventure.name()))
+      .percent(adventure.percent())
+      .color(SpongePlatform.sponge(BossBarColor.class, adventure.color(), BossBar.Color.NAMES))
+      .overlay(SpongePlatform.sponge(BossBarOverlay.class, adventure.overlay(), BossBar.Overlay.NAMES))
+      .createFog(adventure.flags().contains(BossBar.Flag.CREATE_WORLD_FOG))
+      .darkenSky(adventure.flags().contains(BossBar.Flag.DARKEN_SCREEN))
+      .playEndBossMusic(adventure.flags().contains(BossBar.Flag.PLAY_BOSS_MUSIC))
+      .build();
   }
 
   @Override
-  public void show(final @NonNull Player viewer, final @NonNull BossBar adventure) {
-    this.bars.computeIfAbsent(adventure, key -> {
-      key.addListener(this);
-      return ServerBossBar.builder()
-        .name(SpongeComponentSerializer.INSTANCE.serialize(key.name()))
-        .percent(key.percent())
-        .color(SpongePlatform.sponge(BossBarColor.class, key.color(), BossBar.Color.NAMES))
-        .overlay(SpongePlatform.sponge(BossBarOverlay.class, key.overlay(), BossBar.Overlay.NAMES))
-        .createFog(key.flags().contains(BossBar.Flag.CREATE_WORLD_FOG))
-        .darkenSky(key.flags().contains(BossBar.Flag.DARKEN_SCREEN))
-        .playEndBossMusic(key.flags().contains(BossBar.Flag.PLAY_BOSS_MUSIC))
-        .build();
-    }).addPlayer(viewer);
+  protected void show(final @NonNull Player viewer, final @NonNull ServerBossBar bar) {
+    bar.addPlayer(viewer);
   }
 
   @Override
-  public void hide(final @NonNull Player player, final @NonNull BossBar adventure) {
-    this.bars.computeIfPresent(adventure, (key, existing) -> {
-      existing.removePlayer(player);
-      if(existing.getPlayers().isEmpty()) {
-        key.removeListener(this);
-        return null;
-      } else {
-        return existing;
-      }
-    });
+  protected boolean hide(final @NonNull Player viewer, final @NonNull ServerBossBar bar) {
+    final boolean had = bar.getPlayers().contains(viewer);
+    bar.removePlayer(viewer);
+    return had;
   }
 
   @Override
-  public void hideAll(final @NonNull Player viewer) {
-    for(Map.Entry<BossBar, ServerBossBar> entry : this.bars.entrySet()) {
-      entry.getValue().removePlayers(entry.getValue().getPlayers());
-      entry.getKey().removeListener(this);
-    }
-    this.bars.clear();
+  protected boolean isEmpty(final @NonNull ServerBossBar bar) {
+    return bar.getPlayers().isEmpty();
   }
 
   @Override
-  public void hideAll() {
-
+  protected void hideFromAll(final @NonNull ServerBossBar bar) {
+    bar.removePlayers(bar.getPlayers());
   }
 
   @Override

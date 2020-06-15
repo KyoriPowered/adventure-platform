@@ -40,7 +40,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /* package */ class BukkitHandlers {
   private BukkitHandlers() {}
 
-  private static String legacy(final @NonNull Component component) {
+  /* package */ static String legacy(final @NonNull Component component) {
       return LegacyComponentSerializer.legacy().serialize(component);
   }
 
@@ -61,36 +61,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
   }
 
-  /* package */ static class BossBars implements Handler.BossBars<Player> {
-    /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
-    private static final BukkitBossBarListener LISTENERS = new BukkitBossBarListener();
-
-    @Override
-    public boolean isAvailable() {
-      return SUPPORTED;
-    }
-
-    @Override
-    public void show(final @NonNull Player viewer, final @NonNull BossBar bar) {
-      LISTENERS.subscribe(viewer, bar);
-    }
-
-    @Override
-    public void hide(final @NonNull Player viewer, final @NonNull BossBar bar) {
-      LISTENERS.unsubscribe(viewer, bar);
-    }
-
-    @Override
-    public void hideAll(final @NonNull Player viewer) {
-      LISTENERS.unsubscribeFromAll(viewer);
-    }
-
-    @Override
-    public void hideAll() {
-      LISTENERS.unsubscribeAll();
-    }
-  }
-
   /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
 
     @Override
@@ -100,7 +70,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     @Override
     public boolean isAvailable() {
-      return BukkitHandlers.BossBars.SUPPORTED;
+      return BukkitBossBarListener.SUPPORTED;
     }
   }
 

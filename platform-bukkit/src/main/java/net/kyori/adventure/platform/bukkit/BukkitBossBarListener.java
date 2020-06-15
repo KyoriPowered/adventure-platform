@@ -23,13 +23,9 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.text.Component;
@@ -40,54 +36,46 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class BukkitBossBarListener implements BossBar.Listener {
+/* package */ final class BukkitBossBarListener extends AbstractBossBarListener<Player, org.bukkit.boss.BossBar> {
+  /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
   private static final BossBar.Flag[] FLAGS = BossBar.Flag.values();
   private static final HandlerCollection<org.bukkit.boss.BossBar, NameSetter> SET_NAME = HandlerCollection.of(new CraftBukkitHandlers.BossBarNameSetter(), new BukkitHandlers.BossBarNameSetter());
-
-  private final Map<BossBar, org.bukkit.boss.BossBar> bars = Collections.synchronizedMap(new IdentityHashMap<>());
 
   /* package */ BukkitBossBarListener() {
   }
 
-  private void withBar(final BossBar bar, final Consumer<org.bukkit.boss.BossBar> consumer) {
-    final org.bukkit.boss.BossBar bukkit = this.bars.get(bar);
-    if(bukkit != null) {
-      consumer.accept(bukkit);
-    }
-  }
-
   @Override
   public void bossBarNameChanged(@NonNull final BossBar bar, @NonNull final Component oldName, @NonNull final Component newName) {
-    this.withBar(bar, bukkit -> {
+    this.handle(bar, newName, (val, bukkit) -> {
       final NameSetter setter = SET_NAME.get(bukkit);
       if(setter != null) {
-        setter.setName(bukkit, bar.name());
+        setter.setName(bukkit, val);
       }
     });
   }
 
   @Override
   public void bossBarPercentChanged(@NonNull final BossBar bar, final float oldPercent, final float newPercent) {
-    this.withBar(bar, bukkit -> bukkit.setProgress(newPercent));
+    this.handle(bar, newPercent, (val, bukkit) -> bukkit.setProgress(val));
   }
 
   @Override
   public void bossBarColorChanged(@NonNull final BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
-    this.withBar(bar, bukkit -> bukkit.setColor(bukkit(newColor)));
+    this.handle(bar, newColor, (val, bukkit) -> bukkit.setColor(bukkit(val)));
   }
 
   @Override
   public void bossBarOverlayChanged(@NonNull final BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
-    this.withBar(bar, bukkit -> bukkit.setStyle(bukkit(newOverlay)));
+    this.handle(bar, newOverlay, (val, bukkit) -> bukkit.setStyle(bukkit(val)));
   }
 
   @Override
   public void bossBarFlagsChanged(@NonNull final BossBar bar, @NonNull final Set<BossBar.Flag> oldFlags, @NonNull final Set<BossBar.Flag> newFlags) {
-    this.withBar(bar, bukkit -> {
+    this.handle(bar, newFlags, (val, bukkit) -> {
       for(int i = 0, length = FLAGS.length; i < length; i++) {
         final BossBar.Flag flag = FLAGS[i];
         final BarFlag bukkitFlag = bukkit(flag);
-        if(newFlags.contains(flag)) {
+        if(val.contains(flag)) {
           bukkit.addFlag(bukkitFlag);
         } else {
           bukkit.removeFlag(bukkitFlag);
@@ -95,6 +83,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       }
     });
   }
+
   private static BarColor bukkit(final BossBar.@NonNull Color color) {
     if(color == BossBar.Color.PINK) {
       return BarColor.PINK;
@@ -140,48 +129,42 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     throw new IllegalArgumentException();
   }
 
-  void subscribe(final @NonNull Player player, final @NonNull BossBar bar) {
-    final org.bukkit.boss.BossBar bukkit = this.bars.computeIfAbsent(bar, adventure -> {
-      final org.bukkit.boss.BossBar ret = Bukkit.createBossBar("", bukkit(adventure.color()), bukkit(adventure.overlay()));
-      final NameSetter nameSetter = SET_NAME.get(ret);
-      if(nameSetter != null) {
-        nameSetter.setName(ret, adventure.name());
-      }
-      ret.setProgress(adventure.percent());
-      bar.addListener(this);
-      return ret;
-    });
-    bukkit.addPlayer(player);
-  }
-
-  void unsubscribe(final @NonNull Player player, final @NonNull BossBar bar) {
-    this.bars.computeIfPresent(bar, (adventure, bukkit) -> {
-      bukkit.removePlayer(player);
-      if(bukkit.getPlayers().isEmpty()) {
-        bar.removeListener(this);
-        return null;
-      } else {
-        return bukkit;
-      }
-    });
-  }
-
-  public void unsubscribeFromAll(final @NonNull Player player) {
-    for(Iterator<org.bukkit.boss.BossBar> it = this.bars.values().iterator(); it.hasNext();) {
-      final org.bukkit.boss.BossBar bukkit = it.next();
-      bukkit.removePlayer(player);
-      if(bukkit.getPlayers().isEmpty()) {
-        it.remove();
-      }
+  @Override
+  protected org.bukkit.boss.@NonNull BossBar newInstance(final @NonNull BossBar adventure) {
+    final org.bukkit.boss.BossBar ret = Bukkit.createBossBar("", bukkit(adventure.color()), bukkit(adventure.overlay()));
+    final NameSetter nameSetter = SET_NAME.get(ret);
+    if(nameSetter != null) {
+      nameSetter.setName(ret, adventure.name());
     }
+    ret.setProgress(adventure.percent());
+    return ret;
   }
 
-  void unsubscribeAll() {
-    for(Map.Entry<BossBar, org.bukkit.boss.BossBar> entry : this.bars.entrySet()) {
-      entry.getValue().removeAll();
-      entry.getKey().removeListener(this);
-    }
-    this.bars.clear();
+  @Override
+  protected void show(final @NonNull Player viewer, final org.bukkit.boss.@NonNull BossBar bar) {
+    bar.addPlayer(viewer);
+  }
+
+  @Override
+  protected boolean hide(final @NonNull Player viewer, final org.bukkit.boss.@NonNull BossBar bar) {
+    boolean has = bar.getPlayers().contains(viewer);
+    bar.removePlayer(viewer);
+    return has;
+  }
+
+  @Override
+  protected boolean isEmpty(final org.bukkit.boss.@NonNull BossBar bar) {
+    return bar.getPlayers().isEmpty();
+  }
+
+  @Override
+  protected void hideFromAll(final org.bukkit.boss.@NonNull BossBar bar) {
+    bar.removeAll();
+  }
+
+  @Override
+  public boolean isAvailable() {
+    return SUPPORTED;
   }
 
   /**

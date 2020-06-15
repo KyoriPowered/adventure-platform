@@ -111,13 +111,30 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
-  /* package */ static MethodHandle optionalConstructor(final @Nullable Class<?> target, final @NonNull MethodType type) {
+  /* package */ static @Nullable MethodHandle findConstructor(final @Nullable Class<?> target, final @Nullable Class<?>@NonNull... pTypes) {
     if(target == null) {
       return null;
     }
+    for(Class<?> clazz : pTypes) {
+      if(clazz == null) return null;
+    }
 
     try {
-      return LOOKUP.findConstructor(target, type);
+      return LOOKUP.findConstructor(target, MethodType.methodType(void.class, pTypes));
+    } catch(NoSuchMethodException | IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /* package */ static @Nullable MethodHandle findMethod(final @Nullable Class<?> holder, final String methodName, final Class<?> rType, final Class<?>... pTypes) {
+    if(holder == null) return null;
+    if(rType == null) return null;
+    for(Class<?> clazz : pTypes) {
+      if(clazz == null) return null;
+    }
+
+    try {
+      return LOOKUP.findVirtual(holder, methodName, MethodType.methodType(rType, pTypes));
     } catch(NoSuchMethodException | IllegalAccessException e) {
       return null;
     }
@@ -302,5 +319,4 @@ import static java.util.Objects.requireNonNull;
     requireNonNull(handler, "handler");
     Bukkit.getServer().getPluginManager().registerEvent(type, EVENT_LISTENER, priority, (listener, event) -> handler.accept((T) event), owner, ignoreCancelled);
   }
-
 }

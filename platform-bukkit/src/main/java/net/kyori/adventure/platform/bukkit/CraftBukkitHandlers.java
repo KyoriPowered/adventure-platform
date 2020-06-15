@@ -26,12 +26,17 @@ package net.kyori.adventure.platform.bukkit;
 import com.google.gson.Gson;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.UUID;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.impl.TypedHandler;
@@ -39,15 +44,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
+import static net.kyori.adventure.platform.bukkit.BukkitHandlers.legacy;
 import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
-import static net.kyori.adventure.platform.bukkit.Crafty.optionalConstructor;
+import static net.kyori.adventure.platform.bukkit.Crafty.findConstructor;
 
 public class CraftBukkitHandlers {
   
@@ -85,6 +94,18 @@ public class CraftBukkitHandlers {
     PLAYER_CONNECTION_SEND_PACKET = playerConnectionSendPacket;
   }
 
+  /* package */ static void sendPacket(final @NonNull Player player, final @Nullable Object packet) {
+    if(packet == null) {
+      return;
+    }
+
+    try {
+      PLAYER_CONNECTION_SEND_PACKET.invoke(ENTITY_PLAYER_GET_CONNECTION.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(player)));
+    } catch(Throwable throwable) {
+      Knobs.logError("sending packet to user", throwable);
+    }
+  }
+
   /* package */ static class PacketSendingHandler<V extends CommandSender> extends TypedHandler<V> {
 
     @SuppressWarnings("unchecked")
@@ -98,15 +119,7 @@ public class CraftBukkitHandlers {
     }
 
     public void send(final @NonNull V player, final @Nullable Object packet) {
-      if(packet == null) {
-        return;
-      }
-
-      try {
-        PLAYER_CONNECTION_SEND_PACKET.invoke(ENTITY_PLAYER_GET_CONNECTION.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(player)));
-      } catch(Throwable throwable) {
-        Knobs.logError("sending packet to user", throwable);
-      }
+      sendPacket((Player) player, packet);
     }
   }
 
@@ -131,7 +144,7 @@ public class CraftBukkitHandlers {
         // Chat packet //
         final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
         // PacketPlayOutChat constructor changed for 1.16
-        chatPacketConstructor = Crafty.optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT));
+        chatPacketConstructor = Crafty.findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
         if(chatPacketConstructor == null) {
           if(CLASS_MESSAGE_TYPE != null) {
             chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, CLASS_CHAT_COMPONENT, UUID.class));
@@ -140,7 +153,7 @@ public class CraftBukkitHandlers {
           // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
           chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
         }
-        legacyChatPacketConstructor = optionalConstructor(chatPacketClass, methodType(void.class, CLASS_CHAT_COMPONENT, byte.class));
+        legacyChatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, byte.class);
 
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
@@ -209,7 +222,7 @@ public class CraftBukkitHandlers {
   private static final @Nullable Class<?> CLASS_TITLE_PACKET = Crafty.findNmsClass("PacketPlayOutTitle");
   private static final @Nullable Class<?> CLASS_TITLE_ACTION = Crafty.findNmsClass("PacketPlayOutTitle$EnumTitleAction"); // welcome to spigot, where we can't name classes? i guess?
   private static final MethodHandle CONSTRUCTOR_TITLE_MESSAGE; // (EnumTitleAction, IChatBaseComponent)
-  private static final @Nullable MethodHandle CONSTRUCTOR_TITLE_TIMES = Crafty.optionalConstructor(CLASS_TITLE_PACKET, methodType(int.class, int.class, int.class));
+  private static final @Nullable MethodHandle CONSTRUCTOR_TITLE_TIMES = Crafty.findConstructor(CLASS_TITLE_PACKET, int.class, int.class, int.class);
   private static final @Nullable Object TITLE_ACTION_TITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "TITLE", 0);
   private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "SUBTITLE", 1);
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR");
@@ -349,6 +362,120 @@ public class CraftBukkitHandlers {
         throw err;
       } catch(final Throwable ex) {
         Knobs.logError("sending boss bar name change", ex);
+      }
+    }
+  }
+
+  /* package */ static class BossBars_1_8 extends AbstractBossBarListener<Player, PhantomEntity<EnderDragon>> {
+
+    @Override
+    public boolean isAvailable() {
+      return ENABLED && PhantomEntity.Impl.SUPPORTED && Crafty.hasClass("org.bukkit.entity.EnderDragon");
+    }
+
+    @Override
+    public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+      handle(bar, newName, (val, tracker) -> {
+        if(tracker.entity() != null) {
+          tracker.entity().setCustomName(legacy(val));
+          tracker.sendUpdate();
+        }
+      });
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
+      handle(bar, newPercent, (val, tracker) -> {
+        if(tracker.entity() != null) {
+          tracker.entity().setHealth(val * tracker.entity().getMaxHealth());
+          tracker.sendUpdate();
+        }
+      });
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected @NonNull PhantomEntity<EnderDragon> newInstance(final @NonNull BossBar adventure) {
+      final PhantomEntity<EnderDragon> tracker = PhantomEntity.of(new Location(Bukkit.getServer().getWorlds().get(0), 0, -5, 0), EnderDragon.class); // todo: do based on player
+      final @Nullable EnderDragon entity = tracker.entity();
+      if(entity != null) {
+        entity.setCustomName(legacy(adventure.name()));
+        entity.setCustomNameVisible(true);
+        entity.setHealth(adventure.percent() * entity.getMaxHealth());
+      }
+      return tracker;
+    }
+
+    @Override
+    protected void show(final @NonNull Player viewer, final @NonNull PhantomEntity<EnderDragon> bar) {
+      bar.add(viewer);
+    }
+
+    @Override
+    protected boolean hide(final @NonNull Player viewer, final @NonNull PhantomEntity<EnderDragon> bar) {
+      return bar.remove(viewer);
+    }
+
+    @Override
+    protected boolean isEmpty(final @NonNull PhantomEntity<EnderDragon> bar) {
+      return !bar.watching();
+    }
+
+    @Override
+    protected void hideFromAll(final @NonNull PhantomEntity<EnderDragon> bar) {
+      bar.removeAll();
+    }
+  }
+
+  /* package */ static class Books extends PacketSendingHandler<Player> implements Handler.Books<Player> {
+    private static final Class<?> CLASS_ENUM_HAND = Crafty.findNmsClass("EnumHand");
+    private static final Object HAND_MAIN = Crafty.enumValue(CLASS_ENUM_HAND, "MAIN_HAND", 0);
+    private static final Class<?> PACKET_OPEN_BOOK = Crafty.findNmsClass("PacketPlayOutOpenWrittenBook");
+    private static final MethodHandle NEW_PACKET_OPEN_BOOK = Crafty.findConstructor(PACKET_OPEN_BOOK, CLASS_ENUM_HAND);
+
+    @Override
+    public boolean isAvailable() {
+      return super.isAvailable() && NEW_PACKET_OPEN_BOOK != null;
+    }
+
+    @Override
+    public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
+      // Build NBT (w/ adventure)
+      // set to nms ItemStack
+      // send inventory update item
+      // send open book packet
+      // restore main hand item
+      // todo: actually implement
+      try {
+        send(viewer, NEW_PACKET_OPEN_BOOK.invoke(HAND_MAIN));
+      } catch(Throwable throwable) {
+        Knobs.logError("sending book to " + viewer, throwable);
+      }
+    }
+  }
+
+  // before 1.13 the open book packet is a packet250
+  /* package */ static class Books_Pre1_13 extends PacketSendingHandler<Player> implements Handler.Books<Player> {
+    private static final int HAND_MAIN = 0;
+    private static final String PACKET_TYPE_BOOK_OPEN = "MC|BOpen";
+    private static final Class<?> CLASS_BYTE_BUF = Crafty.findClass("io.netty.buffer.ByteBuf");
+    private static final Class<?> CLASS_PACKET_CUSTOM_PAYLOAD = Crafty.findNmsClass("PacketPlayOutCustomPayload");
+    private static final Class<?> CLASS_PACKET_DATA_SERIALIZER = Crafty.findNmsClass("PacketDataSerializer");
+
+    private static final MethodHandle NEW_PACKET_CUSTOM_PAYLOAD = Crafty.findConstructor(CLASS_PACKET_CUSTOM_PAYLOAD, String.class, CLASS_PACKET_DATA_SERIALIZER); // (channelId: String, payload: PacketByteBuf)
+    private static final MethodHandle NEW_PACKET_BYTE_BUF = Crafty.findConstructor(CLASS_PACKET_DATA_SERIALIZER, CLASS_BYTE_BUF); // (wrapped: ByteBuf)
+
+    @Override
+    public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
+      // TODO: construct stack
+      final ByteBuf data = Unpooled.buffer();
+      data.writeByte(HAND_MAIN);
+      try {
+        final Object packetByteBuf = NEW_PACKET_BYTE_BUF.invoke(data);
+        send(viewer, NEW_PACKET_CUSTOM_PAYLOAD.invoke(PACKET_TYPE_BOOK_OPEN, packetByteBuf));
+      } catch(Throwable throwable) {
+        Knobs.logError("sending legacy open book packet to " + viewer, throwable);
       }
     }
   }

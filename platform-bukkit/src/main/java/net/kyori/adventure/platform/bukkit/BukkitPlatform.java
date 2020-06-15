@@ -165,7 +165,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
       new CraftBukkitHandlers.Titles());
     this.bossBar = HandlerCollection.of(
       new ViaVersionHandlers.BossBars<>(this.viaProvider),
-      new BukkitHandlers.BossBars());
+      new BukkitBossBarListener(),
+      new CraftBukkitHandlers.BossBars_1_8());
     this.playSound = HandlerCollection.of(
       new BukkitHandlers.PlaySound_WithCategory(),
       new ViaVersionHandlers.PlaySound<>(this.viaProvider, player -> {
@@ -174,7 +175,9 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
       }),
       new BukkitHandlers.PlaySound_NoCategory());
     this.books = HandlerCollection.of(
-      new SpigotHandlers.OpenBook() // todo: backwards compat
+      new SpigotHandlers.OpenBook(),
+      new CraftBukkitHandlers.Books(),
+      new CraftBukkitHandlers.Books_Pre1_13()
     );
   }
 
