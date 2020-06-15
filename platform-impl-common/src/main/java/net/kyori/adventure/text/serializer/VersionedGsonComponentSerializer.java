@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -105,7 +106,7 @@ public final class VersionedGsonComponentSerializer implements ComponentSerializ
 
     @Override
     public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
-      if(!Style.class.equals(type.getType())) {
+      if(!TextColor.class.isAssignableFrom(type.getRawType())) {
         return null;
       }
       final TypeAdapter<T> delegated = gson.getDelegateAdapter(this, type);
@@ -114,11 +115,11 @@ public final class VersionedGsonComponentSerializer implements ComponentSerializ
         @Override
         @SuppressWarnings("unchecked")
         public void write(final JsonWriter out, final T value) throws IOException {
-          Style style = (Style) value; // we already filtered ourselves to a Style at the beginning of create()
-          if(style.color() != null && !(style.color() instanceof NamedTextColor)) {
-            style = style.color(NamedTextColor.nearestTo(style.color()));
+          TextColor color = (TextColor) value; // we already filtered ourselves to a TextColor at the beginning of create()
+          if(color != null && !(color instanceof NamedTextColor)) {
+            color = NamedTextColor.nearestTo(color);
           }
-          delegated.write(out, (T) style);
+          delegated.write(out, (T) color);
         }
 
         @Override
