@@ -98,6 +98,7 @@ public final class SpongePlatform extends AdventurePlatformImpl {
   private HandlerCollection<Viewer, Handler.Titles<Viewer>> title;
   private HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
   private HandlerCollection<Viewer, Handler.PlaySound<Viewer>> sound;
+  private HandlerCollection<Viewer, Handler.Books<Viewer>> books;
 
   @Inject
   /* package */ SpongePlatform(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
@@ -122,6 +123,7 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     this.title = HandlerCollection.of(new ViaVersionHandlers.Titles<>(via), new SpongeHandlers.Titles());
     this.bossBar = HandlerCollection.of(new ViaVersionHandlers.BossBars<>(via), new SpongeBossBarListener());
     this.sound = HandlerCollection.of(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
+    this.books = HandlerCollection.of(new SpongeHandlers.Books());
   }
 
   /**
@@ -142,7 +144,7 @@ public final class SpongePlatform extends AdventurePlatformImpl {
 
     @Listener(order = Order.FIRST)
     public void join(final ClientConnectionEvent.@NonNull Join event) {
-      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), chat, actionBar, title, bossBar, sound));
+      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), chat, actionBar, title, bossBar, sound, books));
     }
 
     @Listener(order = Order.LAST)
@@ -157,7 +159,7 @@ public final class SpongePlatform extends AdventurePlatformImpl {
 
     @Listener
     public void serverStart(final @NonNull GameStartingServerEvent event) {
-      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), chat, actionBar, null, null, null));
+      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), chat, actionBar, null, null, null, null));
     }
 
     @Listener
@@ -172,9 +174,9 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     } else if(source instanceof ConsoleSource) {
       return console();
     } else if(source instanceof Viewer) {
-      return new SpongeSenderAudience<>((Viewer & MessageReceiver) source, this.chat, this.actionBar, this.title, null, this.sound);
+      return new SpongeSenderAudience<>((Viewer & MessageReceiver) source, this.chat, this.actionBar, this.title, null, this.sound, this.books);
     } else {
-      return new SpongeSenderAudience<>(source, this.chat, this.actionBar, null, null, null);
+      return new SpongeSenderAudience<>(source, this.chat, this.actionBar, null, null, null, null);
     }
   }
 

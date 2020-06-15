@@ -42,7 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 /* package */ final class BukkitBossBarListener implements BossBar.Listener {
   private static final BossBar.Flag[] FLAGS = BossBar.Flag.values();
-  private static final HandlerCollection<org.bukkit.boss.BossBar, NameSetter> SET_NAME = new HandlerCollection<>(new CraftBukkitHandlers.BossBarNameSetter(), new BukkitHandlers.BossBarNameSetter());
+  private static final HandlerCollection<org.bukkit.boss.BossBar, NameSetter> SET_NAME = HandlerCollection.of(new CraftBukkitHandlers.BossBarNameSetter(), new BukkitHandlers.BossBarNameSetter());
 
   private final Map<BossBar, org.bukkit.boss.BossBar> bars = Collections.synchronizedMap(new IdentityHashMap<>());
 

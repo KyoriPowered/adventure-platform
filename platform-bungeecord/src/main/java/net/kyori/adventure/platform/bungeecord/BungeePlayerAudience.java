@@ -31,7 +31,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.EmptyComponent;
 import net.kyori.adventure.text.serializer.BungeeComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
@@ -118,10 +118,10 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
   @Override
   public void showTitle(final @NonNull Title title) {
     final net.md_5.bungee.api.Title bungee = this.proxy.createTitle();
-    if (!TextComponent.empty().equals(title.title())) {
+    if (!EmptyComponent.empty().equals(title.title())) {
       bungee.title(BungeeComponentSerializer.INSTANCE.serialize(title.title()));
     }
-    if (!TextComponent.empty().equals(title.subtitle())) {
+    if (!EmptyComponent.empty().equals(title.subtitle())) {
       bungee.subTitle(BungeeComponentSerializer.INSTANCE.serialize(title.subtitle()));
     }
 

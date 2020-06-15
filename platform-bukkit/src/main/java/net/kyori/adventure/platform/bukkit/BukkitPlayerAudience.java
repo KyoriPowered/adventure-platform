@@ -38,8 +38,14 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Playe
     private Locale locale;
     private String localeRaw;
 
-    BukkitPlayerAudience(final @NonNull Player sender, final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title, final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar, final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound) {
-        super(sender, chat, actionBar, title, bossBar, sound);
+    BukkitPlayerAudience(final @NonNull Player sender,
+                         final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat,
+                         final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar,
+                         final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title,
+                         final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar,
+                         final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound,
+                         final @Nullable HandlerCollection<? super Player, ? extends Handler.Books<? super Player>> books) {
+        super(sender, chat, actionBar, title, bossBar, sound, books);
     }
 
     @Override

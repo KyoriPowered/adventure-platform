@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.audience.SenderAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
@@ -95,6 +96,11 @@ public class BungeeSenderAudience implements SenderAudience {
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
     // No-op
+  }
+
+  @Override
+  public void openBook(final @NonNull Book book) {
+
   }
 
   @Override

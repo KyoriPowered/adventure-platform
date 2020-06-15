@@ -42,8 +42,9 @@ import org.spongepowered.api.text.channel.MessageReceiver;
                               final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar, 
                               final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title, 
                               final @Nullable HandlerCollection<? super V, ? extends Handler.BossBars<? super V>> bossBar,
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound) {
-    super(viewer, chat, actionBar, title, bossBar, sound);
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.Books<? super V>> books) {
+    super(viewer, chat, actionBar, title, bossBar, sound, books);
   }
 
   @Override

@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.impl;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -41,6 +42,7 @@ public class HandledAudience<V> implements Audience {
   private final Handler.Titles<? super V> titleHandler;
   private final Handler.BossBars<? super V> bossBarHandler;
   private final Handler.@Nullable PlaySound<? super V> soundHandler;
+  private final Handler.@Nullable Books<? super V> bookHandler;
 
   public HandledAudience(
     final @NonNull V viewer,
@@ -48,7 +50,8 @@ public class HandledAudience<V> implements Audience {
     final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
     final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title,
     final @Nullable HandlerCollection<? super V, ? extends Handler.BossBars<? super V>> bossBar,
-    final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound
+    final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound,
+    final @Nullable HandlerCollection<? super V, ? extends Handler.Books<? super V>> books
   ) {
     this.viewer = requireNonNull(viewer, "viewer");
     this.chatHandler = handler(chat, viewer);
@@ -56,6 +59,7 @@ public class HandledAudience<V> implements Audience {
     this.titleHandler = handler(title, viewer);
     this.bossBarHandler = handler(bossBar, viewer);
     this.soundHandler = handler(sound, viewer);
+    this.bookHandler = handler(books, viewer);
   }
 
   private static <V, H extends Handler<? super V>> H handler(final HandlerCollection<? super V, H> collection, final V viewer) {
@@ -116,6 +120,13 @@ public class HandledAudience<V> implements Audience {
   public void stopSound(final @NonNull SoundStop stop) {
     if(this.soundHandler != null) {
       this.soundHandler.stop(this.viewer, requireNonNull(stop, "stop"));
+    }
+  }
+
+  @Override
+  public void openBook(final @NonNull Book book) {
+    if(this.bookHandler != null) {
+      this.bookHandler.openBook(this.viewer, book);
     }
   }
 

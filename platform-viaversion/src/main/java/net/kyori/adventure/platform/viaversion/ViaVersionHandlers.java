@@ -38,7 +38,8 @@ import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.EmptyComponent;
+import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -72,14 +73,49 @@ public final class ViaVersionHandlers {
      */
     boolean isAvailable();
 
+    /**
+     * Get the active {@link ViaPlatform} instance
+     *
+     * @return the platform
+     */
     ViaPlatform<? extends V> platform();
 
-    default UserConnection connection(final V viewer) {
+    default @Nullable UserConnection connection(final @NonNull V viewer) {
       final UUID viewerId = id(viewer);
       return viewerId == null ? null : platform().getConnectionManager().getConnectedClient(viewerId);
     }
 
-    @Nullable UUID id(final V viewer);
+    /**
+     * Check that a viewer is a player, and if so return their UUID.
+     *
+     * @param viewer the viewer
+     * @return its id, or null if not a player.
+     */
+    @Nullable UUID id(final @NonNull V viewer);
+
+    /**
+     * Get a versioned GSON serializer appropriate for the viewer's protocol version.
+     *
+     * <p>The default implementation of this method assumes that ViaVersion is available,
+     * but implementations may be more defensive and return an appropriate value even when
+     * ViaVersion is not available.</p>
+     *
+     * @param viewer The receiving viewer
+     * @return a serializer
+     */
+    default @NonNull VersionedGsonComponentSerializer serializer(final @NonNull V viewer) {
+      int protocolVersion = ProtocolRegistry.SERVER_PROTOCOL;
+      final UUID id = id(viewer);
+      if(id != null) {
+        protocolVersion = platform().getApi().getPlayerVersion(id);
+      }
+
+      if(protocolVersion >= ProtocolVersion.v1_16.getId()) {
+        return VersionedGsonComponentSerializer.MODERN;
+      } else {
+        return VersionedGsonComponentSerializer.PRE_1_16;
+      }
+    }
   }
 
   /**
@@ -210,14 +246,14 @@ public final class ViaVersionHandlers {
         send(wrapper);
       }
 
-      if(!TextComponent.empty().equals(title.subtitle())) {
+      if(!EmptyComponent.empty().equals(title.subtitle())) {
         final String subtitleJson = GsonComponentSerializer.INSTANCE.serialize(title.subtitle());
         final PacketWrapper wrapper = make(viewer, ACTION_SUBTITLE);
         wrapper.write(Type.STRING, subtitleJson);
         send(wrapper);
       }
 
-      if(!TextComponent.empty().equals(title.title())) {
+      if(!EmptyComponent.empty().equals(title.title())) {
         final String titleJson = GsonComponentSerializer.INSTANCE.serialize(title.title());
         final PacketWrapper wrapper = make(viewer, ACTION_TITLE);
         wrapper.write(Type.STRING, titleJson);

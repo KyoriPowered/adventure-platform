@@ -43,8 +43,9 @@ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> i
                          final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Titles<? super S>> title,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.BossBars<? super S>> bossBar,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound) {
-        super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound);
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound,
+                         final @Nullable HandlerCollection<? super S, ? extends Handler.Books<? super  S>> books) {
+        super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound, books);
     }
 
     @Override

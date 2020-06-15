@@ -37,8 +37,9 @@ import org.spongepowered.api.entity.living.player.Player;
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar, 
-                              final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound) {
-    super(viewer, chat, actionBar, title, bossBar, sound);
+                              final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound,
+                              final @Nullable HandlerCollection<? super Player, ? extends Handler.Books<? super Player>> books) {
+    super(viewer, chat, actionBar, title, bossBar, sound, books);
   }
 
   @Override

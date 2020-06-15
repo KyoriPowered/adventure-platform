@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.sound.Sound;
@@ -35,6 +36,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.effect.sound.SoundCategory;
 import org.spongepowered.api.effect.sound.SoundType;
+import org.spongepowered.api.text.BookView;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
@@ -163,6 +165,25 @@ import org.spongepowered.api.world.Locatable;
 
     private static SoundCategory sponge(final Sound.@Nullable Source source) {
       return source == null ? null : SpongePlatform.sponge(SoundCategory.class, source, Sound.Source.NAMES);
+    }
+  }
+
+  /* package */ static class Books implements Handler.Books<Viewer> {
+
+    @Override
+    public boolean isAvailable() {
+      return true;
+    }
+
+    @Override
+    public void openBook(final @NonNull Viewer viewer, final @NonNull Book book) {
+      final BookView.Builder view = BookView.builder()
+        .title(SpongeComponentSerializer.INSTANCE.serialize(book.title()))
+        .author(SpongeComponentSerializer.INSTANCE.serialize(book.author()));
+      for(final Component page : book.pages()) {
+        view.addPage(SpongeComponentSerializer.INSTANCE.serialize(page));
+      }
+      viewer.sendBookView(view.build());
     }
   }
 }

@@ -142,6 +142,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
   private final HandlerCollection<Player, Handler.Titles<Player>> title;
   private final HandlerCollection<Player, Handler.BossBars<Player>> bossBar;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
+  private final HandlerCollection<Player, Handler.Books<Player>> books;
 
   public BukkitPlatform(final @NonNull Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
@@ -172,6 +173,9 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
         return new ViaVersionHandlers.PlaySound.Pos(pos.getX(), pos.getY(), pos.getZ());
       }),
       new BukkitHandlers.PlaySound_NoCategory());
+    this.books = HandlerCollection.of(
+      new SpigotHandlers.OpenBook() // todo: backwards compat
+    );
   }
 
   @SuppressWarnings("unchecked")
@@ -182,7 +186,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
 
   private void init() {
     registerEvent(PlayerJoinEvent.class, EventPriority.LOWEST, event -> {
-      this.add(new BukkitPlayerAudience(event.getPlayer(), chat, actionBar, title, bossBar, playSound));
+      this.add(new BukkitPlayerAudience(event.getPlayer(), chat, actionBar, title, bossBar, playSound, books));
     });
     registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
@@ -203,7 +207,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
       }
     });
 
-    this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.chat, null, null, null, null));
+    this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.chat, null, null, null, null, null));
   }
 
   public @NonNull Audience player(final @NonNull Player player) {
@@ -218,7 +222,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     } else if(sender instanceof ConsoleCommandSender) {
       return console();
     } else {
-      return new BukkitSenderAudience<>(sender, this.chat, null, null, null, null);
+      return new BukkitSenderAudience<>(sender, this.chat, null, null, null, null, null);
     }
   }
 
@@ -267,12 +271,20 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     }
 
     @Override
-    public UUID id(final CommandSender viewer) {
+    public UUID id(final @NonNull CommandSender viewer) {
       if(!(viewer instanceof Player)) {
         return null;
       }
 
       return ((Player) viewer).getUniqueId();
+    }
+
+    @Override
+    public @NonNull VersionedGsonComponentSerializer serializer(final @NonNull CommandSender viewer) {
+      if(isAvailable()) {
+        return ViaVersionHandlers.ViaAPIProvider.super.serializer(viewer);
+      }
+      return BukkitPlatform.GSON_SERIALIZER;
     }
 
     /* package */ void dirtyVia() {

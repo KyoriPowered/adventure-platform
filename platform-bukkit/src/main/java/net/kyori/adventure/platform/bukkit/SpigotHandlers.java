@@ -29,6 +29,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.Component;
@@ -36,8 +37,12 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
@@ -117,6 +122,35 @@ import static java.util.Objects.requireNonNull;
       return new BaseComponent[]{new AdapterComponent(component)};
     } else {
       return ComponentSerializer.parse(BukkitPlatform.GSON_SERIALIZER.serialize(component));
+    }
+  }
+
+  /* package */ static final class OpenBook implements Handler.Books<Player> {
+    private static final boolean SUPPORTED = Crafty.hasMethod(Player.class, "openBook", ItemStack.class); // Added June 2019
+
+    @Override
+    public boolean isAvailable() {
+      return BOUND & SUPPORTED;
+    }
+
+    public ItemStack createBook(final @NonNull Book book) {
+      final ItemStack stack = new ItemStack(Material.WRITTEN_BOOK);
+      final ItemMeta meta = stack.getItemMeta();
+      if(meta instanceof BookMeta) {
+        final BookMeta spigot = (BookMeta) meta;
+        for(final Component page : book.pages()) {
+          spigot.spigot().addPage(toBungeeCord(page));
+        }
+        spigot.setAuthor(LegacyComponentSerializer.legacy().serialize(book.author()));
+        spigot.setTitle(LegacyComponentSerializer.legacy().serialize(book.title())); // todo: don't use legacy
+        stack.setItemMeta(spigot);
+      }
+      return stack;
+    }
+
+    @Override
+    public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
+      viewer.openBook(createBook(book));
     }
   }
 

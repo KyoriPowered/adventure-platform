@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -168,5 +169,9 @@ public interface Handler<V> {
     void play(final @NonNull V viewer, final @NonNull Sound sound, final double x, final double y, final double z);
     
     void stop(final @NonNull V viewer, final @NonNull SoundStop sound);
+  }
+
+  interface Books<V> extends Handler<V> {
+    void openBook(final @NonNull V viewer, final @NonNull Book book);
   }
 }
