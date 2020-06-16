@@ -41,35 +41,41 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 interface PhantomEntity<T extends Entity> {
 
-  // TODOO: relative location?
-
-  /**
-   * Create a new instance of the provided entity type that can be spawned for specific players.
-   *
-   * @param spawnPos the location to spawn the entity at
-   * @param type entity class
-   * @param <T> entity type
-   * @return a new instance. if on an unsupported platform, a no-op instance will be returned.
-   */
-  static <T extends Entity> PhantomEntity<T> of(final @NonNull Location spawnPos, final @NonNull Class<T> type) {
-    if(!(LivingEntity.class.isAssignableFrom(type))) {
-      throw new IllegalArgumentException("Only living entities can be spawned at the moment! Add new spawn packets to resolve this issue.");
-    }
-    if(Impl.SUPPORTED) {
-      final T created = Impl.createFakeEntity(spawnPos, type);
-      if(created != null) {
-        return new Impl<>(created);
-      }
-    }
-    return new NoOp<>();
-  }
-
   /**
    * Get the entity being monitored
    *
    * @return The entity
    */
   T entity();
+
+  /**
+   * Get if this entity is in relative mode.
+   *
+   * @return relative status
+   */
+  boolean relative();
+
+  /**
+   * Set the entity's loctaion as an offset from the viewer.
+   *
+   * <p>A pitch and yaw offset of zero will place the entity {@code magnitudeOffset} in front of the player.</p>
+   *
+   * @param magnitudeOffset Magnitude of the offset
+   * @param pitchOffset pitch offset from the viewer's position
+   * @param yawOffset yaw offset from the viewer's position
+   * @return this
+   */
+  PhantomEntity<T> relative(final double magnitudeOffset, final double pitchOffset, final double yawOffset);
+
+  /**
+   * Set the entity's location as a fixed position in the world.
+   *
+   * <p>The world field of the location is ignored.</p>
+   *
+   * @param position new position
+   * @return this
+   */
+  PhantomEntity<T> location(final @NonNull Location position);
 
   /**
    * Get if the provided viewer is subscribed to our tracked entity
@@ -84,6 +90,19 @@ interface PhantomEntity<T extends Entity> {
    * @return the entity to track
    */
   boolean watching();
+
+  /**
+   * Set the invisibility flag on this entity.
+   *
+   * <p>This method will not send an update on its own -- use the {@link #sendUpdate()} method
+   * when notification is desired.</p>
+   *
+   * @param invisible whether the entity should be invisible
+   * @return this
+   */
+  PhantomEntity<T> invisible(final boolean invisible);
+
+  boolean invisible();
 
   /**
    * Spawn the entity for a viewer
@@ -111,7 +130,10 @@ interface PhantomEntity<T extends Entity> {
    */
   void sendUpdate();
 
-  class Impl<T extends Entity> implements PhantomEntity<T> {
+  default void updateIfNecessary(final @NonNull Player player, final @NonNull Location playerPos) {
+  }
+
+  /* package */ final class Impl<T extends Entity> implements PhantomEntity<T> {
 
     // Entity bits //
     private static final Class<? extends World> CLASS_CRAFT_WORLD = Crafty.findCraftClass("CraftWorld", World.class);
@@ -122,28 +144,38 @@ interface PhantomEntity<T extends Entity> {
 
     private static final MethodHandle CRAFT_WORLD_CREATE_ENTITY = Crafty.findMethod(CLASS_CRAFT_WORLD, "createEntity", CLASS_NMS_ENTITY, Location.class, Class.class);
     private static final MethodHandle CRAFT_ENTITY_GET_HANDLE = Crafty.findMethod(CLASS_CRAFT_ENTITY, "getHandle", CLASS_NMS_ENTITY);
-    private static final MethodHandle NMS_ENTITY_GET_BUKKIT_ENTITY = Crafty.findMethod(CLASS_NMS_ENTITY, "getBukkitEntity", Entity.class);
+    private static final MethodHandle NMS_ENTITY_GET_BUKKIT_ENTITY = Crafty.findMethod(CLASS_NMS_ENTITY, "getBukkitEntity", CLASS_CRAFT_ENTITY);
     private static final MethodHandle NMS_ENTITY_GET_DATA_WATCHER = Crafty.findMethod(CLASS_NMS_ENTITY, "getDataWatcher", CLASS_DATA_WATCHER);
+    private static final MethodHandle NMS_ENTITY_SET_LOCATION = Crafty.findMethod(CLASS_NMS_ENTITY, "setLocation", void.class, double.class, double.class, double.class, float.class, float.class); // (x, y, z, pitch, yaw) -> void
+    private static final MethodHandle NMS_ENTITY_IS_INVISIBLE = Crafty.findMethod(CLASS_NMS_ENTITY, "isInvisible", boolean.class);
+    private static final MethodHandle NMS_ENTITY_SET_INVISIBLE = Crafty.findMethod(CLASS_NMS_ENTITY, "setInvisible", void.class, boolean.class);
 
     // Packets //
     private static final Class<?> CLASS_SPAWN_LIVING_PACKET = Crafty.findNmsClass("PacketPlayOutSpawnEntityLiving");
     private static final MethodHandle NEW_SPAWN_LIVING_PACKET = Crafty.findConstructor(CLASS_SPAWN_LIVING_PACKET, CLASS_NMS_LIVING_ENTITY); // (entityToSpawn: LivingEntity)
     private static final Class<?> CLASS_ENTITY_DESTROY_PACKET = Crafty.findNmsClass("PacketPlayOutEntityDestroy");
     private static final MethodHandle NEW_ENTITY_DESTROY_PACKET = Crafty.findConstructor(CLASS_ENTITY_DESTROY_PACKET, int[].class); // (ids: int[])
-
     private static final Class<?> CLASS_ENTITY_METADATA_PACKET = Crafty.findNmsClass("PacketPlayOutEntityMetadata");
     private static final MethodHandle NEW_ENTITY_METADATA_PACKET = Crafty.findConstructor(CLASS_ENTITY_METADATA_PACKET, int.class, CLASS_DATA_WATCHER, boolean.class); // (entityId: int, DataWatcher, updateAll: boolean)
+    private static final Class<?> CLASS_ENTITY_TELEPORT_PACKET = Crafty.findNmsClass("PacketPlayOutEntityTeleport");
+    private static final MethodHandle NEW_ENTITY_TELEPORT_PACKET = Crafty.findConstructor(CLASS_ENTITY_TELEPORT_PACKET, CLASS_NMS_ENTITY);
 
     static final boolean SUPPORTED = CRAFT_WORLD_CREATE_ENTITY != null && CRAFT_ENTITY_GET_HANDLE != null && NMS_ENTITY_GET_BUKKIT_ENTITY != null && NMS_ENTITY_GET_DATA_WATCHER != null;
 
+    private final @NonNull PhantomEntityTracker tracker;
     private final @NonNull T entity;
     private final Set<Player> watching = ConcurrentHashMap.newKeySet();
+    private volatile double relativeOffsetDistance;
+    private volatile double relativeOffsetPitch;
+    private volatile double relativeOffsetYaw;
+    private volatile boolean locationDirty;
 
-    Impl(@NonNull final T entity) {
+    Impl(final @NonNull PhantomEntityTracker tracker, final @NonNull T entity) {
+      this.tracker = tracker;
       this.entity = entity;
     }
 
-    private Object nmsEntity() {
+    Object nmsEntity() {
       if(!CLASS_CRAFT_ENTITY.isInstance(this.entity)) return null;
       try {
         return CRAFT_ENTITY_GET_HANDLE.invoke(this.entity);
@@ -154,7 +186,7 @@ interface PhantomEntity<T extends Entity> {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Entity> T createFakeEntity(final Location pos, final Class<T> clazz) {
+    static <T extends Entity> T createFakeEntity(final Location pos, final Class<T> clazz) {
       if(!CLASS_CRAFT_WORLD.isInstance(pos.getWorld())) return null;
 
       try {
@@ -166,7 +198,9 @@ interface PhantomEntity<T extends Entity> {
       }
     }
 
-    private Object createSpawnPacket() {
+    /* package */ Object createSpawnPacket() {
+      // Later versions of MC add a createSpawnPacket()Packet method on Entity -- for broader support that could be used.
+      // For 1.8 at least, we are stuck with this.
       if(entity() instanceof LivingEntity) {
         final Object mcEntity = this.nmsEntity();
         if(mcEntity != null) {
@@ -195,9 +229,21 @@ interface PhantomEntity<T extends Entity> {
         if(nmsEntity == null) return null;
 
         final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(nmsEntity);
-        return NEW_ENTITY_METADATA_PACKET.invoke(this.entity.getEntityId(), dataWatcher, true);
+        return NEW_ENTITY_METADATA_PACKET.invoke(this.entity.getEntityId(), dataWatcher, false);
       } catch(Throwable throwable) {
         Knobs.logError("updating metadata for fake entity " + entity(), throwable);
+        return null;
+      }
+    }
+
+    private Object createLocationUpdatePacket() {
+      try {
+        final Object nmsEntity = nmsEntity();
+        if(nmsEntity == null) return null;
+
+        return NEW_ENTITY_TELEPORT_PACKET.invoke(nmsEntity);
+      } catch(Throwable throwable) {
+        Knobs.logError("creating location update packet", throwable);
         return null;
       }
     }
@@ -205,6 +251,41 @@ interface PhantomEntity<T extends Entity> {
     @Override
     public T entity() {
       return this.entity;
+    }
+
+    @Override
+    public boolean relative() {
+      return this.relativeOffsetDistance != 0 || this.relativeOffsetPitch != 0 || this.relativeOffsetYaw != 0;
+    }
+
+    @Override
+    public PhantomEntity<T> relative(final double magnitudeOffset, final double pitchOffset, final double yawOffset) {
+      final boolean wasRelative = relative();
+      this.relativeOffsetDistance = magnitudeOffset;
+      this.relativeOffsetPitch = pitchOffset;
+      this.relativeOffsetYaw = yawOffset;
+      this.tracker.updateTrackingState(this, wasRelative);
+      return this;
+    }
+
+    @Override
+    public PhantomEntity<T> location(final @NonNull Location position) {
+      final boolean wasRelative = relative();
+      this.relativeOffsetDistance = 0;
+      this.relativeOffsetPitch = 0;
+      this.relativeOffsetYaw = 0;
+      this.tracker.updateTrackingState(this, wasRelative);
+      location0(position);
+      this.locationDirty = true;
+      return this;
+    }
+
+    private void location0(final @NonNull Location position) {
+      try {
+        NMS_ENTITY_SET_LOCATION.invoke(nmsEntity(), position.getX(), position.getY(), position.getZ(), position.getPitch(), position.getYaw());
+      } catch(Throwable throwable) {
+        Knobs.logError("setting position for phantom entity " + this.entity, throwable);
+      }
     }
 
     @Override
@@ -218,18 +299,53 @@ interface PhantomEntity<T extends Entity> {
     }
 
     @Override
+    public PhantomEntity<T> invisible(final boolean invisible) {
+      if(NMS_ENTITY_SET_INVISIBLE != null) {
+        try {
+          NMS_ENTITY_SET_INVISIBLE.invoke(nmsEntity(), invisible);
+        } catch(Throwable thr) {
+          Knobs.logError("setting invisibility for entity", thr);
+        }
+      }
+      return this;
+    }
+
+    @Override
+    public boolean invisible() {
+      if(NMS_ENTITY_IS_INVISIBLE != null) {
+        try {
+          return (boolean)NMS_ENTITY_IS_INVISIBLE.invoke(nmsEntity());
+        } catch(Throwable thr) {
+          Knobs.logError("getting invisibility for entity", thr);
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean add(final @NonNull Player viewer) {
       if(this.watching.add(viewer)) {
-        CraftBukkitHandlers.sendPacket(viewer, createSpawnPacket());
+        sendSpawnPacket(viewer);
+        this.tracker.updateTrackingState(this, relative());
         return true;
       }
       return false;
+    }
+
+    /* package */ void sendSpawnPacket(final @NonNull Player viewer) {
+      if(relative()) {
+        this.location0(makeRelative(viewer.getLocation()));
+      }
+      CraftBukkitHandlers.sendPacket(viewer, createSpawnPacket());
     }
 
     @Override
     public boolean remove(final @NonNull Player viewer) {
       if(this.watching.remove(viewer)) {
         CraftBukkitHandlers.sendPacket(viewer, createDespawnPacket());
+        if(this.watching.isEmpty()) {
+          this.tracker.handleRemove(this);
+        }
         return true;
       }
       return false;
@@ -243,14 +359,37 @@ interface PhantomEntity<T extends Entity> {
           CraftBukkitHandlers.sendPacket(viewer, despawnPacket);
         }
         this.watching.clear();
+        this.tracker.handleRemove(this);
       }
     }
 
     @Override
     public void sendUpdate() {
-      final Object updatePacket = createMetadataUpdatePacket();
+      final Object metadataPacket = createMetadataUpdatePacket();
+      final Object locationPacket = this.locationDirty ? createLocationUpdatePacket() : null;
       for(final Player ply : this.watching) {
-        CraftBukkitHandlers.sendPacket(ply, updatePacket);
+        CraftBukkitHandlers.sendPacket(ply, metadataPacket);
+        CraftBukkitHandlers.sendPacket(ply, locationPacket);
+      }
+      this.locationDirty = false;
+    }
+
+    private Location makeRelative(final @NonNull Location pos) {
+      pos.setPitch(pos.getPitch() - (float) this.relativeOffsetPitch);
+      pos.setYaw(pos.getYaw() + (float) this.relativeOffsetYaw);
+      if(this.relativeOffsetDistance != 0) {
+        pos.add(pos.getDirection().multiply(this.relativeOffsetDistance));
+      }
+      return pos;
+    }
+
+    @Override
+    public void updateIfNecessary(final @NonNull Player player, final @NonNull Location playerPos) {
+      if(relative()
+        && this.watching.contains(player)) {
+        final Location pos = makeRelative(playerPos);
+        location0(pos);
+        CraftBukkitHandlers.sendPacket(player, createLocationUpdatePacket());
       }
     }
   }
@@ -269,12 +408,37 @@ interface PhantomEntity<T extends Entity> {
     }
 
     @Override
+    public boolean relative() {
+      return false;
+    }
+
+    @Override
+    public PhantomEntity<T> relative(final double magnitudeOffset, final double pitchOffset, final double yawOffset) {
+      return this;
+    }
+
+    @Override
+    public PhantomEntity<T> location(final @NonNull Location position) {
+      return this;
+    }
+
+    @Override
     public boolean watching(final @NonNull Player viewer) {
       return false;
     }
 
     @Override
     public boolean watching() {
+      return false;
+    }
+
+    @Override
+    public PhantomEntity<T> invisible(final boolean invisible) {
+      return this;
+    }
+
+    @Override
+    public boolean invisible() {
       return false;
     }
 

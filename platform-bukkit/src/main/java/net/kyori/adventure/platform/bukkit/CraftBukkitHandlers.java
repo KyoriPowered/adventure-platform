@@ -44,11 +44,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Wither;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -354,64 +352,77 @@ public class CraftBukkitHandlers {
     }
   }
 
-  /* package */ static class BossBars_1_8 extends AbstractBossBarListener<Player, PhantomEntity<EnderDragon>> {
+  /* package */ static class BossBars_1_8 extends AbstractBossBarListener<Player, PhantomEntity<Wither>> {
+    private static final double WITHER_DISTANCE = 40;
+    private static final double WITHER_OFFSET_PITCH = 30 /* degrees */;
+
+    private final PhantomEntityTracker tracker;
+
+    BossBars_1_8(final PhantomEntityTracker tracker) {
+      this.tracker = tracker;
+    }
 
     @Override
     public boolean isAvailable() {
-      return ENABLED && PhantomEntity.Impl.SUPPORTED && Crafty.hasClass("org.bukkit.entity.EnderDragon");
+      return ENABLED && PhantomEntity.Impl.SUPPORTED && Crafty.hasClass("org.bukkit.entity.Wither");
     }
 
     @Override
     public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-      handle(bar, newName, (val, tracker) -> {
-        if(tracker.entity() != null) {
-          tracker.entity().setCustomName(legacy(val));
-          tracker.sendUpdate();
+      handle(bar, newName, (val, entity) -> {
+        if(entity.entity() != null) {
+          entity.entity().setCustomName(legacy(val));
+          entity.sendUpdate();
         }
       });
+    }
+
+    private static double health(float percent, double maxHealth) {
+      return percent * (maxHealth - 0.1f) + 0.1f; // don't go to zero health -- if we do the death animation is shown
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
-      handle(bar, newPercent, (val, tracker) -> {
-        if(tracker.entity() != null) {
-          tracker.entity().setHealth(val * tracker.entity().getMaxHealth());
-          tracker.sendUpdate();
+      handle(bar, newPercent, (val, entity) -> {
+        if(entity.entity() != null) {
+          entity.entity().setHealth(health(val, entity.entity().getMaxHealth()));
+          entity.sendUpdate();
         }
       });
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    protected @NonNull PhantomEntity<EnderDragon> newInstance(final @NonNull BossBar adventure) {
-      final PhantomEntity<EnderDragon> tracker = PhantomEntity.of(new Location(Bukkit.getServer().getWorlds().get(0), 0, -5, 0), EnderDragon.class); // todo: do based on player
-      final @Nullable EnderDragon entity = tracker.entity();
+    protected @NonNull PhantomEntity<Wither> newInstance(final @NonNull BossBar adventure) {
+      final PhantomEntity<Wither> tracker = this.tracker.create(Wither.class)
+        .relative(WITHER_DISTANCE, WITHER_OFFSET_PITCH, 0)
+        .invisible(true);
+      final @Nullable Wither entity = tracker.entity();
       if(entity != null) {
         entity.setCustomName(legacy(adventure.name()));
-        entity.setCustomNameVisible(true);
-        entity.setHealth(adventure.percent() * entity.getMaxHealth());
+        entity.setHealth(health(adventure.percent(), entity.getMaxHealth()));
       }
       return tracker;
     }
 
     @Override
-    protected void show(final @NonNull Player viewer, final @NonNull PhantomEntity<EnderDragon> bar) {
+    protected void show(final @NonNull Player viewer, final @NonNull PhantomEntity<Wither> bar) {
       bar.add(viewer);
     }
 
     @Override
-    protected boolean hide(final @NonNull Player viewer, final @NonNull PhantomEntity<EnderDragon> bar) {
+    protected boolean hide(final @NonNull Player viewer, final @NonNull PhantomEntity<Wither> bar) {
       return bar.remove(viewer);
     }
 
     @Override
-    protected boolean isEmpty(final @NonNull PhantomEntity<EnderDragon> bar) {
+    protected boolean isEmpty(final @NonNull PhantomEntity<Wither> bar) {
       return !bar.watching();
     }
 
     @Override
-    protected void hideFromAll(final @NonNull PhantomEntity<EnderDragon> bar) {
+    protected void hideFromAll(final @NonNull PhantomEntity<Wither> bar) {
       bar.removeAll();
     }
   }

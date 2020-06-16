@@ -84,6 +84,7 @@ import static java.util.Objects.requireNonNull;
       Class.forName(clazz);
       return true;
     } catch(ClassNotFoundException e) {
+      Knobs.logError("finding class", e);
       return false;
     }
   }
@@ -92,6 +93,7 @@ import static java.util.Objects.requireNonNull;
     try {
       return Class.forName(clazz);
     } catch(ClassNotFoundException ex) {
+      Knobs.logError("finding class", ex);
       return null;
     }
   }
@@ -107,6 +109,7 @@ import static java.util.Objects.requireNonNull;
       klass.getMethod(methodName, parameters);
       return true;
     } catch(NoSuchMethodException e) {
+      Knobs.logError("finding method", e);
       return false;
     }
   }
@@ -122,6 +125,7 @@ import static java.util.Objects.requireNonNull;
     try {
       return LOOKUP.findConstructor(target, MethodType.methodType(void.class, pTypes));
     } catch(NoSuchMethodException | IllegalAccessException e) {
+      Knobs.logError("finding constructor", e);
       return null;
     }
   }
@@ -136,6 +140,7 @@ import static java.util.Objects.requireNonNull;
     try {
       return LOOKUP.findVirtual(holder, methodName, MethodType.methodType(rType, pTypes));
     } catch(NoSuchMethodException | IllegalAccessException e) {
+      Knobs.logError("finding method", e);
       return null;
     }
   }
@@ -175,6 +180,7 @@ import static java.util.Objects.requireNonNull;
         return constants[ordinal];
       }
     }
+    Knobs.logError("finding enum value for " + klass + ": " + name, null);
     return null;
   }
 

@@ -136,6 +136,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
   }
 
   private final Plugin plugin;
+  private final PhantomEntityTracker entityTracker;
   private final BukkitViaProvider viaProvider;
   private final HandlerCollection<? super CommandSender, ? extends Handler.Chat<? super CommandSender, ?>> chat;
   private final HandlerCollection<Player, Handler.ActionBar<Player, ?>> actionBar;
@@ -146,6 +147,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
 
   public BukkitPlatform(final @NonNull Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
+    this.entityTracker = new PhantomEntityTracker(plugin);
     injectSoftdepend(this.plugin, "ViaVersion");
     this.viaProvider = new BukkitViaProvider(this.plugin.getServer().getPluginManager());
 
@@ -167,7 +169,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     this.bossBar = HandlerCollection.of(
       new ViaVersionHandlers.BossBars<>(this.viaProvider),
       new BukkitBossBarListener(),
-      new CraftBukkitHandlers.BossBars_1_8());
+      new CraftBukkitHandlers.BossBars_1_8(this.entityTracker));
     this.playSound = HandlerCollection.of(
       new BukkitHandlers.PlaySound_WithCategory(),
       new ViaVersionHandlers.PlaySound<>(this.viaProvider, player -> {
@@ -182,6 +184,16 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     );
   }
 
+  /**
+   * Register a single event as a callback function attached to this platform.
+   *
+   * <p>Cancelled events will be ignored.</p>
+   *
+   * @param type Event type
+   * @param priority priority to listen at
+   * @param handler callback fnuction
+   * @param <T> event type
+   */
   @SuppressWarnings("unchecked")
   private <T extends Event> void registerEvent(final Class<T> type, final EventPriority priority, final Consumer<T> handler) {
     requireNonNull(handler, "handler");
