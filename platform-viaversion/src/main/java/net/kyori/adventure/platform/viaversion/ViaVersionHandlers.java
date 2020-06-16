@@ -38,7 +38,7 @@ import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.EmptyComponent;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -246,14 +246,14 @@ public final class ViaVersionHandlers {
         send(wrapper);
       }
 
-      if(!EmptyComponent.empty().equals(title.subtitle())) {
+      if(title.subtitle() != TextComponent.empty()) {
         final String subtitleJson = GsonComponentSerializer.INSTANCE.serialize(title.subtitle());
         final PacketWrapper wrapper = make(viewer, ACTION_SUBTITLE);
         wrapper.write(Type.STRING, subtitleJson);
         send(wrapper);
       }
 
-      if(!EmptyComponent.empty().equals(title.title())) {
+      if(title.title() != TextComponent.empty()) {
         final String titleJson = GsonComponentSerializer.INSTANCE.serialize(title.title());
         final PacketWrapper wrapper = make(viewer, ACTION_TITLE);
         wrapper.write(Type.STRING, titleJson);
