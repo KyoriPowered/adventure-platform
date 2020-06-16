@@ -125,8 +125,8 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
       if(entry.getValue().subscribers.remove(player)) {
         player.unsafe().sendPacket(entry.getValue().newPacket(ACTION_REMOVE));
         if(entry.getValue().subscribers.isEmpty()) {
-          it.remove();
           entry.getKey().removeListener(this);
+          it.remove();
         }
       }
     }

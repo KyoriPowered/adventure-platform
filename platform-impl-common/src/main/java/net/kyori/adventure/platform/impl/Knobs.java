@@ -111,16 +111,16 @@ public final class Knobs {
 
   public static void logError(final @NonNull String description, final @Nullable Throwable ex) {
     if(PRINT_ERRORS) {
-      logger.error(ex, "Adventure detected an error when {}: {}.", description, ex == null ? "no exception" : ex.getMessage());
+      logger.error(ex, "Adventure detected an error when {0}: {1}.", description, ex == null ? "no exception" : ex.getMessage());
     }
   }
 
   public static <V> void logChosenHandler(final @NonNull V viewer, final @Nullable Handler<V> handler) {
     if(PRINT_CHOSEN_HANDLER) {
       if(handler == null) {
-        logger.info("No handler found in this collection for viewer {}", viewer);
+        logger.info("No handler found in this collection for viewer {0}", viewer);
       } else {
-        logger.info("Chose handler {} for viewer {}", handler, viewer);
+        logger.info("Chose handler {0} for viewer {1}", handler, viewer);
       }
     }
   }

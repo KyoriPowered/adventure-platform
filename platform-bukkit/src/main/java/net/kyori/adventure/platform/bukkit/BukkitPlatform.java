@@ -152,6 +152,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     this.chat = HandlerCollection.of(
       new ViaVersionHandlers.Chat<>(this.viaProvider),
       new SpigotHandlers.Chat(),
+      new SpigotHandlers.Chat_PlayerOnly(),
       new CraftBukkitHandlers.Chat(),
       new BukkitHandlers.Chat());
     this.actionBar = HandlerCollection.of(

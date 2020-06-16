@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
+import java.text.MessageFormat;
 import net.kyori.adventure.platform.impl.Knobs;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
@@ -33,14 +34,14 @@ public class Slf4jLogHandler implements Knobs.LogHandler {
   private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
   
   @Override
-  public void info(final @NonNull String message, @NonNull final Object... params) {
-    logger.info(message, params);
+  public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {
+    logger.info(MessageFormat.format(message, params));
   }
 
   @Override
-  public void error(final @NonNull Throwable exc, final @NonNull String message, @NonNull final Object... params) {
+  public void error(final @NonNull Throwable exc, final @NonNull String message, final @NonNull Object@NonNull... params) {
     if(logger.isErrorEnabled()) {
-      logger.error(MessageFormatter.arrayFormat(message, params, exc).getMessage(), exc);
+      logger.error(MessageFormat.format(message, params), exc);
     }
   }
 }

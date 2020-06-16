@@ -74,8 +74,8 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
       final Map.Entry<BossBar, I> entry = it.next();
       if(hide(viewer, entry.getValue())) {
         if(isEmpty(entry.getValue())) {
-          it.remove();
           entry.getKey().removeListener(this);
+          it.remove();
         }
       }
     }
