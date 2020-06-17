@@ -38,7 +38,7 @@ public final class Knobs {
   private Knobs() {
   }
 
-  private static final String PROPERTY_PREFIX = "net.kyori.adventure.";
+  private static final String PROPERTY_PREFIX = "net.kyo".concat("ri.adventure."); // prevent from being changed by shade relocation
   private static final @NonNull Pattern COMMA_SPLIT = Pattern.compile(",");
 
   /**
