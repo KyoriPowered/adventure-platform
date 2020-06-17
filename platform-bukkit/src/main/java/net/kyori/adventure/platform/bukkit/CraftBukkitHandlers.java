@@ -353,6 +353,7 @@ public class CraftBukkitHandlers {
   }
 
   /* package */ static class BossBars_1_8 extends AbstractBossBarListener<Player, PhantomEntity<Wither>> {
+    private static final int WITHER_DATA_INVULN_TICKS = 20;
     private static final double WITHER_DISTANCE = 40;
     private static final double WITHER_OFFSET_PITCH = 30 /* degrees */;
 
@@ -397,7 +398,8 @@ public class CraftBukkitHandlers {
     protected @NonNull PhantomEntity<Wither> newInstance(final @NonNull BossBar adventure) {
       final PhantomEntity<Wither> tracker = this.tracker.create(Wither.class)
         .relative(WITHER_DISTANCE, WITHER_OFFSET_PITCH, 0)
-        .invisible(true);
+        .invisible(true)
+        .data(WITHER_DATA_INVULN_TICKS, 890); // hide the shimmering armor when below 50% health
       final @Nullable Wither entity = tracker.entity();
       if(entity != null) {
         entity.setCustomName(legacy(adventure.name()));

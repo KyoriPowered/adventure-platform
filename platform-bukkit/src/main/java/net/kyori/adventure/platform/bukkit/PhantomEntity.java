@@ -102,7 +102,24 @@ interface PhantomEntity<T extends Entity> {
    */
   PhantomEntity<T> invisible(final boolean invisible);
 
+  /**
+   * Get if this entity is invisible.
+   *
+   * @return invisibility state
+   */
   boolean invisible();
+
+  /**
+   * Set the provided tracked data on the entity.
+   *
+   * <p>Data at the position must have already been added to the entity's data watcher
+   * -- there is no internal validation that the tracked value instance exists.</p>
+   *
+   * @param position Data position
+   * @param value Value. Untyped.
+   * @return this
+   */
+  PhantomEntity<T> data(final int position, final Object value);
 
   /**
    * Spawn the entity for a viewer
@@ -149,6 +166,7 @@ interface PhantomEntity<T extends Entity> {
     private static final MethodHandle NMS_ENTITY_SET_LOCATION = Crafty.findMethod(CLASS_NMS_ENTITY, "setLocation", void.class, double.class, double.class, double.class, float.class, float.class); // (x, y, z, pitch, yaw) -> void
     private static final MethodHandle NMS_ENTITY_IS_INVISIBLE = Crafty.findMethod(CLASS_NMS_ENTITY, "isInvisible", boolean.class);
     private static final MethodHandle NMS_ENTITY_SET_INVISIBLE = Crafty.findMethod(CLASS_NMS_ENTITY, "setInvisible", void.class, boolean.class);
+    private static final MethodHandle DATA_WATCHER_WATCH = Crafty.findMethod(CLASS_DATA_WATCHER, "watch", void.class, int.class, Object.class);
 
     // Packets //
     private static final Class<?> CLASS_SPAWN_LIVING_PACKET = Crafty.findNmsClass("PacketPlayOutSpawnEntityLiving");
@@ -322,6 +340,19 @@ interface PhantomEntity<T extends Entity> {
       return false;
     }
 
+    public PhantomEntity<T> data(final int position, final Object value) {
+      // DataWatchers were refactored at some point and use TrackedData as their key, not ints -- but this works for 1.8
+      if(DATA_WATCHER_WATCH != null) {
+        try {
+          final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(nmsEntity());
+          DATA_WATCHER_WATCH.invoke(dataWatcher, position, value);
+        } catch(Throwable throwable) {
+          Knobs.logError("watching data", throwable);
+        }
+      }
+      return this;
+    }
+
     @Override
     public boolean add(final @NonNull Player viewer) {
       if(this.watching.add(viewer)) {
@@ -440,6 +471,11 @@ interface PhantomEntity<T extends Entity> {
     @Override
     public boolean invisible() {
       return false;
+    }
+
+    @Override
+    public PhantomEntity<T> data(final int position, final Object value) {
+      return this;
     }
 
     @Override
