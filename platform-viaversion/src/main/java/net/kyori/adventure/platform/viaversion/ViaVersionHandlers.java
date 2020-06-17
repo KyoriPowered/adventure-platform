@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.viaversion;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -274,7 +275,7 @@ public final class ViaVersionHandlers {
   }
 
   public static final class BossBars<V> extends ConnectionBased<V> implements Handler.BossBars<V>, net.kyori.adventure.bossbar.BossBar.Listener {
-    private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = new IdentityHashMap<>();
+    private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public BossBars(final ViaAPIProvider<? super V> via) {
       super(via);
@@ -300,8 +301,10 @@ public final class ViaVersionHandlers {
 
     @Override
     public void hide(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
-      final Instance barInstance = this.bars.computeIfPresent(bar, (adventure, instance) -> {
-        instance.subscribedPlayers.remove(this.via.id(viewer));
+      this.bars.computeIfPresent(bar, (adventure, instance) -> {
+        if(instance.subscribedPlayers.remove(this.via.id(viewer))) {
+          send(instance.make(connection(viewer), ACTION_REMOVE));
+        }
         if(instance.subscribedPlayers.isEmpty()) {
           adventure.removeListener(this);
           return null;
@@ -309,10 +312,6 @@ public final class ViaVersionHandlers {
           return instance;
         }
       });
-
-      if(barInstance != null) {
-        send(barInstance.make(connection(viewer), ACTION_REMOVE));
-      }
     }
 
     @Override
