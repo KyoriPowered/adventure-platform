@@ -31,6 +31,7 @@ import net.kyori.adventure.platform.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.JdkLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
@@ -67,6 +68,7 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
 
   private final String key;
   private final Plugin plugin;
+  private final BungeeBossBarListener bossBars = new BungeeBossBarListener();
 
   BungeePlatform(final String key, final Plugin plugin) {
     this.key = requireNonNull(key, "key");
@@ -82,15 +84,23 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
     add(new BungeeSenderAudience(this.plugin.getProxy().getConsole()));
   }
 
+  /* package */ ProxyServer proxy() {
+    return this.plugin.getProxy();
+  }
+
+  /* package */ BungeeBossBarListener bossBars() {
+    return this.bossBars;
+  }
+
   @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
   public void onLogin(PostLoginEvent event) {
-    this.add(new BungeePlayerAudience(this.plugin.getProxy(), event.getPlayer()));
+    this.add(new BungeePlayerAudience(this, event.getPlayer()));
   }
 
   @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
   public void onQuit(PlayerDisconnectEvent event) {
     this.remove(event.getPlayer().getUniqueId());
-    BungeeBossBarListener.INSTANCE.unsubscribeAll(event.getPlayer());
+    this.bossBars.hideAll(event.getPlayer());
   }
 
   public Audience audience(final @NonNull CommandSender sender)  {
@@ -108,6 +118,6 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
   public void close() {
     INSTANCES.remove(this.key);
     this.plugin.getProxy().getPluginManager().unregisterListener(this);
-    BungeeBossBarListener.INSTANCE.unsubscribeAll();
+    this.bossBars.hideAll();
   }
 }

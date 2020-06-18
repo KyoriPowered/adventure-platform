@@ -35,7 +35,6 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.BungeeComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -44,12 +43,12 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
 public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
 
-  private final ProxyServer proxy;
+  private final BungeePlatform platform;
   private final ProxiedPlayer player;
 
-  public BungeePlayerAudience(final @NonNull ProxyServer proxy, final @NonNull ProxiedPlayer player) {
+  public BungeePlayerAudience(final @NonNull BungeePlatform platform, final @NonNull ProxiedPlayer player) {
     super(player);
-    this.proxy = proxy;
+    this.platform = platform;
     this.player = player;
   }
 
@@ -74,13 +73,12 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    BungeeBossBarListener.INSTANCE.subscribe(bar, this.player);
+  public void showBossBar(final @NonNull BossBar bar) { this.platform.bossBars().show(this.player, bar);
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
-    BungeeBossBarListener.INSTANCE.unsubscribe(bar, this.player);
+    this.platform.bossBars().hide(this.player, bar);
   }
 
   @Override
@@ -117,7 +115,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void showTitle(final @NonNull Title title) {
-    final net.md_5.bungee.api.Title bungee = this.proxy.createTitle();
+    final net.md_5.bungee.api.Title bungee = this.platform.proxy().createTitle();
     if (title.title() != TextComponent.empty()) {
       bungee.title(BungeeComponentSerializer.INSTANCE.serialize(title.title()));
     }
@@ -134,11 +132,11 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Player
 
   @Override
   public void clearTitle() {
-    this.player.sendTitle(this.proxy.createTitle().clear());
+    this.player.sendTitle(this.platform.proxy().createTitle().clear());
   }
 
   @Override
   public void resetTitle() {
-    this.player.sendTitle(this.proxy.createTitle().reset());
+    this.player.sendTitle(this.platform.proxy().createTitle().reset());
   }
 }
