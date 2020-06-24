@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform;
+package net.kyori.adventure.platform.impl;
 
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;

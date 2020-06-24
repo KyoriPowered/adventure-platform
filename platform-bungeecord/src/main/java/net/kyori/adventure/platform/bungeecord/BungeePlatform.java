@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AdventurePlatformImpl;
+import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.JdkLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.md_5.bungee.api.CommandSender;
