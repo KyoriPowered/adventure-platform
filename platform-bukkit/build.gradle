@@ -9,8 +9,8 @@ repositories {
 
 dependencies {
   api project(":adventure-platform-common")
-  api 'net.kyori:adventure-text-serializer-gson'
-  api 'net.kyori:adventure-text-serializer-legacy'
+  api "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
+  api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
   implementation project(":adventure-platform-impl-common")
   implementation project(":adventure-platform-viaversion")
   compileOnly 'io.netty:netty-all:4.0.23.Final' // for pre-1.13 book sending

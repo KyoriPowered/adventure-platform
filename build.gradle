@@ -2,6 +2,9 @@ plugins {
   id 'net.minecrell.licenser' version '0.4.1' apply false
 }
 
+// Adventure version
+ext.adventure = "4.0.0-SNAPSHOT"
+
 subprojects {
   apply plugin: 'java-library'
   apply plugin: 'maven'
@@ -46,17 +49,6 @@ subprojects {
   }
 
   dependencies {
-    constraints {
-      [
-        'api',
-        'text-serializer-gson',
-        'text-serializer-legacy',
-        'text-serializer-plain',
-        'text-feature-pagination'
-      ].each {
-        api "net.kyori:adventure-$it:$version"
-      }
-    }
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
   }
