@@ -66,6 +66,6 @@ public class VersionedGsonComponentSerializerTest {
   }
 
   private static String name(NamedTextColor color) {
-    return NamedTextColor.NAMES.name(color);
+    return NamedTextColor.NAMES.key(color);
   }
 }

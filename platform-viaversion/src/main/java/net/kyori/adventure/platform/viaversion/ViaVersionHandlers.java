@@ -473,7 +473,7 @@ public final class ViaVersionHandlers {
     }
 
     protected @NonNull String source(final Sound.@Nullable Source source) {
-      return source == null ? "" : Sound.Source.NAMES.name(source);
+      return source == null ? "" : Sound.Source.NAMES.key(source);
     }
 
     @Override

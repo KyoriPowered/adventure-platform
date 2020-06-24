@@ -32,7 +32,8 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
-import net.kyori.adventure.util.NameMap;
+import net.kyori.adventure.util.Index;
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Game;
@@ -61,14 +62,17 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     Knobs.logger(new Slf4jLogHandler());
   }
 
-  /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull NameMap<K> elements)  {
-    return Sponge.getRegistry().getType(spongeType, elements.name(requireNonNull(value, "value")))
+  /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements)  {
+    return Sponge.getRegistry().getType(spongeType, elements.key(requireNonNull(value, "value")))
       .orElseThrow(() -> new IllegalArgumentException("Value " + value + " could not be found in Sponge type " + spongeType));
   }
 
-  /* package */ static <K, S extends CatalogType> K adventure(final @NonNull S sponge, final @NonNull NameMap<K> values) {
-    return values.value(requireNonNull(sponge, "sponge").getId())
-      .orElseThrow(() -> new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent"));
+  /* package */ static <K, S extends CatalogType> K adventure(final @NonNull S sponge, final @NonNull Index<String, K> values) {
+    K value = values.value(requireNonNull(sponge, "sponge").getId());
+    if(value == null) {
+      throw new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent");
+    }
+    return value;
   }
 
   /* package */ static <S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
