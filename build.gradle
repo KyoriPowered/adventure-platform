@@ -42,9 +42,6 @@ subprojects {
     maven {
       name = 'viaversion'
       url = 'https://repo.viaversion.com'
-      content {
-        includeGroup "us.myles"
-      }
     }
   }
 
