@@ -190,5 +190,6 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     for(Handler.BossBars<Player> handler : this.bossBar) {
       handler.hideAll();
     }
+    super.close();
   }
 }

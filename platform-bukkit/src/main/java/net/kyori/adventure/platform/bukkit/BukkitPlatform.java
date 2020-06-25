@@ -248,6 +248,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     for(Handler.BossBars<Player> handler : this.bossBar) {
       handler.hideAll();
     }
+    super.close();
   }
 
   /* package */ static class BukkitViaProvider implements ViaVersionHandlers.ViaAPIProvider<CommandSender> {

@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -44,14 +46,15 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
-    private final Audience all;
-    private final Audience console;
-    private final Audience players;
-    private final Map<UUID, PlayerAudience> playerMap;
-    private final Set<SenderAudience> senderSet;
-    private final Map<String, Audience> permissionMap;
-    private final Map<UUID, Audience> worldMap;
-    private final Map<String, Audience> serverMap;
+    private Audience all;
+    private Audience console;
+    private Audience players;
+    private Map<UUID, PlayerAudience> playerMap;
+    private Set<SenderAudience> senderSet;
+    private Map<String, Audience> permissionMap;
+    private Map<UUID, Audience> worldMap;
+    private Map<String, Audience> serverMap;
+    private volatile boolean closed;
 
     public AdventurePlatformImpl() {
         this.console = new ConsoleAudience();
@@ -62,6 +65,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         this.permissionMap = new ConcurrentSkipListMap<>(String::compareTo);
         this.worldMap = new ConcurrentSkipListMap<>(UUID::compareTo);
         this.serverMap = new ConcurrentSkipListMap<>(String::compareTo);
+        this.closed = false;
     }
 
     /**
@@ -71,6 +75,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
      */
     protected void add(SenderAudience audience) {
         // TODO: wrap audiences to inject custom rendering code
+        // TODO: check if closed before forwarding messages
         this.senderSet.add(audience);
         if (audience instanceof PlayerAudience) {
             this.playerMap.put(((PlayerAudience) audience).getId(), (PlayerAudience) audience);
@@ -198,5 +203,21 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
             audience = this.serverMap.computeIfAbsent(serverName, ServerAudience::new);
         }
         return audience;
+    }
+
+    @Override
+    public void close() {
+        if (!this.closed) {
+            this.all = Audience.empty();
+            this.console = Audience.empty();
+            this.players = Audience.empty();
+            this.playerMap = Collections.emptyMap();
+            this.senderSet = Collections.emptySet();
+            this.permissionMap = Collections.emptyMap();
+            this.worldMap = Collections.emptyMap();
+            this.serverMap = Collections.emptyMap();
+        }
+
+        this.closed = true;
     }
 }

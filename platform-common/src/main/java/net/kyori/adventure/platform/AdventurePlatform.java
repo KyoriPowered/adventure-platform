@@ -32,7 +32,7 @@ import java.util.UUID;
 /**
  * A platform for implementing Adventure.
  */
-public interface AdventurePlatform extends AutoCloseable {
+public interface AdventurePlatform {
   /**
    * Gets an audience for all online players, including the server's console.
    *
@@ -110,6 +110,10 @@ public interface AdventurePlatform extends AutoCloseable {
    */
   @NonNull Audience server(@NonNull String serverName);
 
-  @Override
+  /**
+   * Closes the platform and releases any resources.
+   *
+   * <p>Any previous and future audiences will silently drop messages.</p>
+   */
   void close();
 }

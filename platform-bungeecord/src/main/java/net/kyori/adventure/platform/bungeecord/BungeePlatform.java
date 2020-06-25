@@ -119,5 +119,6 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
     INSTANCES.remove(this.key);
     this.plugin.getProxy().getPluginManager().unregisterListener(this);
     this.bossBars.hideAll();
+    super.close();
   }
 }
