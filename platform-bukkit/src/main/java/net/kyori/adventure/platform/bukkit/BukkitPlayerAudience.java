@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -54,8 +55,8 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Adven
     }
 
     @Override
-    public @Nullable UUID worldId() {
-        return this.viewer.getWorld().getUID();
+    public @Nullable Key world() {
+        return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName()); // TODO: handle Keys
     }
 
     @Override

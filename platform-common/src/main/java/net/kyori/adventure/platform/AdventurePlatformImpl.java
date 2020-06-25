@@ -38,6 +38,7 @@ import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.text.Component;
@@ -61,7 +62,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
   private Map<UUID, AdventurePlayerAudience> playerMap;
   private Set<AdventureAudience> senderSet;
   private Map<String, Audience> permissionMap;
-  private Map<UUID, Audience> worldMap;
+  private Map<Key, Audience> worldMap;
   private Map<String, Audience> serverMap;
   private AdventureRenderer renderer;
   private volatile boolean closed;
@@ -168,8 +169,8 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     }
 
     @Override
-    public @Nullable UUID worldId() {
-      return this.player.worldId();
+    public @Nullable Key world() {
+      return this.player.world();
     }
 
     @Override
@@ -263,14 +264,14 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
   private class WorldAudience implements MultiAudience {
     private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::inWorld);
-    private final UUID worldId;
+    private final Key world;
 
-    private WorldAudience(final @NonNull UUID worldId) {
-      this.worldId = requireNonNull(worldId, "world id");
+    private WorldAudience(final @NonNull Key world) {
+      this.world = requireNonNull(world, "world id");
     }
 
     private boolean inWorld(AdventurePlayerAudience audience) {
-      return this.worldId.equals(audience.worldId());
+      return this.world.equals(audience.world());
     }
 
     @Override
@@ -280,8 +281,8 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
   }
 
   @Override
-  public @NonNull Audience world(@NonNull UUID worldId) {
-    return this.worldMap.computeIfAbsent(worldId, WorldAudience::new);
+  public @NonNull Audience world(@NonNull Key world) {
+    return this.worldMap.computeIfAbsent(world, WorldAudience::new);
   }
 
   private class ServerAudience implements MultiAudience {
@@ -321,7 +322,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
   @Override
   public @NonNull AdventureRenderer renderer() {
-    return renderer;
+    return this.renderer;
   }
 
   @Override

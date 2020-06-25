@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -48,8 +49,8 @@ import org.spongepowered.api.entity.living.player.Player;
   }
 
   @Override
-  public @NonNull UUID worldId() {
-    return this.viewer.getWorld().getUniqueId();
+  public @NonNull Key world() {
+    return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName());
   }
 
   @Override

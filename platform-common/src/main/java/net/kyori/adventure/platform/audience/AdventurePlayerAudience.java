@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.audience;
 
+import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -44,7 +45,7 @@ public interface AdventurePlayerAudience extends AdventureAudience {
    *
    * @return a world uuid, or null if unknown
    */
-  @Nullable UUID worldId();
+  @Nullable Key world();
 
   /**
    * Gets the name of the player's server.

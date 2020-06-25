@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bungeecord;
 import java.util.Locale;
 import java.util.UUID;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
@@ -57,7 +58,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
   }
 
   @Override
-  public @Nullable UUID worldId() {
+  public @Nullable Key world() {
     return null; // Bungee does not know about a player's world
   }
 
@@ -85,7 +86,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
     this.player.sendMessage(ChatMessageType.ACTION_BAR, BungeeComponentSerializer.INSTANCE.serialize(message));
   }
 
-  @Override
+  /*@Override
   public void playSound(final @NonNull Sound sound) {
     // TODO: Out of scope?
     // Packet Named Sound Effect, 0x19
@@ -110,7 +111,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
     // starting 17w45a (pre of 1.13) (proto 343): pkt 0x49
     // created: 1.9.3-pre2 (proto 110): custom data MC|StopSound
     // format: string category | string name, either can be empty string meaning wildcard
-  }
+  }*/
 
   @Override
   public void showTitle(final @NonNull Title title) {

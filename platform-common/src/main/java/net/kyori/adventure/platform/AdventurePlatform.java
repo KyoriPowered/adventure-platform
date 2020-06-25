@@ -97,10 +97,13 @@ public interface AdventurePlatform {
    *
    * <p>The audience is dynamically updated as players join and leave.</p>
    *
-   * @param worldId a world uuid
+   * <p>World identifiers were introduced in Minecraft 1.16. On older game instances,
+   * worlds will be assigned the {@link Key} {@code minecraft:<world name>}</p>
+   *
+   * @param world identifier for a world
    * @return the world's audience
    */
-  @NonNull Audience world(final @NonNull UUID worldId);
+  @NonNull Audience world(final @NonNull Key world);
 
   /**
    * Gets an audience for online players on a server, including the server's console.
