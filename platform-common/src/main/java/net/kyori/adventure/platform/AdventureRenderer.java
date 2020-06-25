@@ -9,12 +9,14 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.Comparator;
 
 /**
- * A component renderer that customizes text for a {@link AdventureAudience} or {@link AdventurePlayerAudience}
+ * A component renderer that customizes text for an {@link AdventureAudience}.
  */
 public interface AdventureRenderer extends ComponentRenderer<AdventureAudience>, Comparator<AdventureAudience> {
 
     /**
      * Customize text for an audience.
+     *
+     * <p>Audience may also be an instance of {@link AdventurePlayerAudience}.</p>
      *
      * @param component a component
      * @param audience an audience

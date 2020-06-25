@@ -24,15 +24,21 @@
 package net.kyori.adventure.platform.impl;
 
 import java.util.Collections;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.audience.MultiAudience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.AdventureRenderer;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.platform.AdventurePlatform;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
 import java.util.Set;
@@ -71,17 +77,116 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         this.closed = false;
     }
 
+    // TODO: Not a fan of this implementation, especially copying Titles and Books
+    // Should do component rendering at a "lower level"
+    private class AdventureAudienceImpl implements ForwardingAudience, AdventureAudience {
+
+        private AdventureAudience audience;
+
+        private AdventureAudienceImpl(AdventureAudience audience) {
+            this.audience = audience;
+        }
+
+        private Component render(@NonNull Component component) {
+            return renderer.render(component, this.audience);
+        }
+
+        @Override
+        public @Nullable Audience audience() {
+            return closed ? null : audience;
+        }
+
+        @Override
+        public void sendMessage(@NonNull Component message) {
+            if (closed) return;
+            final Component newMessage = render(message);
+            this.audience.sendMessage(newMessage);
+        }
+
+        @Override
+        public void sendActionBar(@NonNull Component message) {
+            if (closed) return;
+            final Component newMessage = render(message);
+            this.audience.sendActionBar(newMessage);
+        }
+
+        @Override
+        public void showTitle(@NonNull Title title) {
+            if (closed) return;
+            final Title newTitle = Title.of(render(title.title()), render(title.subtitle()), title.fadeInTime(), title.stayTime(), title.fadeOutTime());
+            this.audience.showTitle(newTitle);
+        }
+
+        @Override
+        public void showBossBar(@NonNull BossBar bar) {
+            if (closed) return;
+            final BossBar newBar = BossBar.of(render(bar.name()), bar.percent(), bar.color(), bar.overlay(), bar.flags());
+            this.audience.showBossBar(newBar);
+        }
+
+        @Override
+        public void openBook(@NonNull Book book) {
+            if (closed) return;
+            final Book newBook = Book.of(render(book.title()), render(book.author()), book.pages().stream().map(this::render).collect(Collectors.toList()));
+            this.audience.openBook(newBook);
+        }
+
+        @Override
+        public @Nullable Locale getLocale() {
+            return this.audience.getLocale();
+        }
+
+        @Override
+        public boolean hasPermission(@NonNull String permission) {
+            return this.audience.hasPermission(permission);
+        }
+
+        @Override
+        public boolean isConsole() {
+            return this.audience.isConsole();
+        }
+    }
+
+    private class AdventurePlayerAudienceImpl extends AdventureAudienceImpl implements AdventurePlayerAudience {
+
+        private AdventurePlayerAudience player;
+
+        private AdventurePlayerAudienceImpl(AdventurePlayerAudience audience) {
+            super(audience);
+            this.player = audience;
+        }
+
+        @Override
+        public @NonNull UUID getId() {
+            return player.getId();
+        }
+
+        @Override
+        public @Nullable UUID getWorldId() {
+            return player.getWorldId();
+        }
+
+        @Override
+        public @Nullable String getServerName() {
+            return player.getServerName();
+        }
+    }
+
     /**
      * Adds an audience to the registry.
      *
      * @param audience an audience
      */
     protected void add(AdventureAudience audience) {
-        // TODO: wrap audiences to inject custom rendering code
-        // TODO: check if closed before forwarding messages
-        this.senderSet.add(audience);
+        if (closed) return;
+
+        final AdventureAudience wrapped = audience instanceof AdventurePlayerAudience ?
+            new AdventurePlayerAudienceImpl((AdventurePlayerAudience) audience) :
+            new AdventureAudienceImpl(audience);
+
+        this.senderSet.add(wrapped);
         if (audience instanceof AdventurePlayerAudience) {
-            this.playerMap.put(((AdventurePlayerAudience) audience).getId(), (AdventurePlayerAudience) audience);
+            this.playerMap.put(((AdventurePlayerAudience) wrapped).getId(), (AdventurePlayerAudience) wrapped);
         }
     }
 
