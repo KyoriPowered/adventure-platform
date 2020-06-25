@@ -25,7 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
-import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
+import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.Player;

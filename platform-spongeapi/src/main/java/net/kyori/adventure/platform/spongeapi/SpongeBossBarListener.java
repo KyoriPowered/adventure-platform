@@ -27,7 +27,6 @@ import java.util.Set;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.SpongeComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.boss.BossBarColor;
 import org.spongepowered.api.boss.BossBarOverlay;

@@ -38,7 +38,7 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
-import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
+import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
 import org.bukkit.Location;
 import org.bukkit.Material;
