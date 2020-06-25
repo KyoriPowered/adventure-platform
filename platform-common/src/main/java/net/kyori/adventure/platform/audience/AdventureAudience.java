@@ -33,25 +33,25 @@ import java.util.Locale;
  * An audience that represents some entity, usually a "command sender."
  */
 public interface AdventureAudience extends Audience {
-    /**
-     * Gets the locale of the audience.
-     *
-     * @return a locale, or null if unknown
-     */
-    @Nullable Locale locale();
+  /**
+   * Gets the locale of the audience.
+   *
+   * @return a locale, or null if unknown
+   */
+  @Nullable Locale locale();
 
-    /**
-     * Gets if the audience has permission for a permission node.
-     *
-     * @param permission a permission node
-     * @return if the audience has permission
-     */
-    boolean hasPermission(final @NonNull String permission);
+  /**
+   * Gets if the audience has permission for a permission node.
+   *
+   * @param permission a permission node
+   * @return if the audience has permission
+   */
+  boolean hasPermission(final @NonNull String permission);
 
-    /**
-     * Gets if the audience is a "console."
-     *
-     * @return if the audience is console.
-     */
-    boolean console();
+  /**
+   * Gets if the audience is a "console."
+   *
+   * @return if the audience is console.
+   */
+  boolean console();
 }

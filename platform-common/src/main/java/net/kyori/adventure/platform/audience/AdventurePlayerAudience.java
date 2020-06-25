@@ -32,24 +32,24 @@ import java.util.UUID;
  * An audience that represents a connected player.
  */
 public interface AdventurePlayerAudience extends AdventureAudience {
-    /**
-     * Gets the player's uuid.
-     *
-     * @return a player uuid
-     */
-    @NonNull UUID id();
+  /**
+   * Gets the player's uuid.
+   *
+   * @return a player uuid
+   */
+  @NonNull UUID id();
 
-    /**
-     * Gets the uuid of the player's world.
-     *
-     * @return a world uuid, or null if unknown
-     */
-    @Nullable UUID worldId();
+  /**
+   * Gets the uuid of the player's world.
+   *
+   * @return a world uuid, or null if unknown
+   */
+  @Nullable UUID worldId();
 
-    /**
-     * Gets the name of the player's server.
-     *
-     * @return a server name, or null if unknown or not on a proxy
-     */
-    @Nullable String serverName();
+  /**
+   * Gets the name of the player's server.
+   *
+   * @return a server name, or null if unknown or not on a proxy
+   */
+  @Nullable String serverName();
 }
