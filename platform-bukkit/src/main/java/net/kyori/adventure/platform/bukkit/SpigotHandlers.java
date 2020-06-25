@@ -58,7 +58,7 @@ import static java.util.Objects.requireNonNull;
         BukkitPlatform.GSON_SERIALIZER.populator().accept(builder);
         builder.registerTypeAdapter(AdapterComponent.class, new Serializer());
       });
-    } catch(NoSuchFieldException | IllegalAccessException ex) {
+    } catch(Exception ex) {
       return false;
     }
   }

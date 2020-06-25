@@ -33,6 +33,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
@@ -53,6 +54,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
 import static net.kyori.adventure.platform.bukkit.BukkitHandlers.legacy;
+import static net.kyori.adventure.platform.bukkit.Crafty.LOOKUP;
 import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
 import static net.kyori.adventure.platform.bukkit.Crafty.findConstructor;
 
@@ -113,7 +115,8 @@ public class CraftBukkitHandlers {
 
     @Override
     public boolean isAvailable() {
-      return ENABLED && super.isAvailable() && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
+      return ENABLED && super.isAvailable() && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null
+        && (MC_TEXT_GSON != null || TEXT_SERIALIZER_DESERIALIZE != null);
     }
 
     public void send(final @NonNull V player, final @Nullable Object packet) {
@@ -128,6 +131,7 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
   private static final Gson MC_TEXT_GSON;
+  private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE;
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
   private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
@@ -136,6 +140,7 @@ public class CraftBukkitHandlers {
     MethodHandle legacyChatPacketConstructor = null;
     MethodHandle chatPacketConstructor = null;
     Gson gson = null;
+    MethodHandle textSerializerDeserialize = null;
 
     try {
       if(CLASS_CHAT_COMPONENT != null) {
@@ -152,6 +157,9 @@ public class CraftBukkitHandlers {
           chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
         }
         legacyChatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, byte.class);
+        if(legacyChatPacketConstructor == null) { // 1.7 paper protocol hack?
+          legacyChatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, int.class);
+        }
 
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
@@ -169,6 +177,16 @@ public class CraftBukkitHandlers {
         if(gsonField != null) {
           gsonField.setAccessible(true);
           gson = (Gson) gsonField.get(null);
+        } else {
+          final Method deserialize = Arrays.stream(chatSerializerClass.getDeclaredMethods())
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
+            .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
+            .min(Comparator.comparing(Method::getName)) // prefer the #a method
+            .orElse(null);
+          if(deserialize != null) {
+            textSerializerDeserialize = LOOKUP.unreflect(deserialize);
+          }
         }
       }
     } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException ex) {
@@ -176,19 +194,29 @@ public class CraftBukkitHandlers {
     }
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
     MC_TEXT_GSON = gson;
+    TEXT_SERIALIZER_DESERIALIZE = textSerializerDeserialize;
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
 
   private static Object mcTextFromComponent(final @NonNull Component message) {
-    if(MC_TEXT_GSON == null || CLASS_CHAT_COMPONENT == null) {
+    if((MC_TEXT_GSON == null && TEXT_SERIALIZER_DESERIALIZE == null) || CLASS_CHAT_COMPONENT == null) {
       throw new IllegalStateException("Not supported");
     }
-    final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializeToTree(message);
-    try {
-      return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
-    } catch(Throwable error) {
-      Knobs.logError("converting adventure Component to MC Component", error);
-      return null;
+    if(MC_TEXT_GSON != null) {
+      final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializeToTree(message);
+      try {
+        return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
+      } catch(Throwable error) {
+        Knobs.logError("converting adventure Component to MC Component", error);
+        return null;
+      }
+    } else {
+      try {
+        return TEXT_SERIALIZER_DESERIALIZE.invoke(BukkitPlatform.GSON_SERIALIZER.serialize(message));
+      } catch(Throwable error) {
+        Knobs.logError("converting adventure Component to MC Component (via 1.7 String serialization)", error);
+        return null;
+      }
     }
   }
 
@@ -244,6 +272,11 @@ public class CraftBukkitHandlers {
   }
 
   /* package */ static class ActionBar1_8thru1_11 extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
+
+    @Override
+    public boolean isAvailable() {
+      return super.isAvailable() && LEGACY_CHAT_PACKET_CONSTRUCTOR != null;
+    }
 
     @Override
     public Object initState(final @NonNull Component message) {
@@ -333,7 +366,8 @@ public class CraftBukkitHandlers {
 
     @Override
     public boolean isAvailable() {
-      return ENABLED && CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
+      return ENABLED && (MC_TEXT_GSON != null || TEXT_SERIALIZER_DESERIALIZE != null)
+        && CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
     }
 
     @Override
