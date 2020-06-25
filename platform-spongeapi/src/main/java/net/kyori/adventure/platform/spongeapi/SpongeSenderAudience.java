@@ -48,7 +48,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
   }
 
   @Override
-  public @Nullable Locale getLocale() {
+  public @Nullable Locale locale() {
     return this.viewer instanceof CommandSource ? ((CommandSource) viewer).getLocale() : null;
   }
 
@@ -58,7 +58,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
   }
 
   @Override
-  public boolean isConsole() {
+  public boolean console() {
     return this.viewer instanceof ConsoleSource;
   }
 }

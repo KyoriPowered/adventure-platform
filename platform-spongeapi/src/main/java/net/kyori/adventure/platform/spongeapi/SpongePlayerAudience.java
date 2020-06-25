@@ -43,17 +43,17 @@ import org.spongepowered.api.entity.living.player.Player;
   }
 
   @Override
-  public @NonNull UUID getId() {
+  public @NonNull UUID id() {
     return this.viewer.getUniqueId();
   }
 
   @Override
-  public @NonNull UUID getWorldId() {
+  public @NonNull UUID worldId() {
     return this.viewer.getWorld().getUniqueId();
   }
 
   @Override
-  public @Nullable String getServerName() {
+  public @Nullable String serverName() {
     return null;
   }
 }

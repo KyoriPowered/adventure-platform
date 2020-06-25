@@ -70,7 +70,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     public AdventurePlatformImpl() {
         this.console = new ConsoleAudience();
-        this.players = new PlayersAudience();
+        this.players = (MultiAudience) () -> this.playerMap.values();
         this.senderSet = ConcurrentHashMap.newKeySet();
         this.all = (MultiAudience) () -> this.senderSet;
         this.playerMap = new ConcurrentHashMap<>();
@@ -140,8 +140,8 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         }
 
         @Override
-        public @Nullable Locale getLocale() {
-            return this.audience.getLocale();
+        public @Nullable Locale locale() {
+            return this.audience.locale();
         }
 
         @Override
@@ -150,8 +150,8 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         }
 
         @Override
-        public boolean isConsole() {
-            return this.audience.isConsole();
+        public boolean console() {
+            return this.audience.console();
         }
     }
 
@@ -165,18 +165,18 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         }
 
         @Override
-        public @NonNull UUID getId() {
-            return player.getId();
+        public @NonNull UUID id() {
+            return this.player.id();
         }
 
         @Override
-        public @Nullable UUID getWorldId() {
-            return player.getWorldId();
+        public @Nullable UUID worldId() {
+            return this.player.worldId();
         }
 
         @Override
-        public @Nullable String getServerName() {
-            return player.getServerName();
+        public @Nullable String serverName() {
+            return this.player.serverName();
         }
     }
 
@@ -194,7 +194,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
         this.senderSet.add(wrapped);
         if (audience instanceof AdventurePlayerAudience) {
-            this.playerMap.put(((AdventurePlayerAudience) wrapped).getId(), (AdventurePlayerAudience) wrapped);
+            this.playerMap.put(((AdventurePlayerAudience) wrapped).id(), (AdventurePlayerAudience) wrapped);
         }
     }
 
@@ -210,11 +210,11 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     @Override
     public @NonNull Audience all() {
-        return all;
+        return this.all;
     }
 
     private class ConsoleAudience implements MultiAudience {
-        private final Iterable<AdventureAudience> console = filter(senderSet, AdventureAudience::isConsole);
+        private final Iterable<AdventureAudience> console = filter(senderSet, AdventureAudience::console);
         @Override
         public @NonNull Iterable<? extends Audience> audiences() {
             return this.console;
@@ -223,19 +223,12 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     @Override
     public @NonNull Audience console() {
-        return console;
-    }
-
-    private class PlayersAudience implements MultiAudience {
-        @Override
-        public @NonNull Iterable<? extends Audience> audiences() {
-            return playerMap.values();
-        }
+        return this.console;
     }
 
     @Override
     public @NonNull Audience players() {
-        return players;
+        return this.players;
     }
 
     @Override
@@ -271,15 +264,15 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     }
 
     private class WorldAudience implements MultiAudience {
-        private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::isInWorld);
+        private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::inWorld);
         private final UUID worldId;
 
         private WorldAudience(final @NonNull UUID worldId) {
             this.worldId = requireNonNull(worldId, "world id");
         }
 
-        private boolean isInWorld(AdventurePlayerAudience audience) {
-            return worldId.equals(audience.getWorldId());
+        private boolean inWorld(AdventurePlayerAudience audience) {
+            return this.worldId.equals(audience.worldId());
         }
 
         @Override
@@ -302,7 +295,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         }
 
         private boolean isOnServer(AdventurePlayerAudience audience) {
-            return this.serverName.equals(audience.getServerName());
+            return this.serverName.equals(audience.serverName());
         }
 
         @Override

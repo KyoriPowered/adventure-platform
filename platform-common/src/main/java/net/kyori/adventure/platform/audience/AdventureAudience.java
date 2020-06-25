@@ -38,7 +38,7 @@ public interface AdventureAudience extends Audience {
      *
      * @return a locale, or null if unknown
      */
-    @Nullable Locale getLocale();
+    @Nullable Locale locale();
 
     /**
      * Gets if the audience has permission for a permission node.
@@ -53,5 +53,5 @@ public interface AdventureAudience extends Audience {
      *
      * @return if the audience is console.
      */
-    boolean isConsole();
+    boolean console();
 }

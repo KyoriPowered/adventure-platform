@@ -37,19 +37,19 @@ public interface AdventurePlayerAudience extends AdventureAudience {
      *
      * @return a player uuid
      */
-    @NonNull UUID getId();
+    @NonNull UUID id();
 
     /**
      * Gets the uuid of the player's world.
      *
      * @return a world uuid, or null if unknown
      */
-    @Nullable UUID getWorldId();
+    @Nullable UUID worldId();
 
     /**
      * Gets the name of the player's server.
      *
      * @return a server name, or null if unknown or not on a proxy
      */
-    @Nullable String getServerName();
+    @Nullable String serverName();
 }

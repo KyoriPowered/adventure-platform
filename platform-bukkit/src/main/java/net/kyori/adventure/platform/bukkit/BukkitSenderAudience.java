@@ -49,7 +49,7 @@ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> i
     }
 
     @Override
-    public @Nullable Locale getLocale() {
+    public @Nullable Locale locale() {
         return null;
     }
 
@@ -59,7 +59,7 @@ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> i
     }
 
     @Override
-    public boolean isConsole() {
+    public boolean console() {
         return this.viewer instanceof ConsoleCommandSender;
     }
 

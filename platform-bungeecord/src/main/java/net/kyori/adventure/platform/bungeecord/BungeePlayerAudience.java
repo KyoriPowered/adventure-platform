@@ -53,22 +53,22 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
   }
 
   @Override
-  public @NonNull UUID getId() {
+  public @NonNull UUID id() {
     return this.player.getUniqueId();
   }
 
   @Override
-  public @Nullable UUID getWorldId() {
+  public @Nullable UUID worldId() {
     return null; // Bungee does not know about a player's world
   }
 
   @Override
-  public @Nullable String getServerName() {
+  public @Nullable String serverName() {
     return this.player.isConnected() ? this.player.getServer().getInfo().getName() : null;
   }
 
   @Override
-  public @Nullable Locale getLocale() {
+  public @Nullable Locale locale() {
     return this.player.getLocale();
   }
 

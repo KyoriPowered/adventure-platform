@@ -49,7 +49,7 @@ public class BungeeSenderAudience implements AdventureAudience {
   }
 
   @Override
-  public @Nullable Locale getLocale() {
+  public @Nullable Locale locale() {
     return null;
   }
 
@@ -59,7 +59,7 @@ public class BungeeSenderAudience implements AdventureAudience {
   }
 
   @Override
-  public boolean isConsole() {
+  public boolean console() {
     return !(this.sender instanceof Connection);
   }
 

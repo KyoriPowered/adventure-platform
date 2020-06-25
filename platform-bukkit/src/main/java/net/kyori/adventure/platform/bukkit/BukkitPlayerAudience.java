@@ -49,23 +49,23 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Adven
     }
 
     @Override
-    public @NonNull UUID getId() {
+    public @NonNull UUID id() {
         return this.viewer.getUniqueId();
     }
 
     @Override
-    public @Nullable UUID getWorldId() {
+    public @Nullable UUID worldId() {
         return this.viewer.getWorld().getUID();
     }
 
     @Override
-    public @Nullable String getServerName() {
+    public @Nullable String serverName() {
         return null;
     }
 
     @Nullable
     @Override
-    public Locale getLocale() {
+    public Locale locale() {
         final String newLocaleRaw = this.viewer.getLocale();
         if (!Objects.equals(localeRaw, newLocaleRaw)) {
             locale = toLocale(localeRaw = newLocaleRaw);
