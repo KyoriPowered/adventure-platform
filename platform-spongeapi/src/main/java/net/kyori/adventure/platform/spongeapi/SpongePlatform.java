@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventurePlatformImpl;
+import net.kyori.adventure.platform.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;

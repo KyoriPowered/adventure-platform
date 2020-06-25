@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.audience;
+package net.kyori.adventure.platform;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,10 +38,8 @@ import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.AdventureRenderer;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.audience.AdventureAudience;
-import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
