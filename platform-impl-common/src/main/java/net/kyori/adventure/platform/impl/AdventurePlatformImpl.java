@@ -23,9 +23,16 @@
  */
 package net.kyori.adventure.platform.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.audience.MultiAudience;
@@ -41,10 +48,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -69,10 +73,10 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         this.players = new PlayersAudience();
         this.senderSet = ConcurrentHashMap.newKeySet();
         this.all = (MultiAudience) () -> this.senderSet;
-        this.playerMap = new ConcurrentSkipListMap<>(UUID::compareTo);
-        this.permissionMap = new ConcurrentSkipListMap<>(String::compareTo);
-        this.worldMap = new ConcurrentSkipListMap<>(UUID::compareTo);
-        this.serverMap = new ConcurrentSkipListMap<>(String::compareTo);
+        this.playerMap = new ConcurrentHashMap<>();
+        this.permissionMap = new ConcurrentHashMap<>();
+        this.worldMap = new ConcurrentHashMap<>();
+        this.serverMap = new ConcurrentHashMap<>();
         this.renderer = new EmptyAdventureRenderer(); // TODO: pass to constructor for customization
         this.closed = false;
     }
@@ -81,7 +85,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     // Should do component rendering at a "lower level"
     private class AdventureAudienceImpl implements ForwardingAudience, AdventureAudience {
 
-        private AdventureAudience audience;
+        private final AdventureAudience audience;
 
         private AdventureAudienceImpl(AdventureAudience audience) {
             this.audience = audience;
@@ -127,7 +131,11 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         @Override
         public void openBook(@NonNull Book book) {
             if (closed) return;
-            final Book newBook = Book.of(render(book.title()), render(book.author()), book.pages().stream().map(this::render).collect(Collectors.toList()));
+            final List<Component> newPages = new ArrayList<>(book.pages().size());
+            for(Component page : book.pages()) {
+                newPages.add(render(page));
+            }
+            final Book newBook = Book.of(render(book.title()), render(book.author()), newPages);
             this.audience.openBook(newBook);
         }
 
@@ -149,7 +157,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     private class AdventurePlayerAudienceImpl extends AdventureAudienceImpl implements AdventurePlayerAudience {
 
-        private AdventurePlayerAudience player;
+        private final AdventurePlayerAudience player;
 
         private AdventurePlayerAudienceImpl(AdventurePlayerAudience audience) {
             super(audience);
@@ -206,9 +214,10 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     }
 
     private class ConsoleAudience implements MultiAudience {
+        private final Iterable<AdventureAudience> console = filter(senderSet, AdventureAudience::isConsole);
         @Override
         public @NonNull Iterable<? extends Audience> audiences() {
-            return senderSet.stream().filter(AdventureAudience::isConsole).collect(Collectors.toList());
+            return this.console;
         }
     }
 
@@ -231,11 +240,12 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     @Override
     public @NonNull Audience player(@NonNull UUID playerId) {
-        final AdventurePlayerAudience player = playerMap.get(playerId);
+        final AdventurePlayerAudience player = this.playerMap.get(playerId);
         return player == null ? Audience.empty() : player;
     }
 
     private class PermissionAudience implements MultiAudience {
+        private final Iterable<AdventureAudience> filtered = filter(senderSet, this::hasPermission);
         private final String permission;
 
         private PermissionAudience(final @NonNull String permission) {
@@ -248,20 +258,20 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
         @Override
         public @NonNull Iterable<? extends Audience> audiences() {
-            return senderSet.stream().filter(this::hasPermission).collect(Collectors.toList());
+            return this.filtered;
         }
     }
 
     @Override
     public @NonNull Audience permission(@NonNull String permission) {
-        Audience audience = this.permissionMap.get(permission);
-        if (audience == null) {
-            audience = this.permissionMap.computeIfAbsent(permission, PermissionAudience::new);
-        }
-        return audience;
+        // TODO: potential memory leak, can we limit collection size somehow?
+        // the rest of the collections could run into the same issue, but this one presents the most potential for unbounded growth
+        // maybe don't even cache, ask ppl to hold references?
+        return this.permissionMap.computeIfAbsent(permission, PermissionAudience::new);
     }
 
     private class WorldAudience implements MultiAudience {
+        private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::isInWorld);
         private final UUID worldId;
 
         private WorldAudience(final @NonNull UUID worldId) {
@@ -274,20 +284,17 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
         @Override
         public @NonNull Iterable<? extends Audience> audiences() {
-            return playerMap.values().stream().filter(this::isInWorld).collect(Collectors.toList());
+            return this.filtered;
         }
     }
 
     @Override
     public @NonNull Audience world(@NonNull UUID worldId) {
-        Audience audience = this.worldMap.get(worldId);
-        if (audience == null) {
-            audience = this.worldMap.computeIfAbsent(worldId, WorldAudience::new);
-        }
-        return audience;
+        return this.worldMap.computeIfAbsent(worldId, WorldAudience::new);
     }
 
     private class ServerAudience implements MultiAudience {
+        private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::isOnServer);
         private final String serverName;
 
         private ServerAudience(final @NonNull String serverName) {
@@ -295,25 +302,21 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         }
 
         private boolean isOnServer(AdventurePlayerAudience audience) {
-            return serverName.equals(audience.getServerName());
+            return this.serverName.equals(audience.getServerName());
         }
 
         @Override
         public @NonNull Iterable<? extends Audience> audiences() {
-            return playerMap.values().stream().filter(this::isOnServer).collect(Collectors.toList());
+            return this.filtered;
         }
     }
 
     @Override
     public @NonNull Audience server(@NonNull String serverName) {
-        Audience audience = this.serverMap.get(serverName);
-        if (audience == null) {
-            audience = this.serverMap.computeIfAbsent(serverName, ServerAudience::new);
-        }
-        return audience;
+        return this.serverMap.computeIfAbsent(serverName, ServerAudience::new);
     }
 
-    private class EmptyAdventureRenderer implements AdventureRenderer {
+    private static class EmptyAdventureRenderer implements AdventureRenderer {
         @Override
         public @NonNull Component render(@NonNull Component component, @NonNull AdventureAudience audience) {
             return component;
@@ -333,6 +336,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     @Override
     public void close() {
         if (!this.closed) {
+            this.closed = true;
             this.all = Audience.empty();
             this.console = Audience.empty();
             this.players = Audience.empty();
@@ -343,7 +347,73 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
             this.serverMap = Collections.emptyMap();
             this.renderer = new EmptyAdventureRenderer();
         }
+    }
 
-        this.closed = true;
+    /**
+     * Return a live filtered view of the input {@link Iterable}.
+     *
+     * <p>Only elements that match {@code filter} will be returned
+     * by {@linkplain Iterator Iterators} provided.</p>
+     *
+     * <p>Because this is a <em>live</em> view, any changes to the state of
+     * the parent {@linkplain Iterable} will be reflected in iterations over
+     * the return value.</p>
+     *
+     * @param input The source iterator
+     * @param filter Predicate to filter on
+     * @param <T> value type
+     * @return live filtered view
+     */
+    private static <T> Iterable<T> filter(final Iterable<T> input, Predicate<T> filter) {
+        return new Iterable<T>() {
+            // create a lazy iterator
+            // pre-fetches by one output value to determine whether or not we have another value
+            // one value will be fetched on iterator creation, and each next value will be
+            // fetched after returning the previous value.
+            @Override
+            public @NonNull Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    private final Iterator<T> parent = input.iterator();
+                    private T next;
+
+                    private void populate() {
+                        while(this.parent.hasNext()) {
+                            T next = this.parent.next();
+                            if(filter.test(next)) {
+                                this.next = next;
+                                return;
+                            }
+                        }
+                    }
+
+                    // initialize first value
+                    {
+                        this.populate();
+                    }
+
+                    @Override
+                    public boolean hasNext() {
+                        return this.next != null;
+                    }
+
+                    @Override
+                    public T next() {
+                        if(this.next == null) {
+                            throw new NoSuchElementException();
+                        }
+                        T next = this.next;
+                        this.populate();
+                        return next;
+                    }
+                };
+            }
+
+            @Override
+            public void forEach(final Consumer<? super T> action) {
+                input.forEach(el -> {
+                    if(filter.test(el)) action.accept(el);
+                });
+            }
+        };
     }
 }
