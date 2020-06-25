@@ -187,9 +187,9 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
   protected void add(AdventureAudience audience) {
     if (closed) return;
 
-    final AdventureAudience wrapped = audience instanceof AdventurePlayerAudience ?
+    final AdventureAudience wrapped = audience;/*audience instanceof AdventurePlayerAudience ?
       new AdventurePlayerAudienceImpl((AdventurePlayerAudience) audience) :
-      new AdventureAudienceImpl(audience);
+      new AdventureAudienceImpl(audience);*/
 
     this.senderSet.add(wrapped);
     if (audience instanceof AdventurePlayerAudience) {
