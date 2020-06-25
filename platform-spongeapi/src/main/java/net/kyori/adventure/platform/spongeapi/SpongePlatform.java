@@ -122,10 +122,19 @@ public final class SpongePlatform extends AdventurePlatformImpl {
   /* package */ void setupHandlers() {
     final SpongeViaProvider via = new SpongeViaProvider(this.plugins);
 
-    this.chat = HandlerCollection.of(new ViaVersionHandlers.Chat<>(via), new SpongeHandlers.Chat());
-    this.actionBar = HandlerCollection.of(new ViaVersionHandlers.ActionBar<>(via), new SpongeHandlers.ActionBar());
-    this.title = HandlerCollection.of(new ViaVersionHandlers.Titles<>(via), new SpongeHandlers.Titles());
-    this.bossBar = HandlerCollection.of(new ViaVersionHandlers.BossBars<>(via), new SpongeBossBarListener());
+    this.chat = HandlerCollection.of(
+      new ViaVersionHandlers.Chat<>(via),
+      new SpongeHandlers.Chat());
+    this.actionBar = HandlerCollection.of(
+      new ViaVersionHandlers.ActionBar<>(via),
+      new SpongeHandlers.ActionBar());
+    this.title = HandlerCollection.of(
+      new ViaVersionHandlers.Titles<>(via),
+      new SpongeHandlers.Titles());
+    this.bossBar = HandlerCollection.of(
+      new ViaVersionHandlers.BossBars_1_16<>(via),
+      new ViaVersionHandlers.BossBars_1_9_1_15<>(via),
+      new SpongeBossBarListener());
     this.sound = HandlerCollection.of(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
     this.books = HandlerCollection.of(new SpongeHandlers.Books());
   }

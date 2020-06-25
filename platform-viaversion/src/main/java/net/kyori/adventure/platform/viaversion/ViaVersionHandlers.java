@@ -54,6 +54,7 @@ import us.myles.ViaVersion.protocols.protocol1_11to1_10.Protocol1_11To1_10;
 import us.myles.ViaVersion.protocols.protocol1_16to1_15_2.ClientboundPackets1_16;
 import us.myles.ViaVersion.protocols.protocol1_16to1_15_2.Protocol1_16To1_15_2;
 import us.myles.ViaVersion.protocols.protocol1_9_3to1_9_1_2.ClientboundPackets1_9_3;
+import us.myles.ViaVersion.protocols.protocol1_9to1_8.Protocol1_9To1_8;
 
 public final class ViaVersionHandlers {
   private static final String ID = "viaversion";
@@ -274,13 +275,51 @@ public final class ViaVersionHandlers {
     }
   }
 
-  public static final class BossBars<V> extends ConnectionBased<V> implements Handler.BossBars<V>, net.kyori.adventure.bossbar.BossBar.Listener {
-    private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = Collections.synchronizedMap(new IdentityHashMap<>());
+  public static final class BossBars_1_9_1_15<V> extends BossBars<V> {
 
-    public BossBars(final ViaAPIProvider<? super V> via) {
+    public BossBars_1_9_1_15(final ViaAPIProvider<? super V> via) {
       super(via);
     }
 
+    @Override
+    protected VersionedGsonComponentSerializer serializer() {
+      return VersionedGsonComponentSerializer.PRE_1_16;
+    }
+
+    @Override
+    protected ProtocolVersion version() {
+      return ProtocolVersion.v1_9;
+    }
+
+    @Override
+    protected void send(final @NonNull PacketWrapper wrapper) {
+      try {
+        wrapper.send(Protocol1_9To1_8.class);
+      } catch(Exception e) {
+        Knobs.logError("sending ViaVersion packet", e);
+      }
+    }
+  }
+
+  public static final class BossBars_1_16<V> extends BossBars<V> {
+    public BossBars_1_16(final ViaAPIProvider<? super V> via) {
+      super(via);
+    }
+
+    @Override
+    protected VersionedGsonComponentSerializer serializer() {
+      return VersionedGsonComponentSerializer.MODERN;
+    }
+  }
+
+  protected static abstract class BossBars<V> extends ConnectionBased<V> implements Handler.BossBars<V>, net.kyori.adventure.bossbar.BossBar.Listener {
+    private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = Collections.synchronizedMap(new IdentityHashMap<>());
+
+    /* package */ BossBars(final ViaAPIProvider<? super V> via) {
+      super(via);
+    }
+
+    protected abstract VersionedGsonComponentSerializer serializer();
 
     @Override
     public void show(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
@@ -290,7 +329,7 @@ public final class ViaVersionHandlers {
       });
       if(barInstance.subscribedPlayers.add(this.via.id(viewer))) {
         final PacketWrapper addPkt = barInstance.make(connection(viewer), ACTION_ADD);
-        addPkt.write(Type.STRING, GsonComponentSerializer.INSTANCE.serialize(bar.name()));
+        addPkt.write(Type.STRING, serializer().serialize(bar.name()));
         addPkt.write(Type.FLOAT, bar.percent());
         addPkt.write(Type.VAR_INT, BossBars.color(bar.color()));
         addPkt.write(Type.VAR_INT, BossBars.overlay(bar.overlay()));
@@ -345,7 +384,7 @@ public final class ViaVersionHandlers {
       final Instance instance = this.bars.get(bar);
       if(instance != null) {
         instance.sendToSubscribers(bar, ACTION_NAME, (pkt, adv) -> {
-          pkt.write(Type.STRING, GsonComponentSerializer.INSTANCE.serialize(adv.name()));
+          pkt.write(Type.STRING, serializer().serialize(adv.name()));
         });
       }
     }

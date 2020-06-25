@@ -167,7 +167,8 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
       new PaperHandlers.Titles(),
       new CraftBukkitHandlers.Titles());
     this.bossBar = HandlerCollection.of(
-      new ViaVersionHandlers.BossBars<>(this.viaProvider),
+      new ViaVersionHandlers.BossBars_1_16<>(this.viaProvider),
+      new ViaVersionHandlers.BossBars_1_9_1_15<>(this.viaProvider),
       new BukkitBossBarListener(),
       new CraftBukkitHandlers.BossBars_1_8(this.entityTracker));
     this.playSound = HandlerCollection.of(
