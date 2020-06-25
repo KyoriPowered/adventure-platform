@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.impl;
+package net.kyori.adventure.platform.audience;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +68,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
   private AdventureRenderer renderer;
   private volatile boolean closed;
 
-  public AdventurePlatformImpl() {
+  protected AdventurePlatformImpl() {
     this.console = new ConsoleAudience();
     this.players = (MultiAudience) () -> this.playerMap.values();
     this.senderSet = ConcurrentHashMap.newKeySet();
