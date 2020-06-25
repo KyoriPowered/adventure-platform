@@ -302,8 +302,8 @@ public final class ViaVersionHandlers {
         if(entry.getValue().subscribedPlayers.remove(id)) {
           this.send(entry.getValue().make(this.via.connection(viewer), ACTION_REMOVE));
           if(entry.getValue().subscribedPlayers.isEmpty()) {
-            it.remove();
             entry.getKey().removeListener(this);
+            it.remove();
           }
         }
 
