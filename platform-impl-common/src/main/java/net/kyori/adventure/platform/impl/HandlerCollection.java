@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.impl;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -42,10 +43,11 @@ public class HandlerCollection<V, H extends Handler<V>> implements Iterable<H> {
   private final @NonNull List<H> handlers;
 
   @SafeVarargs
-  public static <V, H extends Handler<V>> HandlerCollection<V, H> of(final @NonNull H@NonNull... handlers) {
+  public static <V, H extends Handler<V>> HandlerCollection<V, H> of(final @Nullable H@NonNull... handlers) {
     final List<H> handlerList = Stream.of(handlers)
-    .filter(Handler::isAvailable)
-    .collect(Collectors.toList());
+      .filter(Objects::nonNull)
+      .filter(Handler::isAvailable)
+      .collect(Collectors.toList());
     if(handlerList.isEmpty()) {
       return new HandlerCollection<>(Collections.emptyList());
     } else if(handlerList.size() == 1) {

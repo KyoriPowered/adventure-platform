@@ -31,7 +31,6 @@ import net.kyori.adventure.platform.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
-import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
 import net.kyori.adventure.util.Index;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -54,6 +53,7 @@ import org.spongepowered.api.plugin.PluginManager;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
 import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
 public final class SpongePlatform extends AdventurePlatformImpl {
@@ -123,17 +123,17 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     final SpongeViaProvider via = new SpongeViaProvider(this.plugins);
 
     this.chat = HandlerCollection.of(
-      new ViaVersionHandlers.Chat<>(via),
+      via("Chat", via, Handler.Chat.class),
       new SpongeHandlers.Chat());
     this.actionBar = HandlerCollection.of(
-      new ViaVersionHandlers.ActionBar<>(via),
+      via("ActionBar", via, Handler.ActionBar.class),
       new SpongeHandlers.ActionBar());
     this.title = HandlerCollection.of(
-      new ViaVersionHandlers.Titles<>(via),
+      via("Titles", via, Handler.Titles.class),
       new SpongeHandlers.Titles());
     this.bossBar = HandlerCollection.of(
-      new ViaVersionHandlers.BossBars_1_16<>(via),
-      new ViaVersionHandlers.BossBars_1_9_1_15<>(via),
+      via("BossBars_1_16", via, Handler.BossBars.class),
+      via("BossBars_1_9_1_15", via, Handler.BossBars.class),
       new SpongeBossBarListener());
     this.sound = HandlerCollection.of(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
     this.books = HandlerCollection.of(new SpongeHandlers.Books());

@@ -24,7 +24,7 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
-import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
+import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -36,7 +36,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 /**
  * Sponge provider for ViaVersion API
  */
-/* package */  class SpongeViaProvider implements ViaVersionHandlers.ViaAPIProvider<Object> { // too many interfaces :(
+/* package */  class SpongeViaProvider implements ViaAPIProvider<Object> { // too many interfaces :(
 
   private final PluginManager plugins;
   private volatile ViaPlatform<?> platform = null;
@@ -74,6 +74,6 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
   @Override
   public @NonNull VersionedGsonComponentSerializer serializer(final @NonNull Object viewer) {
     if(!isAvailable()) return VersionedGsonComponentSerializer.PRE_1_16;
-    return ViaVersionHandlers.ViaAPIProvider.super.serializer(viewer);
+    return ViaAPIProvider.super.serializer(viewer);
   }
 }

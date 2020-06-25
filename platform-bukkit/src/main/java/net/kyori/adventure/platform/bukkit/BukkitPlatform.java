@@ -39,6 +39,8 @@ import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
+import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
+import net.kyori.adventure.platform.viaversion.ViaAccess;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -61,6 +63,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 public final class BukkitPlatform extends AdventurePlatformImpl implements Listener {
 
@@ -152,28 +155,28 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     this.viaProvider = new BukkitViaProvider(this.plugin.getServer().getPluginManager());
 
     this.chat = HandlerCollection.of(
-      new ViaVersionHandlers.Chat<>(this.viaProvider),
+      via("Chat", this.viaProvider, Handler.Chat.class),
       new SpigotHandlers.Chat(),
       new SpigotHandlers.Chat_PlayerOnly(),
       new CraftBukkitHandlers.Chat(),
       new BukkitHandlers.Chat());
     this.actionBar = HandlerCollection.of(
-      new ViaVersionHandlers.ActionBar<>(this.viaProvider),
+      via("ActionBar", this.viaProvider, Handler.ActionBar.class),
       new SpigotHandlers.ActionBar(),
       new CraftBukkitHandlers.ActionBarModern(),
       new CraftBukkitHandlers.ActionBar1_8thru1_11());
     this.title = HandlerCollection.of(
-      new ViaVersionHandlers.Titles<>(this.viaProvider),
+      via("Titles", this.viaProvider, Handler.Titles.class),
       new PaperHandlers.Titles(),
       new CraftBukkitHandlers.Titles());
     this.bossBar = HandlerCollection.of(
-      new ViaVersionHandlers.BossBars_1_16<>(this.viaProvider),
-      new ViaVersionHandlers.BossBars_1_9_1_15<>(this.viaProvider),
+      via("BossBars_1_16", this.viaProvider, Handler.BossBars.class),
+      via("BossBars_1_9_1_15", this.viaProvider, Handler.BossBars.class),
       new BukkitBossBarListener(),
       new CraftBukkitHandlers.BossBars_1_8(this.entityTracker));
     this.playSound = HandlerCollection.of(
       new BukkitHandlers.PlaySound_WithCategory(),
-      new ViaVersionHandlers.PlaySound<>(this.viaProvider, player -> {
+      ViaAccess.sound(this.viaProvider, player -> {
         final Location pos = player.getLocation();
         return new ViaVersionHandlers.PlaySound.Pos(pos.getX(), pos.getY(), pos.getZ());
       }),
@@ -252,7 +255,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     super.close();
   }
 
-  /* package */ static class BukkitViaProvider implements ViaVersionHandlers.ViaAPIProvider<CommandSender> {
+  /* package */ static class BukkitViaProvider implements ViaAPIProvider<CommandSender> {
 
     private final PluginManager plugins;
     private volatile ViaPlatform<Player> platform = null;
@@ -300,7 +303,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     @Override
     public @NonNull VersionedGsonComponentSerializer serializer(final @NonNull CommandSender viewer) {
       if(isAvailable()) {
-        return ViaVersionHandlers.ViaAPIProvider.super.serializer(viewer);
+        return ViaAPIProvider.super.serializer(viewer);
       }
       return BukkitPlatform.GSON_SERIALIZER;
     }
