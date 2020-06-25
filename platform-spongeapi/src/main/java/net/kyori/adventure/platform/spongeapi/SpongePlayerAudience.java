@@ -24,14 +24,14 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
-import net.kyori.adventure.platform.audience.PlayerAudience;
+import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.Player;
 
-/* package */ final class SpongePlayerAudience extends SpongeSenderAudience<Player> implements PlayerAudience {
+/* package */ final class SpongePlayerAudience extends SpongeSenderAudience<Player> implements AdventurePlayerAudience {
   public SpongePlayerAudience(final @NonNull Player viewer, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, 

@@ -26,14 +26,14 @@ package net.kyori.adventure.platform.bukkit;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
-import net.kyori.adventure.platform.audience.PlayerAudience;
+import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements PlayerAudience {
+class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements AdventurePlayerAudience {
 
     private Locale locale;
     private String localeRaw;

@@ -23,7 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.platform.audience.SenderAudience;
+import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -36,7 +36,7 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements SenderAudience {
+class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements AdventureAudience {
 
     BukkitSenderAudience(final @NonNull S sender,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,

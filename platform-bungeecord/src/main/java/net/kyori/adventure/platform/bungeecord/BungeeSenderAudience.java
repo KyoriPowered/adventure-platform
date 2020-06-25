@@ -24,7 +24,7 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.audience.SenderAudience;
+import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -40,7 +40,7 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-public class BungeeSenderAudience implements SenderAudience {
+public class BungeeSenderAudience implements AdventureAudience {
 
   private final CommandSender sender;
 

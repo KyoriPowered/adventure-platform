@@ -29,9 +29,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.UUID;
 
 /**
- * An audience that represents an individual player.
+ * An audience that represents a connected player.
  */
-public interface PlayerAudience extends SenderAudience {
+public interface AdventurePlayerAudience extends AdventureAudience {
     /**
      * Gets the player's uuid.
      *

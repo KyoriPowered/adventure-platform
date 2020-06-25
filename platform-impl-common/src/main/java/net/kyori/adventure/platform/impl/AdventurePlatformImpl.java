@@ -27,16 +27,17 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
-import net.kyori.adventure.platform.audience.PlayerAudience;
-import net.kyori.adventure.platform.audience.SenderAudience;
+import net.kyori.adventure.platform.AdventureRenderer;
+import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
+import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.platform.AdventurePlatform;
+import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -49,11 +50,12 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     private Audience all;
     private Audience console;
     private Audience players;
-    private Map<UUID, PlayerAudience> playerMap;
-    private Set<SenderAudience> senderSet;
+    private Map<UUID, AdventurePlayerAudience> playerMap;
+    private Set<AdventureAudience> senderSet;
     private Map<String, Audience> permissionMap;
     private Map<UUID, Audience> worldMap;
     private Map<String, Audience> serverMap;
+    private AdventureRenderer renderer;
     private volatile boolean closed;
 
     public AdventurePlatformImpl() {
@@ -65,6 +67,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         this.permissionMap = new ConcurrentSkipListMap<>(String::compareTo);
         this.worldMap = new ConcurrentSkipListMap<>(UUID::compareTo);
         this.serverMap = new ConcurrentSkipListMap<>(String::compareTo);
+        this.renderer = new EmptyAdventureRenderer(); // TODO: pass to constructor for customization
         this.closed = false;
     }
 
@@ -73,12 +76,12 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
      *
      * @param audience an audience
      */
-    protected void add(SenderAudience audience) {
+    protected void add(AdventureAudience audience) {
         // TODO: wrap audiences to inject custom rendering code
         // TODO: check if closed before forwarding messages
         this.senderSet.add(audience);
-        if (audience instanceof PlayerAudience) {
-            this.playerMap.put(((PlayerAudience) audience).getId(), (PlayerAudience) audience);
+        if (audience instanceof AdventurePlayerAudience) {
+            this.playerMap.put(((AdventurePlayerAudience) audience).getId(), (AdventurePlayerAudience) audience);
         }
     }
 
@@ -100,7 +103,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
     private class ConsoleAudience implements MultiAudience {
         @Override
         public @NonNull Iterable<? extends Audience> audiences() {
-            return senderSet.stream().filter(SenderAudience::isConsole).collect(Collectors.toList());
+            return senderSet.stream().filter(AdventureAudience::isConsole).collect(Collectors.toList());
         }
     }
 
@@ -123,7 +126,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
 
     @Override
     public @NonNull Audience player(@NonNull UUID playerId) {
-        final PlayerAudience player = playerMap.get(playerId);
+        final AdventurePlayerAudience player = playerMap.get(playerId);
         return player == null ? Audience.empty() : player;
     }
 
@@ -134,7 +137,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
             this.permission = requireNonNull(permission, "permission");
         }
 
-        private boolean hasPermission(SenderAudience audience) {
+        private boolean hasPermission(AdventureAudience audience) {
             return audience.hasPermission(this.permission);
         }
 
@@ -160,7 +163,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
             this.worldId = requireNonNull(worldId, "world id");
         }
 
-        private boolean isInWorld(PlayerAudience audience) {
+        private boolean isInWorld(AdventurePlayerAudience audience) {
             return worldId.equals(audience.getWorldId());
         }
 
@@ -186,7 +189,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
             this.serverName = requireNonNull(serverName, "server name");
         }
 
-        private boolean isOnServer(PlayerAudience audience) {
+        private boolean isOnServer(AdventurePlayerAudience audience) {
             return serverName.equals(audience.getServerName());
         }
 
@@ -205,6 +208,23 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
         return audience;
     }
 
+    private class EmptyAdventureRenderer implements AdventureRenderer {
+        @Override
+        public @NonNull Component render(@NonNull Component component, @NonNull AdventureAudience audience) {
+            return component;
+        }
+
+        @Override
+        public int compare(AdventureAudience a1, AdventureAudience a2) {
+            return 0; // All audiences are equivalent, since there is no customization
+        }
+    }
+
+    @Override
+    public @NonNull AdventureRenderer renderer() {
+        return renderer;
+    }
+
     @Override
     public void close() {
         if (!this.closed) {
@@ -216,6 +236,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
             this.permissionMap = Collections.emptyMap();
             this.worldMap = Collections.emptyMap();
             this.serverMap = Collections.emptyMap();
+            this.renderer = new EmptyAdventureRenderer();
         }
 
         this.closed = true;

@@ -30,7 +30,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.UUID;
 
 /**
- * A platform for implementing Adventure.
+ * A factory for getting and creating {@link Audience}s.
+ *
+ * @see AdventureRenderer for customizing text per-player
  */
 public interface AdventurePlatform {
   /**
@@ -66,7 +68,7 @@ public interface AdventurePlatform {
    * @param playerId a player uuid
    * @return a player audience
    */
-  @NonNull Audience player(@NonNull UUID playerId);
+  @NonNull Audience player(final @NonNull UUID playerId);
 
   /**
    * Gets or creates an audience containing all viewers with the provided permission.
@@ -88,7 +90,7 @@ public interface AdventurePlatform {
    * @param permission the permission to filter sending to
    * @return a permissible audience
    */
-  @NonNull Audience permission(@NonNull String permission);
+  @NonNull Audience permission(final @NonNull String permission);
 
   /**
    * Gets an audience for online players in a world, including the server's console.
@@ -98,7 +100,7 @@ public interface AdventurePlatform {
    * @param worldId a world uuid
    * @return the world's audience
    */
-  @NonNull Audience world(@NonNull UUID worldId);
+  @NonNull Audience world(final @NonNull UUID worldId);
 
   /**
    * Gets an audience for online players on a server, including the server's console.
@@ -108,10 +110,17 @@ public interface AdventurePlatform {
    * @param serverName a server name
    * @return a server's audience
    */
-  @NonNull Audience server(@NonNull String serverName);
+  @NonNull Audience server(final @NonNull String serverName);
 
   /**
-   * Closes the platform and releases any resources.
+   * Gets an component renderer that customizes text for each audience.
+   *
+   * @return a component renderer
+   */
+  @NonNull AdventureRenderer renderer();
+
+  /**
+   * Closes the factory and releases any resources.
    *
    * <p>Any previous and future audiences will silently drop messages.</p>
    */

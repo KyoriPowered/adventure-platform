@@ -30,9 +30,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.Locale;
 
 /**
- * An audience that represents a "command sender."
+ * An audience that represents some entity, usually a "command sender."
  */
-public interface SenderAudience extends Audience {
+public interface AdventureAudience extends Audience {
     /**
      * Gets the locale of the audience.
      *

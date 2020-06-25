@@ -26,7 +26,7 @@ package net.kyori.adventure.platform.bungeecord;
 import java.util.Locale;
 import java.util.UUID;
 
-import net.kyori.adventure.platform.audience.PlayerAudience;
+import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -41,7 +41,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
-public class BungeePlayerAudience extends BungeeSenderAudience implements PlayerAudience {
+public class BungeePlayerAudience extends BungeeSenderAudience implements AdventurePlayerAudience {
 
   private final BungeePlatform platform;
   private final ProxiedPlayer player;
