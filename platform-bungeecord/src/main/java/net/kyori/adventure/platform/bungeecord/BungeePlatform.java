@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
-import net.kyori.adventure.platform.impl.JdkLogHandler;
+import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -47,7 +47,7 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
   private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
   
   static {
-    Knobs.logger(new JdkLogHandler());
+    Knobs.logger(new JDKLogHandler());
   }
 
   public static BungeePlatform of(final @NonNull Plugin plugin) {

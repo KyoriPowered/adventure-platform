@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public final class JdkLogHandler implements Knobs.LogHandler {
+public final class JDKLogHandler implements Knobs.LogHandler {
   private final Logger logger = Logger.getLogger("net.kyori.adventure");
   @Override
   public void info(final @NonNull String message, final Object@NonNull... params) {

@@ -36,7 +36,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.impl.AdventurePlatformImpl;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
-import net.kyori.adventure.platform.impl.JdkLogHandler;
+import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.serializer.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
@@ -72,7 +72,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
   /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
 
   static {
-    Knobs.logger(new JdkLogHandler());
+    Knobs.logger(new JDKLogHandler());
     if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null) { // we are 1.16
       GSON_SERIALIZER = VersionedGsonComponentSerializer.MODERN;
     } else {
