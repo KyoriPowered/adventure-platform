@@ -150,7 +150,7 @@ public class CraftBukkitHandlers {
         chatPacketConstructor = Crafty.findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
         if(chatPacketConstructor == null) {
           if(CLASS_MESSAGE_TYPE != null) {
-            chatPacketConstructor = Crafty.LOOKUP.findConstructor(chatPacketClass, methodType(void.class, CLASS_MESSAGE_TYPE, CLASS_CHAT_COMPONENT, UUID.class));
+            chatPacketConstructor = findConstructor(chatPacketClass,CLASS_CHAT_COMPONENT, CLASS_MESSAGE_TYPE, UUID.class);
           }
         } else {
           // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
@@ -189,7 +189,7 @@ public class CraftBukkitHandlers {
           }
         }
       }
-    } catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException ex) {
+    } catch(IllegalAccessException | IllegalArgumentException ex) {
       Knobs.logError("finding chat serializer", ex);
     }
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
