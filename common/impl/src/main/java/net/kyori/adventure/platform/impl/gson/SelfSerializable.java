@@ -40,6 +40,7 @@ public interface SelfSerializable {
    * Write this object to a json writer
    *
    * @param out writer to write to
+   * @throws IOException when any serialization-related error occurs
    */
   void write(JsonWriter out) throws IOException;
 

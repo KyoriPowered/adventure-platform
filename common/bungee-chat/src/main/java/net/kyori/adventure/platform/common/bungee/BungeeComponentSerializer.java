@@ -28,11 +28,11 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.function.Function;
+import net.kyori.adventure.platform.PlatformComponentSerializer;
 import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.impl.gson.GsonInjections;
 import net.kyori.adventure.platform.impl.gson.SelfSerializable;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -40,7 +40,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-public class BungeeComponentSerializer implements ComponentSerializer<Component, Component, BaseComponent[]> {
+public class BungeeComponentSerializer implements PlatformComponentSerializer<BaseComponent[]> {
   public static final boolean SUPPORTED = bind();
   public static final BungeeComponentSerializer MODERN = new BungeeComponentSerializer(VersionedGsonComponentSerializer.MODERN, AdapterComponent::new);
   public static final BungeeComponentSerializer PRE_1_16 = new BungeeComponentSerializer(VersionedGsonComponentSerializer.PRE_1_16, DownsamplingAdapterComponent::new);
@@ -64,6 +64,11 @@ public class BungeeComponentSerializer implements ComponentSerializer<Component,
     } catch(Exception ex) {
       return false;
     }
+  }
+
+  @Override
+  public boolean supported() {
+    return SUPPORTED;
   }
 
   @Override

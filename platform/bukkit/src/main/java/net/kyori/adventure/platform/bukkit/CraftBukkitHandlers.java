@@ -23,17 +23,11 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
@@ -54,9 +48,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
 import static net.kyori.adventure.platform.bukkit.BukkitHandlers.legacy;
-import static net.kyori.adventure.platform.bukkit.Crafty.LOOKUP;
-import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
 import static net.kyori.adventure.platform.bukkit.Crafty.findConstructor;
+import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.CLASS_CHAT_COMPONENT;
 
 public class CraftBukkitHandlers {
   
@@ -116,7 +109,7 @@ public class CraftBukkitHandlers {
     @Override
     public boolean isAvailable() {
       return ENABLED && super.isAvailable() && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null
-        && (MC_TEXT_GSON != null || TEXT_SERIALIZER_DESERIALIZE != null);
+        && MinecraftComponentSerializer.INSTANCE.supported();
     }
 
     public void send(final @NonNull V player, final @Nullable Object packet) {
@@ -125,13 +118,10 @@ public class CraftBukkitHandlers {
   }
 
   // Components //
-  private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = Crafty.findNmsClass("IChatBaseComponent");
   private static final @Nullable Class<?> CLASS_MESSAGE_TYPE = Crafty.findNmsClass("ChatMessageType");
   private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.enumValue(CLASS_MESSAGE_TYPE, "CHAT", 0);
   private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
-  private static final Gson MC_TEXT_GSON;
-  private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE;
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
   private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
@@ -139,8 +129,6 @@ public class CraftBukkitHandlers {
   static {
     MethodHandle legacyChatPacketConstructor = null;
     MethodHandle chatPacketConstructor = null;
-    Gson gson = null;
-    MethodHandle textSerializerDeserialize = null;
 
     try {
       if(CLASS_CHAT_COMPONENT != null) {
@@ -160,63 +148,20 @@ public class CraftBukkitHandlers {
         if(legacyChatPacketConstructor == null) { // 1.7 paper protocol hack?
           legacyChatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, int.class);
         }
-
-        // Chat serializer //
-        final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
-          .filter(JsonDeserializer.class::isAssignableFrom)
-          .findAny()
-          // fallback to the 1.7 class?
-          .orElseGet(() -> {
-            return nmsClass("ChatSerializer");
-          });
-        final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
-          .filter(m -> Modifier.isStatic(m.getModifiers()))
-          .filter(m -> m.getType().equals(Gson.class))
-          .findFirst()
-          .orElse(null);
-        if(gsonField != null) {
-          gsonField.setAccessible(true);
-          gson = (Gson) gsonField.get(null);
-        } else {
-          final Method deserialize = Arrays.stream(chatSerializerClass.getDeclaredMethods())
-            .filter(m -> Modifier.isStatic(m.getModifiers()))
-            .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
-            .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
-            .min(Comparator.comparing(Method::getName)) // prefer the #a method
-            .orElse(null);
-          if(deserialize != null) {
-            textSerializerDeserialize = LOOKUP.unreflect(deserialize);
-          }
-        }
       }
-    } catch(IllegalAccessException | IllegalArgumentException ex) {
+    } catch(IllegalArgumentException ex) {
       Knobs.logError("finding chat serializer", ex);
     }
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
-    MC_TEXT_GSON = gson;
-    TEXT_SERIALIZER_DESERIALIZE = textSerializerDeserialize;
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
 
-  private static Object mcTextFromComponent(final @NonNull Component message) {
-    if((MC_TEXT_GSON == null && TEXT_SERIALIZER_DESERIALIZE == null) || CLASS_CHAT_COMPONENT == null) {
-      throw new IllegalStateException("Not supported");
-    }
-    if(MC_TEXT_GSON != null) {
-      final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializeToTree(message);
-      try {
-        return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
-      } catch(Throwable error) {
-        Knobs.logError("converting adventure Component to MC Component", error);
-        return null;
-      }
-    } else {
-      try {
-        return TEXT_SERIALIZER_DESERIALIZE.invoke(BukkitPlatform.GSON_SERIALIZER.serialize(message));
-      } catch(Throwable error) {
-        Knobs.logError("converting adventure Component to MC Component (via 1.7 String serialization)", error);
-        return null;
-      }
+  /* package */ static @Nullable Object mcTextFromComponent(final @NonNull Component message) {
+    try {
+      return MinecraftComponentSerializer.INSTANCE.serialize(message);
+    } catch(final RuntimeException ex) {
+      // logged in the serializer
+      return null;
     }
   }
 
@@ -366,7 +311,7 @@ public class CraftBukkitHandlers {
 
     @Override
     public boolean isAvailable() {
-      return ENABLED && (MC_TEXT_GSON != null || TEXT_SERIALIZER_DESERIALIZE != null)
+      return ENABLED && MinecraftComponentSerializer.INSTANCE.supported()
         && CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
     }
 
