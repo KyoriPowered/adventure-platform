@@ -46,7 +46,6 @@ public final class ViaAccess {
         return (T) clazz.asSubclass(expectedParent).getConstructor(ViaAPIProvider.class).newInstance(provider);
       }
     } catch(InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException | NoClassDefFoundError e) {
-      e.printStackTrace();
       // expected, viaversion is not present
     }
     return null;
@@ -61,7 +60,6 @@ public final class ViaAccess {
         return (Handler.PlaySound<V>) clazz.getConstructor(ViaAPIProvider.class, Function.class).newInstance(provider, locationProvider);
       }
     } catch(InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException | NoClassDefFoundError e) {
-      e.printStackTrace();
       // expected, viaversion is not present
     }
     return null;
