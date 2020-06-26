@@ -1,6 +1,6 @@
 rootProject.name = 'adventure-platform-parent'
 
-['api', 'impl', 'viaversion'].each {
+['api', 'impl', 'bungee-chat', 'viaversion'].each {
   include ":common:$it"
   findProject(":common:$it")?.name = "adventure-platform-common-$it"
 }

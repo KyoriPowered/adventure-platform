@@ -23,18 +23,10 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.internal.Excluder;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nonnegative;
 import net.kyori.adventure.platform.impl.Knobs;
@@ -253,64 +245,6 @@ import static java.util.Objects.requireNonNull;
   @ForName
   /* package */ static Class<?> nmsClass(final @NonNull String name) {
     return requireNonNull(findNmsClass(name), "Could not find net.minecraft.server class " + name);
-  }
-
-
-  // Gson //
-
-  @SuppressWarnings("unchecked")
-  /* package */ static boolean injectGson(final @NonNull Gson existing, final @NonNull Consumer<GsonBuilder> accepter) {
-    try {
-      final Field factoriesField = field(Gson.class, "factories");
-      final Field builderFactoriesField = field(GsonBuilder.class, "factories");
-      final Field builderHierarchyFactoriesField = field(GsonBuilder.class, "hierarchyFactories");
-
-      final GsonBuilder builder = new GsonBuilder();
-      accepter.accept(builder);
-
-      final List<TypeAdapterFactory> existingFactories = (List<TypeAdapterFactory>) factoriesField.get(existing);
-      final List<TypeAdapterFactory> newFactories = new ArrayList<>();
-      newFactories.addAll((List<TypeAdapterFactory>) builderFactoriesField.get(builder));
-      Collections.reverse(newFactories);
-      newFactories.addAll((List<TypeAdapterFactory>) builderHierarchyFactoriesField.get(builder));
-
-      final List<TypeAdapterFactory> modifiedFactories = new ArrayList<>(existingFactories);
-
-      // the excluder must precede all adapters that handle user-defined types
-      final int index = findExcluderIndex(modifiedFactories);
-
-      for(final TypeAdapterFactory newFactory : Lists.reverse(newFactories)) {
-        modifiedFactories.add(index, newFactory);
-      }
-
-      /*Class<?> treeTypeAdapterClass; // TODO: Is this necessary?
-      try {
-        // newer gson releases
-        treeTypeAdapterClass = Class.forName("com.google.gson.internal.bind.TreeTypeAdapter");
-      } catch(final ClassNotFoundException e) {
-        // old gson releases
-        treeTypeAdapterClass = Class.forName("com.google.gson.TreeTypeAdapter");
-      }
-
-      final Method newFactoryWithMatchRawTypeMethod = treeTypeAdapterClass.getMethod("newFactoryWithMatchRawType", TypeToken.class, Object.class);
-      final TypeAdapterFactory adapterComponentFactory = (TypeAdapterFactory) newFactoryWithMatchRawTypeMethod.invoke(null, TypeToken.get(AdapterComponent.class), new SpigotAdapter.Serializer());
-      modifiedFactories.add(index, adapterComponentFactory);*/
-
-      factoriesField.set(existing, modifiedFactories);
-      return true;
-    } catch(NoSuchFieldException | IllegalAccessException ex) {
-      return false;
-    }
-  }
-
-  private static int findExcluderIndex(final @NonNull List<TypeAdapterFactory> factories) {
-    for(int i = 0, size = factories.size(); i < size; i++) {
-      final TypeAdapterFactory factory = factories.get(i);
-      if(factory instanceof Excluder) {
-        return i + 1;
-      }
-    }
-    return 0;
   }
 
   // Events //

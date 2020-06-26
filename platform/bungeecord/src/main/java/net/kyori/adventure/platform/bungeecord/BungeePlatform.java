@@ -44,6 +44,9 @@ import static java.util.Objects.requireNonNull;
 
 public class BungeePlatform extends AdventurePlatformImpl implements Listener {
 
+  static final int PROTCOOL_1_9 = 107;
+  static final int PROTOCOL_1_16 = 735;
+
   private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
   
   static {

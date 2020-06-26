@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bungeecord;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.common.bungee.BungeeComponentSerializer;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -64,7 +65,7 @@ public class BungeeSenderAudience implements AdventureAudience {
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    this.sender.sendMessage(BungeeComponentSerializer.INSTANCE.serialize(requireNonNull(message, "message")));
+    this.sender.sendMessage(serializer().serialize(requireNonNull(message, "message")));
   }
 
   @Override
@@ -115,5 +116,13 @@ public class BungeeSenderAudience implements AdventureAudience {
   @Override
   public void resetTitle() {
     // No-op
+  }
+
+  /**
+   * Get the component serializer appropriate to this viewer's supported content.
+   * @return component serializer instance
+   */
+  protected BungeeComponentSerializer serializer() {
+    return BungeeComponentSerializer.MODERN;
   }
 }

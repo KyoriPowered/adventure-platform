@@ -71,12 +71,13 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
 
 
+  /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
   // A derivative of the Gson serializer that will serialize text appropriately based on the server version
   /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
 
   static {
     Knobs.logger(new JDKLogHandler());
-    if(Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null) { // we are 1.16
+    if(IS_1_16) { // we are 1.16
       GSON_SERIALIZER = VersionedGsonComponentSerializer.MODERN;
     } else {
       GSON_SERIALIZER = VersionedGsonComponentSerializer.PRE_1_16;

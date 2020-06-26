@@ -49,8 +49,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     @Override
     public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
       final Title.Builder paperTitle = Title.builder()
-        .title(SpigotHandlers.toBungeeCord(title.title()))
-        .subtitle(SpigotHandlers.toBungeeCord(title.subtitle()));
+        .title(SpigotHandlers.SERIALIZER.serialize(title.title()))
+        .subtitle(SpigotHandlers.SERIALIZER.serialize(title.subtitle()));
 
       applyTime(title.fadeInTime(), paperTitle::fadeIn);
       applyTime(title.stayTime(), paperTitle::stay);

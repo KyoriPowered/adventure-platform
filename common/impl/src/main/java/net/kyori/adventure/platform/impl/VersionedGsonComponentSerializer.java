@@ -62,6 +62,10 @@ public final class VersionedGsonComponentSerializer implements ComponentSerializ
     return this.populator;
   }
 
+  public TypeAdapter<Component> typeAdapter() {
+    return this.serializer.getAdapter(Component.class);
+  }
+
   @Override
   public @NonNull Component deserialize(final @NonNull String input) {
     return this.serializer.fromJson(input, Component.class);

@@ -29,13 +29,13 @@ import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.platform.common.bungee.BungeeComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -83,7 +83,7 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    this.player.sendMessage(ChatMessageType.ACTION_BAR, BungeeComponentSerializer.INSTANCE.serialize(message));
+    this.player.sendMessage(ChatMessageType.ACTION_BAR, serializer().serialize(message));
   }
 
   /*@Override
@@ -117,10 +117,10 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
   public void showTitle(final @NonNull Title title) {
     final net.md_5.bungee.api.Title bungee = this.platform.proxy().createTitle();
     if (title.title() != TextComponent.empty()) {
-      bungee.title(BungeeComponentSerializer.INSTANCE.serialize(title.title()));
+      bungee.title(serializer().serialize(title.title()));
     }
     if (title.subtitle() != TextComponent.empty()) {
-      bungee.subTitle(BungeeComponentSerializer.INSTANCE.serialize(title.subtitle()));
+      bungee.subTitle(serializer().serialize(title.subtitle()));
     }
 
     bungee.fadeIn(ticks(title.fadeInTime()))
@@ -138,5 +138,13 @@ public class BungeePlayerAudience extends BungeeSenderAudience implements Advent
   @Override
   public void resetTitle() {
     this.player.sendTitle(this.platform.proxy().createTitle().reset());
+  }
+
+  protected BungeeComponentSerializer serializer() {
+    if(this.player.getPendingConnection().getVersion() >= BungeePlatform.PROTOCOL_1_16) {
+      return BungeeComponentSerializer.MODERN;
+    } else {
+      return BungeeComponentSerializer.PRE_1_16;
+    }
   }
 }

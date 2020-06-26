@@ -68,11 +68,11 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
   private volatile boolean closed;
 
   protected AdventurePlatformImpl() {
-    this.console = new ConsoleAudience();
-    this.players = (MultiAudience) () -> this.playerMap.values();
     this.senderSet = ConcurrentHashMap.newKeySet();
     this.all = (MultiAudience) () -> this.senderSet;
     this.playerMap = new ConcurrentHashMap<>();
+    this.players = (MultiAudience) () -> this.playerMap.values();
+    this.console = new ConsoleAudience();
     this.permissionMap = new ConcurrentHashMap<>();
     this.worldMap = new ConcurrentHashMap<>();
     this.serverMap = new ConcurrentHashMap<>();
@@ -369,6 +369,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
           private T next;
 
           private void populate() {
+            this.next = null;
             while(this.parent.hasNext()) {
               T next = this.parent.next();
               if(filter.test(next)) {
