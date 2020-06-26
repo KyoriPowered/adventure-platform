@@ -9,6 +9,6 @@ configurations {
 
 dependencies {
   shadedApi 'us.myles:viaversion-common:3.0.0'
-  implementation project(':adventure-platform-impl-common')
+  implementation project(':common:adventure-platform-common-impl')
   compileOnly "io.netty:netty-all:4.0.20.Final"
 }

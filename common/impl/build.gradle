@@ -1,4 +1,4 @@
 dependencies {
-  api project(':adventure-platform-common')
+  api project(':common:adventure-platform-common-api')
   api "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
 }

@@ -1,6 +1,11 @@
+# General IDE + build files
 /.gradle/
 /.idea/
-/platform-*/build/
-/platform-*/out/
 /run/
 /*.iml
+
+# Per-subproject build folders
+/*/*/build/
+/*/*/out/
+/*/build/
+/*/out/
