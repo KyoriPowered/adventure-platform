@@ -137,6 +137,21 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
+  /* package */ static @Nullable MethodHandle findStatic(final @Nullable Class<?> holder, final String methodName, final Class<?> rType, final Class<?>... pTypes) {
+    if(holder == null) return null;
+    if(rType == null) return null;
+    for(Class<?> clazz : pTypes) {
+      if(clazz == null) return null;
+    }
+
+    try {
+      return LOOKUP.findStatic(holder, methodName, MethodType.methodType(rType, pTypes));
+    } catch(NoSuchMethodException | IllegalAccessException e) {
+      Knobs.logError("finding method", e);
+      return null;
+    }
+  }
+
   /**
    * Get a field from {@code klass} and make it accessible .
    * 

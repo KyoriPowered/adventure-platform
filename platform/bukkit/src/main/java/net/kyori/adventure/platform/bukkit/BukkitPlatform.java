@@ -167,6 +167,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
       new CraftBukkitHandlers.ActionBarModern(),
       new CraftBukkitHandlers.ActionBar1_8thru1_11());
     this.title = HandlerCollection.of(
+      // TODO: ViaVersion titles for 1.8-1.5
       via("Titles", this.viaProvider, Handler.Titles.class),
       new PaperHandlers.Titles(),
       new CraftBukkitHandlers.Titles());
@@ -174,7 +175,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
       via("BossBars_1_16", this.viaProvider, Handler.BossBars.class),
       via("BossBars_1_9_1_15", this.viaProvider, Handler.BossBars.class),
       new BukkitBossBarListener(),
-      new CraftBukkitHandlers.BossBars_1_8(this.entityTracker));
+      new CraftBukkitHandlers.BossBars_1_8(this.entityTracker)); // TODO: spawn fake entity on 1.7.10
     this.playSound = HandlerCollection.of(
       new BukkitHandlers.PlaySound_WithCategory(),
       ViaAccess.sound(this.viaProvider, player -> {
@@ -185,7 +186,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     this.books = HandlerCollection.of(
       new SpigotHandlers.OpenBook(),
       new CraftBukkitHandlers.Books(),
-      new CraftBukkitHandlers.Books_Pre1_13()
+      new CraftBukkitHandlers.Books_Pre1_13() // 1.8-1.13 (sending book open doesn't exist on 1.7.10)
     );
   }
 

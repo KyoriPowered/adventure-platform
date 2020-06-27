@@ -25,23 +25,35 @@ package net.kyori.adventure.platform.bukkit;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.nbt.BinaryTagIO;
+import net.kyori.adventure.nbt.BinaryTagTypes;
+import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.nbt.ListBinaryTag;
+import net.kyori.adventure.nbt.StringBinaryTag;
 import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.impl.TypedHandler;
+import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
+import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wither;
+import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -408,35 +420,159 @@ public class CraftBukkitHandlers {
     }
   }
 
-  /* package */ static class Books extends PacketSendingHandler<Player> implements Handler.Books<Player> {
-    private static final Class<?> CLASS_ENUM_HAND = Crafty.findNmsClass("EnumHand");
-    private static final Object HAND_MAIN = Crafty.enumValue(CLASS_ENUM_HAND, "MAIN_HAND", 0);
-    private static final Class<?> PACKET_OPEN_BOOK = Crafty.findNmsClass("PacketPlayOutOpenWrittenBook");
-    private static final MethodHandle NEW_PACKET_OPEN_BOOK = Crafty.findConstructor(PACKET_OPEN_BOOK, CLASS_ENUM_HAND);
+  protected static abstract class AbstractBooks extends PacketSendingHandler<Player> implements Handler.Books<Player> {
+    private static final Material BOOK_TYPE = (Material) Crafty.enumValue(Material.class, "WRITTEN_BOOK");
+    private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(Material.WRITTEN_BOOK); // will always be copied
 
-    @Override
-    public boolean isAvailable() {
-      return super.isAvailable() && NEW_PACKET_OPEN_BOOK != null;
+    /* package */ AbstractBooks() {
     }
 
     @Override
+    public boolean isAvailable() {
+      return super.isAvailable()
+        && NBT_IO_DESERIALIZE != null && MC_ITEMSTACK_SET_TAG != null && CRAFT_ITEMSTACK_CRAFT_MIRROR != null && CRAFT_ITEMSTACK_NMS_COPY != null
+        && BOOK_STACK != null;
+    }
+
+    protected abstract void sendOpenPacket(final @NonNull Player viewer) throws Throwable;
+
+    @Override
     public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
-      // Build NBT (w/ adventure)
-      // set to nms ItemStack
-      // send inventory update item
-      // send open book packet
-      // restore main hand item
-      // todo: actually implement
+      final CompoundBinaryTag bookTag = tagFor(book, BukkitPlatform.GSON_SERIALIZER);
+      final ItemStack current = viewer.getInventory().getItemInHand(); // TODO: Do this with packets instead -- sync ids have changed between versions
       try {
-        send(viewer, NEW_PACKET_OPEN_BOOK.invoke(HAND_MAIN));
+        // apply item to inventory
+        final ItemStack bookStack = withTag(BOOK_STACK, bookTag);
+        viewer.getInventory().setItemInHand(bookStack);
+        //send(viewer, newSetHeldItemPacket(viewer, bookStack));
+        sendOpenPacket(viewer);
       } catch(Throwable throwable) {
         Knobs.logError("sending book to " + viewer, throwable);
+      } finally {
+        viewer.getInventory().setItemInHand(current);
+      }
+    }
+
+    private static final String BOOK_TITLE = "title";
+    private static final String BOOK_AUTHOR = "author";
+    private static final String BOOK_PAGES = "pages";
+    private static final String BOOK_RESOLVED = "resolved"; // set resolved to save on a parse as MC Components for Parseable texts
+
+    /**
+     * Create a tag with necessary data for showing a book
+     *
+     * @param book The book to show
+     * @param serializer serializer appropriately versioned for the viewer
+     * @return NBT compound
+     */
+    private static CompoundBinaryTag tagFor(final @NonNull Book book, final @NonNull VersionedGsonComponentSerializer serializer) {
+      final ListBinaryTag.Builder<StringBinaryTag> pages = ListBinaryTag.builder(BinaryTagTypes.STRING);
+      for(final Component page : book.pages()) {
+        pages.add(StringBinaryTag.of(serializer.serialize(page)));
+      }
+      return CompoundBinaryTag.builder()
+        .putString(BOOK_TITLE, serializer.serialize(book.title()))
+        .putString(BOOK_AUTHOR, serializer.serialize(book.author()))
+        .put(BOOK_PAGES, pages.build())
+        .putByte(BOOK_RESOLVED, (byte) 1)
+        .build();
+    }
+
+    // NBT conversions //
+
+    private static final Class<?> CLASS_NBT_TAG_COMPOUND = Crafty.findNmsClass("NBTTagCompound");
+    private static final Class<?> CLASS_NBT_IO = Crafty.findNmsClass("NBTCompressedStreamTools");
+    private static final MethodHandle NBT_IO_DESERIALIZE;
+
+    static {
+      MethodHandle nbtIoDeserialize = null;
+
+      if(CLASS_NBT_IO != null) { // obf obf obf
+        // public static NBTCompressedStreamTools.___(DataInputStream)NBTTagCompound
+        for(Method method : CLASS_NBT_IO.getDeclaredMethods()) {
+          if(Modifier.isStatic(method.getModifiers())
+            && method.getReturnType().equals(CLASS_NBT_TAG_COMPOUND)
+            && method.getParameterCount() == 1
+            && method.getParameterTypes()[0].equals(DataInputStream.class)) {
+            try {
+              nbtIoDeserialize = Crafty.LOOKUP.unreflect(method);
+            } catch(IllegalAccessException ignore) {
+            }
+            break;
+          }
+        }
+      }
+
+      NBT_IO_DESERIALIZE = nbtIoDeserialize;
+    }
+
+    // Return an MC CompoundTag from an adventure one
+    private Object adventureTagToMc(final @NonNull CompoundBinaryTag tag) throws IOException {
+      final TrustedByteArrayOutputStream output = new TrustedByteArrayOutputStream();
+      BinaryTagIO.writeOutputStream(tag, output);
+
+      try(DataInputStream dis = new DataInputStream(output.toInputStream())) {
+        return NBT_IO_DESERIALIZE.invoke(dis);
+      } catch(Throwable err) {
+        throw new IOException(err);
+      }
+    }
+
+    // Item stacks //
+
+    private static final Class<?> CLASS_CRAFT_ITEMSTACK = Crafty.findCraftClass("inventory.CraftItemStack");
+    private static final Class<?> CLASS_MC_ITEMSTACK = Crafty.findNmsClass("ItemStack");
+
+    private static final MethodHandle MC_ITEMSTACK_SET_TAG = Crafty.findMethod(CLASS_MC_ITEMSTACK, "setTag", void.class, CLASS_NBT_TAG_COMPOUND);
+    private static final MethodHandle MC_ITEMSTACK_GET_TAG = Crafty.findMethod(CLASS_MC_ITEMSTACK, "getTag", CLASS_NBT_TAG_COMPOUND);
+
+    private static final MethodHandle CRAFT_ITEMSTACK_NMS_COPY = Crafty.findStatic(CLASS_CRAFT_ITEMSTACK, "asNMSCopy", CLASS_MC_ITEMSTACK, ItemStack.class);
+    private static final MethodHandle CRAFT_ITEMSTACK_CRAFT_MIRROR = Crafty.findStatic(CLASS_CRAFT_ITEMSTACK, "asCraftMirror", CLASS_CRAFT_ITEMSTACK, CLASS_MC_ITEMSTACK);
+
+    /**
+     * Return a native stack with the tag set on it
+     *
+     * @param input Original stack
+     * @param tag data tag to set
+     * @return MC native ItemStack
+     */
+    private ItemStack withTag(final ItemStack input, CompoundBinaryTag tag) {
+      if(CRAFT_ITEMSTACK_NMS_COPY == null || MC_ITEMSTACK_SET_TAG == null || CRAFT_ITEMSTACK_CRAFT_MIRROR == null) {
+        return input;
+      }
+      try {
+        final Object mcStack = CRAFT_ITEMSTACK_NMS_COPY.invoke(input);
+        final Object mcTag = adventureTagToMc(tag);
+
+        MC_ITEMSTACK_SET_TAG.invoke(mcStack, mcTag);
+        return (ItemStack) CRAFT_ITEMSTACK_CRAFT_MIRROR.invoke(mcStack);
+      } catch(final Throwable error) {
+        Knobs.logError("setting tag on stack " + input, error);
+        return input;
       }
     }
   }
 
+
+  /* package */ static class Books extends AbstractBooks implements Handler.Books<Player> {
+    private static final Class<?> CLASS_ENUM_HAND = Crafty.findNmsClass("EnumHand");
+    private static final Object HAND_MAIN = Crafty.enumValue(CLASS_ENUM_HAND, "MAIN_HAND", 0);
+    private static final Class<?> PACKET_OPEN_BOOK = Crafty.findNmsClass("PacketPlayOutOpenBook");
+    private static final MethodHandle NEW_PACKET_OPEN_BOOK = Crafty.findConstructor(PACKET_OPEN_BOOK, CLASS_ENUM_HAND);
+
+    @Override
+    public boolean isAvailable() {
+      return super.isAvailable() && HAND_MAIN != null && NEW_PACKET_OPEN_BOOK != null;
+    }
+
+    @Override
+    protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
+      send(viewer, NEW_PACKET_OPEN_BOOK.invoke(HAND_MAIN));
+    }
+  }
+
   // before 1.13 the open book packet is a packet250
-  /* package */ static class Books_Pre1_13 extends PacketSendingHandler<Player> implements Handler.Books<Player> {
+  /* package */ static class Books_Pre1_13 extends AbstractBooks {
     private static final int HAND_MAIN = 0;
     private static final String PACKET_TYPE_BOOK_OPEN = "MC|BOpen";
     private static final Class<?> CLASS_BYTE_BUF = Crafty.findClass("io.netty.buffer.ByteBuf");
@@ -447,16 +583,16 @@ public class CraftBukkitHandlers {
     private static final MethodHandle NEW_PACKET_BYTE_BUF = Crafty.findConstructor(CLASS_PACKET_DATA_SERIALIZER, CLASS_BYTE_BUF); // (wrapped: ByteBuf)
 
     @Override
-    public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
-      // TODO: construct stack
+    public boolean isAvailable() {
+      return super.isAvailable() && CLASS_BYTE_BUF != null && CLASS_PACKET_CUSTOM_PAYLOAD != null;
+    }
+
+    @Override
+    protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
       final ByteBuf data = Unpooled.buffer();
       data.writeByte(HAND_MAIN);
-      try {
-        final Object packetByteBuf = NEW_PACKET_BYTE_BUF.invoke(data);
-        send(viewer, NEW_PACKET_CUSTOM_PAYLOAD.invoke(PACKET_TYPE_BOOK_OPEN, packetByteBuf));
-      } catch(Throwable throwable) {
-        Knobs.logError("sending legacy open book packet to " + viewer, throwable);
-      }
+      final Object packetByteBuf = NEW_PACKET_BYTE_BUF.invoke(data);
+      send(viewer, NEW_PACKET_CUSTOM_PAYLOAD.invoke(PACKET_TYPE_BOOK_OPEN, packetByteBuf));
     }
   }
 }
