@@ -91,6 +91,9 @@ public class BungeeComponentSerializer implements PlatformComponentSerializer<Ba
   }
 }
 class AdapterComponent extends BaseComponent implements SelfSerializable {
+  private static final GsonComponentSerializer GSON = GsonComponentSerializer.gson();
+  private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder().hexColors().build();
+
   private final Component component;
   private volatile String legacy;
 
@@ -99,16 +102,20 @@ class AdapterComponent extends BaseComponent implements SelfSerializable {
     this.component = component;
   }
 
+  protected GsonComponentSerializer gson() {
+    return GSON;
+  }
+
+  protected LegacyComponentSerializer legacy() {
+    return LEGACY;
+  }
+
   @Override
   public String toLegacyText() {
     if (this.legacy == null) {
-      this.legacy = legacyUncached();
+      this.legacy = legacy().serialize(this.component);
     }
     return this.legacy;
-  }
-
-  protected String legacyUncached() {
-    return LegacyComponentSerializer.legacy().serialize(this.component);
   }
 
   @Override
@@ -120,30 +127,27 @@ class AdapterComponent extends BaseComponent implements SelfSerializable {
     return this.component;
   }
 
-  protected GsonComponentSerializer serializer() {
-    return GsonComponentSerializer.gson();
-  }
-
   @Override
   public void write(final JsonWriter out) throws IOException {
-    serializer().serializer().getAdapter(Component.class).write(out, this.component);
+    gson().serializer().getAdapter(Component.class).write(out, this.component);
   }
 }
 
 final class DownsamplingAdapterComponent extends AdapterComponent {
-  private static final LegacyComponentSerializer LEGACY_DOWNSAMPLING = LegacyComponentSerializer.builder().downsampleColors().build();
+  private static final GsonComponentSerializer GSON = GsonComponentSerializer.gsonDownsampleColor();
+  private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacy();
 
   DownsamplingAdapterComponent(final Component component) {
     super(component);
   }
 
   @Override
-  protected String legacyUncached() {
-    return LEGACY_DOWNSAMPLING.serialize(this.component());
+  protected GsonComponentSerializer gson() {
+    return GSON;
   }
 
   @Override
-  protected GsonComponentSerializer serializer() {
-    return GsonComponentSerializer.gsonDownsampleColor();
+  protected LegacyComponentSerializer legacy() {
+    return LEGACY;
   }
 }

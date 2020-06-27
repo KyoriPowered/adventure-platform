@@ -80,10 +80,10 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     Knobs.logger(new JDKLogHandler());
     if(IS_1_16) { // we are 1.16
       GSON_SERIALIZER = GsonComponentSerializer.gson();
-      LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
+      LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().build();
     } else {
       GSON_SERIALIZER = GsonComponentSerializer.gsonDownsampleColor();
-      LEGACY_SERIALIZER = LegacyComponentSerializer.builder().downsampleColors().build();
+      LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
     }
   }
 
