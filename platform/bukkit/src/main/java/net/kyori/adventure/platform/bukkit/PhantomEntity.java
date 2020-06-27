@@ -39,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *
  * <p>Managed entities will not be ticked normally, so all adjustments must be done manually.</p>
  */
-interface PhantomEntity<T extends Entity> {
+/* package */ interface PhantomEntity<T extends Entity> {
 
   /**
    * Get the entity being monitored

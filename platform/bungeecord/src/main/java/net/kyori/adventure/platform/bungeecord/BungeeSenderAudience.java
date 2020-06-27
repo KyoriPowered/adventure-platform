@@ -40,11 +40,11 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-public class BungeeSenderAudience implements AdventureAudience {
+/* package */ class BungeeSenderAudience implements AdventureAudience {
 
   private final CommandSender sender;
 
-  public BungeeSenderAudience(final @NonNull CommandSender sender) {
+  /* package */ BungeeSenderAudience(final @NonNull CommandSender sender) {
     this.sender = requireNonNull(sender, "command sender");
   }
 

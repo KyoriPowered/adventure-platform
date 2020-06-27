@@ -61,7 +61,7 @@ import static net.kyori.adventure.platform.bukkit.BukkitHandlers.legacy;
 import static net.kyori.adventure.platform.bukkit.Crafty.findConstructor;
 import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.CLASS_CHAT_COMPONENT;
 
-public class CraftBukkitHandlers {
+/* package */ class CraftBukkitHandlers {
   
   private static final boolean ENABLED = Knobs.enabled("craftbukkit");
   
@@ -208,7 +208,7 @@ public class CraftBukkitHandlers {
   private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "SUBTITLE", 1);
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR");
 
-  /* package */static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
+  /* package */ static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
 
     @Override
     public boolean isAvailable() {

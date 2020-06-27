@@ -36,7 +36,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 /**
  * Sponge provider for ViaVersion API
  */
-/* package */  class SpongeViaProvider implements ViaAPIProvider<Object> { // too many interfaces :(
+/* package */ class SpongeViaProvider implements ViaAPIProvider<Object> { // too many interfaces :(
 
   private final PluginManager plugins;
   private volatile ViaPlatform<?> platform = null;

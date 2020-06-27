@@ -21,27 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.platform.bungeecord;
 
-import java.text.MessageFormat;
-import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.AudienceFactory;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 
-/* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
-  
-  @Override
-  public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {
-    logger.info(MessageFormat.format(message, params));
-  }
-
-  @Override
-  public void error(final @NonNull Throwable exc, final @NonNull String message, final @NonNull Object@NonNull... params) {
-    if(logger.isErrorEnabled()) {
-      logger.error(MessageFormat.format(message, params), exc);
+/**
+ * A factory for getting and creating {@link Audience}s for the BungeeCord API.
+ */
+public interface BungeeAudienceFactory extends AudienceFactory {
+    /**
+     * Creates a {@link BungeeAudienceFactory} for the given plugin.
+     *
+     * @param plugin the plugin
+     * @return the audience factory
+     */
+    static @NonNull BungeeAudienceFactory create(final @NonNull Plugin plugin) {
+        return BungeePlatform.getInstance(plugin);
     }
-  }
+
+    /**
+     * Gets an audience for an individual player.
+     *
+     * <p>If the player is not online, messages are silently dropped.</p>
+     *
+     * @param player a player
+     * @return a player audience
+     */
+    @NonNull Audience player(final @NonNull ProxiedPlayer player);
+
+    /**
+     * Gets an audience for a command sender.
+     *
+     * @param sender the sender
+     * @return an audience
+     */
+    @NonNull Audience audience(final @NonNull CommandSender sender);
 }

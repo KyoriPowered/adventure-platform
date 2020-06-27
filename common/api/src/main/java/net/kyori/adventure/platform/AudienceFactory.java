@@ -34,7 +34,7 @@ import java.util.UUID;
  *
  * @see AdventureRenderer for customizing text per-player
  */
-public interface AdventurePlatform {
+public interface AudienceFactory {
   /**
    * Gets an audience for all online players, including the server's console.
    *

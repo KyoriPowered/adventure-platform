@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.AdventurePlatformImpl;
+import net.kyori.adventure.platform.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
@@ -56,7 +56,7 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-public final class SpongePlatform extends AdventurePlatformImpl {
+/* package */ final class SpongePlatform extends AbstractAdventurePlatform implements SpongeAudienceFactory {
   
   static { // init
     Knobs.logger(new Slf4jLogHandler());
@@ -80,14 +80,7 @@ public final class SpongePlatform extends AdventurePlatformImpl {
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
 
-  /**
-   * Create a new platform for a plugin. A guice-created instance should be preferred.
-   *
-   * @param container plugin requesting this platform instance
-   * @param game the game
-   * @return platform
-   */
-  public static SpongePlatform of(final @NonNull PluginContainer container, final Game game) {
+  /* package */ static SpongePlatform getInstance(final @NonNull PluginContainer container, final Game game) {
     final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
     platform.init(container);
     return platform;
@@ -181,6 +174,12 @@ public final class SpongePlatform extends AdventurePlatformImpl {
     }
   }
 
+  @Override
+  public @NonNull Audience player(@NonNull Player player) {
+    return player(requireNonNull(player, "player").getUniqueId());
+  }
+
+  @Override
   public @NonNull Audience audience(final @NonNull MessageReceiver source) {
     if(source instanceof Player) {
       return player(((Player) source).getUniqueId());
