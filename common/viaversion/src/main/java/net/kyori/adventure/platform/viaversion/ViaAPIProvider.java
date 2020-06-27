@@ -24,7 +24,7 @@
 package net.kyori.adventure.platform.viaversion;
 
 import java.util.UUID;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.data.UserConnection;
@@ -76,7 +76,7 @@ public interface ViaAPIProvider<V> {
    * @param viewer The receiving viewer
    * @return a serializer
    */
-  default @NonNull VersionedGsonComponentSerializer serializer(final @NonNull V viewer) {
+  default @NonNull GsonComponentSerializer serializer(final @NonNull V viewer) {
     int protocolVersion = ProtocolRegistry.SERVER_PROTOCOL;
     final UUID id = id(viewer);
     if(id != null) {
@@ -84,9 +84,9 @@ public interface ViaAPIProvider<V> {
     }
 
     if(protocolVersion >= ProtocolVersion.v1_16.getId()) {
-      return VersionedGsonComponentSerializer.MODERN;
+      return GsonComponentSerializer.gson();
     } else {
-      return VersionedGsonComponentSerializer.PRE_1_16;
+      return GsonComponentSerializer.gsonDownsampleColor();
     }
   }
 }

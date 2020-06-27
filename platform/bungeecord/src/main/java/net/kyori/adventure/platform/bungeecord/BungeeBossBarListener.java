@@ -46,7 +46,7 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    handle(bar, newName, (val, inst) -> inst.sendToSubscribers(ACTION_NAME, pkt -> pkt.setTitle(GsonComponentSerializer.INSTANCE.serialize(val))));
+    handle(bar, newName, (val, inst) -> inst.sendToSubscribers(ACTION_NAME, pkt -> pkt.setTitle(GsonComponentSerializer.gson().serialize(val)))); // TODO: based on viewer
   }
 
   @Override
@@ -126,7 +126,7 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
 
     /* package */ net.md_5.bungee.protocol.packet.@NonNull BossBar newCreatePacket() {
       final net.md_5.bungee.protocol.packet.BossBar packet = newPacket(Handler.BossBars.ACTION_ADD);
-      packet.setTitle(GsonComponentSerializer.INSTANCE.serialize(this.adventure.name()));
+      packet.setTitle(GsonComponentSerializer.gson().serialize(this.adventure.name())); // TODO: Based on viewer protocol
       packet.setHealth(this.adventure.percent());
       packet.setColor(color(this.adventure.color()));
       packet.setDivision(overlay(this.adventure.overlay()));
@@ -162,6 +162,6 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
    * @return if the player has a client with boss bar support
    */
   private static boolean canSeeBossBars(final @NonNull ProxiedPlayer player) {
-    return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_9;
+    return player.getPendingConnection().getVersion() >= BungeePlatform.PROTCOOL_1_9;
   }
 }

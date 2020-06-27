@@ -38,10 +38,11 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.platform.viaversion.ViaAccess;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -72,15 +73,17 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
 
 
   /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
-  // A derivative of the Gson serializer that will serialize text appropriately based on the server version
-  /* package */ static final VersionedGsonComponentSerializer GSON_SERIALIZER;
+  /* package */ static final GsonComponentSerializer GSON_SERIALIZER;
+  /* package */ static final LegacyComponentSerializer LEGACY_SERIALIZER;
 
   static {
     Knobs.logger(new JDKLogHandler());
     if(IS_1_16) { // we are 1.16
-      GSON_SERIALIZER = VersionedGsonComponentSerializer.MODERN;
+      GSON_SERIALIZER = GsonComponentSerializer.gson();
+      LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
     } else {
-      GSON_SERIALIZER = VersionedGsonComponentSerializer.PRE_1_16;
+      GSON_SERIALIZER = GsonComponentSerializer.gsonDownsampleColor();
+      LEGACY_SERIALIZER = LegacyComponentSerializer.builder().downsampleColors().build();
     }
   }
 
@@ -303,7 +306,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     }
 
     @Override
-    public @NonNull VersionedGsonComponentSerializer serializer(final @NonNull CommandSender viewer) {
+    public @NonNull GsonComponentSerializer serializer(final @NonNull CommandSender viewer) {
       if(isAvailable()) {
         return ViaAPIProvider.super.serializer(viewer);
       }

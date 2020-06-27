@@ -43,10 +43,9 @@ import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.impl.TypedHandler;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -237,7 +236,7 @@ public class CraftBukkitHandlers {
     @Override
     public Object initState(final @NonNull Component message) {
       // Action bar through the chat packet doesn't properly support formatting
-      final TextComponent legacyMessage = TextComponent.of(LegacyComponentSerializer.legacy().serialize(message));
+      final TextComponent legacyMessage = TextComponent.of(BukkitPlatform.LEGACY_SERIALIZER.serialize(message));
       try {
         return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), Chat.TYPE_ACTIONBAR);
       } catch(Throwable throwable) {
@@ -464,7 +463,7 @@ public class CraftBukkitHandlers {
      * @param serializer serializer appropriately versioned for the viewer
      * @return NBT compound
      */
-    private static CompoundBinaryTag tagFor(final @NonNull Book book, final @NonNull VersionedGsonComponentSerializer serializer) {
+    private static CompoundBinaryTag tagFor(final @NonNull Book book, final @NonNull GsonComponentSerializer serializer) {
       final ListBinaryTag.Builder<StringBinaryTag> pages = ListBinaryTag.builder(BinaryTagTypes.STRING);
       for(final Component page : book.pages()) {
         pages.add(StringBinaryTag.of(serializer.serialize(page)));

@@ -40,7 +40,6 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -139,7 +138,7 @@ public final class ViaVersionHandlers {
 
     @Override
     public String initState(@NonNull final Component component) {
-      return GsonComponentSerializer.INSTANCE.serialize(component);
+      return GsonComponentSerializer.gson().serialize(component);
     }
 
     @Override
@@ -190,14 +189,14 @@ public final class ViaVersionHandlers {
       }
 
       if(title.subtitle() != TextComponent.empty()) {
-        final String subtitleJson = GsonComponentSerializer.INSTANCE.serialize(title.subtitle());
+        final String subtitleJson = GsonComponentSerializer.gson().serialize(title.subtitle());
         final PacketWrapper wrapper = make(viewer, ACTION_SUBTITLE);
         wrapper.write(Type.STRING, subtitleJson);
         send(wrapper);
       }
 
       if(title.title() != TextComponent.empty()) {
-        final String titleJson = GsonComponentSerializer.INSTANCE.serialize(title.title());
+        final String titleJson = GsonComponentSerializer.gson().serialize(title.title());
         final PacketWrapper wrapper = make(viewer, ACTION_TITLE);
         wrapper.write(Type.STRING, titleJson);
         send(wrapper);
@@ -223,8 +222,8 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    protected VersionedGsonComponentSerializer serializer() {
-      return VersionedGsonComponentSerializer.PRE_1_16;
+    protected GsonComponentSerializer serializer() {
+      return GsonComponentSerializer.gsonDownsampleColor();
     }
 
     @Override
@@ -248,8 +247,8 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    protected VersionedGsonComponentSerializer serializer() {
-      return VersionedGsonComponentSerializer.MODERN;
+    protected GsonComponentSerializer serializer() {
+      return GsonComponentSerializer.gson();
     }
   }
 
@@ -260,7 +259,7 @@ public final class ViaVersionHandlers {
       super(via);
     }
 
-    protected abstract VersionedGsonComponentSerializer serializer();
+    protected abstract GsonComponentSerializer serializer();
 
     @Override
     public void show(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {

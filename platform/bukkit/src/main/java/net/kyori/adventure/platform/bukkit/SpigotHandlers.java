@@ -28,7 +28,6 @@ import net.kyori.adventure.platform.common.bungee.BungeeComponentSerializer;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Material;
@@ -127,8 +126,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
         for(final Component page : book.pages()) {
           spigot.spigot().addPage(SERIALIZER.serialize(page));
         }
-        spigot.setAuthor(LegacyComponentSerializer.legacy().serialize(book.author()));
-        spigot.setTitle(LegacyComponentSerializer.legacy().serialize(book.title())); // todo: don't use legacy
+        spigot.setAuthor(BukkitPlatform.LEGACY_SERIALIZER.serialize(book.author()));
+        spigot.setTitle(BukkitPlatform.LEGACY_SERIALIZER.serialize(book.title())); // todo: don't use legacy
         stack.setItemMeta(spigot);
       }
       return stack;

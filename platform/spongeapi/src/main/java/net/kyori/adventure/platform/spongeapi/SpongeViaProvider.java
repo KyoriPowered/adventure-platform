@@ -25,7 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
 import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.Player;
@@ -72,8 +72,8 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
   }
 
   @Override
-  public @NonNull VersionedGsonComponentSerializer serializer(final @NonNull Object viewer) {
-    if(!isAvailable()) return VersionedGsonComponentSerializer.PRE_1_16;
+  public @NonNull GsonComponentSerializer serializer(final @NonNull Object viewer) {
+    if(!isAvailable()) return GsonComponentSerializer.gsonDownsampleColor();
     return ViaAPIProvider.super.serializer(viewer);
   }
 }

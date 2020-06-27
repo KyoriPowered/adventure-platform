@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -39,13 +38,13 @@ public final class SpongeComponentSerializer implements ComponentSerializer<Comp
     @NonNull
     @Override
     public Component deserialize(@NonNull Text input) {
-        return GsonComponentSerializer.INSTANCE.deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
+        return GsonComponentSerializer.gson().deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
     }
 
     @NonNull
     @Override
     public Text serialize(@NonNull Component component) {
-        return TextSerializers.JSON.deserialize(VersionedGsonComponentSerializer.PRE_1_16.serialize(requireNonNull(component, "component")));
+        return TextSerializers.JSON.deserialize(GsonComponentSerializer.gsonDownsampleColor().serialize(requireNonNull(component, "component")));
     }
 
 }

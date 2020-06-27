@@ -23,13 +23,11 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
 import org.bukkit.command.CommandSender;
@@ -41,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   private BukkitHandlers() {}
 
   /* package */ static String legacy(final @NonNull Component component) {
-      return LegacyComponentSerializer.legacy().serialize(component);
+      return BukkitPlatform.LEGACY_SERIALIZER.serialize(component);
   }
 
   /* package */ static class Chat implements Handler.Chat<CommandSender, String> {

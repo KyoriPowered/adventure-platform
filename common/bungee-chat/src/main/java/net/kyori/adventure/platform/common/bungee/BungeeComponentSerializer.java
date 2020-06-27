@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.function.Function;
 import net.kyori.adventure.platform.PlatformComponentSerializer;
-import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
 import net.kyori.adventure.platform.impl.gson.GsonInjections;
 import net.kyori.adventure.platform.impl.gson.SelfSerializable;
 import net.kyori.adventure.text.Component;
@@ -42,13 +41,13 @@ import static java.util.Objects.requireNonNull;
 
 public class BungeeComponentSerializer implements PlatformComponentSerializer<BaseComponent[]> {
   public static final boolean SUPPORTED = bind();
-  public static final BungeeComponentSerializer MODERN = new BungeeComponentSerializer(VersionedGsonComponentSerializer.MODERN, AdapterComponent::new);
-  public static final BungeeComponentSerializer PRE_1_16 = new BungeeComponentSerializer(VersionedGsonComponentSerializer.PRE_1_16, DownsamplingAdapterComponent::new);
+  public static final BungeeComponentSerializer MODERN = new BungeeComponentSerializer(GsonComponentSerializer.gson(), AdapterComponent::new);
+  public static final BungeeComponentSerializer PRE_1_16 = new BungeeComponentSerializer(GsonComponentSerializer.gsonDownsampleColor(), DownsamplingAdapterComponent::new);
 
-  private final VersionedGsonComponentSerializer serializer;
+  private final GsonComponentSerializer serializer;
   private final Function<Component, AdapterComponent> maker;
 
-  private BungeeComponentSerializer(final VersionedGsonComponentSerializer serializer, final Function<Component, AdapterComponent> maker) {
+  private BungeeComponentSerializer(final GsonComponentSerializer serializer, final Function<Component, AdapterComponent> maker) {
     this.serializer = serializer;
     this.maker = maker;
   }
@@ -58,7 +57,7 @@ public class BungeeComponentSerializer implements PlatformComponentSerializer<Ba
     try {
       final Field gsonField = GsonInjections.field(net.md_5.bungee.chat.ComponentSerializer.class, "gson");
       return GsonInjections.injectGson((Gson) gsonField.get(null), builder -> {
-        GsonComponentSerializer.GSON_BUILDER_CONFIGURER.accept(builder); // TODO: this might be unused?
+        GsonComponentSerializer.gson().populator().apply(builder); // TODO: this might be unused?
         builder.registerTypeAdapterFactory(new SelfSerializable.AdapterFactory());
       });
     } catch(Exception ex) {
@@ -77,7 +76,7 @@ public class BungeeComponentSerializer implements PlatformComponentSerializer<Ba
     if(input.length == 1 && input[0] instanceof AdapterComponent) {
       return ((AdapterComponent) input[0]).component();
     } else {
-      return GsonComponentSerializer.INSTANCE.deserialize(net.md_5.bungee.chat.ComponentSerializer.toString(input));
+      return GsonComponentSerializer.gson().deserialize(net.md_5.bungee.chat.ComponentSerializer.toString(input));
     }
   }
 
@@ -103,9 +102,13 @@ class AdapterComponent extends BaseComponent implements SelfSerializable {
   @Override
   public String toLegacyText() {
     if (this.legacy == null) {
-      this.legacy = LegacyComponentSerializer.legacy().serialize(this.component);
+      this.legacy = legacyUncached();
     }
     return this.legacy;
+  }
+
+  protected String legacyUncached() {
+    return LegacyComponentSerializer.legacy().serialize(this.component);
   }
 
   @Override
@@ -117,24 +120,30 @@ class AdapterComponent extends BaseComponent implements SelfSerializable {
     return this.component;
   }
 
-  protected VersionedGsonComponentSerializer serializer() {
-    return VersionedGsonComponentSerializer.MODERN;
+  protected GsonComponentSerializer serializer() {
+    return GsonComponentSerializer.gson();
   }
 
   @Override
   public void write(final JsonWriter out) throws IOException {
-    serializer().typeAdapter().write(out, this.component);
+    serializer().serializer().getAdapter(Component.class).write(out, this.component);
   }
 }
 
 final class DownsamplingAdapterComponent extends AdapterComponent {
+  private static final LegacyComponentSerializer LEGACY_DOWNSAMPLING = LegacyComponentSerializer.builder().downsampleColors().build();
 
   DownsamplingAdapterComponent(final Component component) {
     super(component);
   }
 
   @Override
-  protected VersionedGsonComponentSerializer serializer() {
-    return VersionedGsonComponentSerializer.PRE_1_16;
+  protected String legacyUncached() {
+    return LEGACY_DOWNSAMPLING.serialize(this.component());
+  }
+
+  @Override
+  protected GsonComponentSerializer serializer() {
+    return GsonComponentSerializer.gsonDownsampleColor();
   }
 }
