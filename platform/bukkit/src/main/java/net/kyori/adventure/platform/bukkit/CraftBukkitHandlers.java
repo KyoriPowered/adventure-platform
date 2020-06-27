@@ -44,7 +44,6 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.impl.TypedHandler;
 import net.kyori.adventure.platform.impl.VersionedGsonComponentSerializer;
-import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -391,7 +390,7 @@ public class CraftBukkitHandlers {
         .relative(WITHER_DISTANCE, WITHER_OFFSET_PITCH, 0)
         .invisible(true)
         .data(WITHER_DATA_INVULN_TICKS, 890); // hide the shimmering armor when below 50% health
-      final @Nullable Wither entity = tracker.entity();
+      final /* @Nullable */ Wither entity = tracker.entity();
       if(entity != null) {
         entity.setCustomName(legacy(adventure.name()));
         entity.setHealth(health(adventure.percent(), entity.getMaxHealth()));

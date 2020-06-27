@@ -120,7 +120,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     @Override
     public void stop(final @NonNull Player viewer, final @NonNull SoundStop stop) {
       final String soundName = name(stop.sound());
-      final Sound.@Nullable Source source = stop.source();
+      final Sound./* @Nullable */ Source source = stop.source();
       final SoundCategory category = source == null ? null : category(source);
       viewer.stopSound(soundName, category);
     }
