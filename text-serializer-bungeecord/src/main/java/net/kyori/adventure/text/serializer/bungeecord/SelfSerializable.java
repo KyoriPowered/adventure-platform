@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.impl.gson;
+package net.kyori.adventure.text.serializer.bungeecord;
 
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
@@ -34,7 +34,7 @@ import java.io.IOException;
 /**
  * A representation of a wrapper adapter, generally between and Adventure type and a native type.
  */
-public interface SelfSerializable {
+interface SelfSerializable {
 
   /**
    * Write this object to a json writer

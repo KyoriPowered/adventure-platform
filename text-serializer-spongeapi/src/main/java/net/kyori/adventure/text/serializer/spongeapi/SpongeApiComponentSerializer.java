@@ -21,19 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.text.serializer.spongeapi;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.MinecraftVersion;
+import org.spongepowered.api.Platform;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import static java.util.Objects.requireNonNull;
 
-public final class SpongeComponentSerializer implements ComponentSerializer<Component, Component, Text> {
-    public static final SpongeComponentSerializer INSTANCE = new SpongeComponentSerializer();
+/**
+ * A component serializer for Sponge API's {@link Text}.
+ */
+public final class SpongeApiComponentSerializer implements ComponentSerializer<Component, Component, Text> {
+    private static final SpongeApiComponentSerializer INSTANCE = new SpongeApiComponentSerializer();
+    private static final MinecraftVersion VERSION = Sponge.getPlatform().getMinecraftVersion();
+
+    /**
+     * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.
+     *
+     * @return a component serializer
+     */
+    public static SpongeApiComponentSerializer get() {
+        return of(VERSION);
+    }
+
+    /**
+     * Gets a component serializer for a specific {@link MinecraftVersion}.
+     *
+     * @param version a minecraft version
+     * @return a component serializer
+     */
+    public static SpongeApiComponentSerializer of(final @NonNull MinecraftVersion version) {
+        return INSTANCE;
+    }
+
+    private SpongeApiComponentSerializer() {}
 
     @NonNull
     @Override
@@ -46,5 +74,4 @@ public final class SpongeComponentSerializer implements ComponentSerializer<Comp
     public Text serialize(@NonNull Component component) {
         return TextSerializers.JSON.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
     }
-
 }
