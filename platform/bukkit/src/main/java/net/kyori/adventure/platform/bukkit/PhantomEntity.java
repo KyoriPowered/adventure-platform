@@ -32,6 +32,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Wither;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -56,7 +57,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   boolean relative();
 
   /**
-   * Set the entity's loctaion as an offset from the viewer.
+   * Set the entity's location as an offset from the viewer.
    *
    * <p>A pitch and yaw offset of zero will place the entity {@code magnitudeOffset} in front of the player.</p>
    *
@@ -178,7 +179,15 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     private static final Class<?> CLASS_ENTITY_TELEPORT_PACKET = Crafty.findNmsClass("PacketPlayOutEntityTeleport");
     private static final MethodHandle NEW_ENTITY_TELEPORT_PACKET = Crafty.findConstructor(CLASS_ENTITY_TELEPORT_PACKET, CLASS_NMS_ENTITY);
 
-    static final boolean SUPPORTED = CRAFT_WORLD_CREATE_ENTITY != null && CRAFT_ENTITY_GET_HANDLE != null && NMS_ENTITY_GET_BUKKIT_ENTITY != null && NMS_ENTITY_GET_DATA_WATCHER != null;
+    // 1.7 legacy support (Wither only) //
+    private static final Class<?> CLASS_ENTITY_WITHER = Crafty.findNmsClass("EntityWither");
+    private static final Class<?> CLASS_WORLD = Crafty.findNmsClass("World");
+    private static final Class<?> CLASS_WORLD_SERVER = Crafty.findNmsClass("WorldServer");
+    private static final MethodHandle CRAFT_WORLD_GET_HANDLE = Crafty.findMethod(CLASS_CRAFT_WORLD, "getHandle", CLASS_WORLD_SERVER);
+    private static final MethodHandle NEW_ENTITY_WITHER = Crafty.findConstructor(CLASS_ENTITY_WITHER, CLASS_WORLD);
+
+    /* package */ static final boolean SUPPORTED = (CRAFT_WORLD_CREATE_ENTITY != null || (NEW_ENTITY_WITHER != null && CRAFT_WORLD_GET_HANDLE != null))
+        && CRAFT_ENTITY_GET_HANDLE != null && NMS_ENTITY_GET_BUKKIT_ENTITY != null && NMS_ENTITY_GET_DATA_WATCHER != null;
 
     private final @NonNull PhantomEntityTracker tracker;
     private final @NonNull T entity;
@@ -208,17 +217,22 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       if(!CLASS_CRAFT_WORLD.isInstance(pos.getWorld())) return null;
 
       try {
-        final Object nmsEntity = CRAFT_WORLD_CREATE_ENTITY.invoke(pos.getWorld(), pos, clazz);
-        return (T) NMS_ENTITY_GET_BUKKIT_ENTITY.invoke(nmsEntity);
-      } catch(Throwable throwable) {
+        if(CRAFT_WORLD_CREATE_ENTITY != null) {
+          final Object nmsEntity = CRAFT_WORLD_CREATE_ENTITY.invoke(pos.getWorld(), pos, clazz);
+          return (T) NMS_ENTITY_GET_BUKKIT_ENTITY.invoke(nmsEntity);
+        } else if (Wither.class.isAssignableFrom(clazz) && NEW_ENTITY_WITHER != null) { // 1.7.10 compat
+          final Object nmsEntity = NEW_ENTITY_WITHER.invoke(CRAFT_WORLD_GET_HANDLE.invoke(pos.getWorld()));
+          return (T) NMS_ENTITY_GET_BUKKIT_ENTITY.invoke(nmsEntity);
+        }
+      } catch (Throwable throwable) {
         Knobs.logError("creating fake entity for boss bar", throwable);
-        return null;
       }
+      return null;
     }
 
     /* package */ Object createSpawnPacket() {
       // Later versions of MC add a createSpawnPacket()Packet method on Entity -- for broader support that could be used.
-      // For 1.8 at least, we are stuck with this.
+      // For 1.8 and 1.7 at least, we are stuck with this.
       if(entity() instanceof LivingEntity) {
         final Object mcEntity = this.nmsEntity();
         if(mcEntity != null) {

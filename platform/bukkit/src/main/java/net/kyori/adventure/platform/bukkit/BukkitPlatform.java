@@ -178,7 +178,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       via("BossBars_1_16", this.viaProvider, Handler.BossBars.class),
       via("BossBars_1_9_1_15", this.viaProvider, Handler.BossBars.class),
       new BukkitBossBarListener(),
-      new CraftBukkitHandlers.BossBars_1_8(this.entityTracker)); // TODO: spawn fake entity on 1.7.10
+      new CraftBukkitHandlers.BossBars_1_8(this.entityTracker));
     this.playSound = HandlerCollection.of(
       new BukkitHandlers.PlaySound_WithCategory(),
       ViaAccess.sound(this.viaProvider, player -> {
@@ -219,7 +219,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
         handler.hideAll(event.getPlayer());
       }
     });
-    
+
     // ViaVersion
     registerEvent(PluginEnableEvent.class, EventPriority.NORMAL, event -> {
       if(event.getPlugin().getName().equals(PLUGIN_VIAVERSION)) {

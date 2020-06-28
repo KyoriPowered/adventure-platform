@@ -103,8 +103,6 @@ import static java.util.Objects.requireNonNull;
 
   }
 
-  // TODO: respawn tracker, world change?
-
   public void close() {
     this.open = false;
     for(PhantomEntity<?> entity : this.trackedEntities) {
