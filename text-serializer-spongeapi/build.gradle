@@ -1,0 +1,17 @@
+repositories {
+  maven {
+    url 'https://repo.spongepowered.org/maven/'
+  }
+}
+
+dependencies {
+    api "net.kyori:adventure-api:${rootProject.adventure}"
+    implementation "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
+    compileOnly "org.spongepowered:spongeapi:7.1.0"
+}
+
+jar {
+  manifest.attributes(
+    'Automatic-Module-Name': 'net.kyori.adventure.text.serializer.spongeapi'
+  )
+}

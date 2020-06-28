@@ -24,10 +24,10 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.common.bungee.BungeeComponentSerializer;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Material;
@@ -40,9 +40,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 /* package */ class SpigotHandlers {
 
-  /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeComponentSerializer.SUPPORTED;
+  /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
-  /* package */ static final BungeeComponentSerializer SERIALIZER = BukkitPlatform.IS_1_16 ? BungeeComponentSerializer.MODERN : BungeeComponentSerializer.PRE_1_16;
+  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BukkitPlatform.IS_1_16 ? BungeeCordComponentSerializer.get() : BungeeCordComponentSerializer.legacy();
 
   private static class WithBungeeText<T extends CommandSender> implements Handler<T> {
 

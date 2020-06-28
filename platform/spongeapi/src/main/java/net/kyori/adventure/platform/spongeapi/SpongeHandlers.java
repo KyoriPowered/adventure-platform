@@ -30,6 +30,7 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.effect.Viewer;
@@ -55,7 +56,7 @@ import org.spongepowered.api.world.Locatable;
 
     @Override
     public Text initState(final @NonNull Component component) {
-      return SpongeComponentSerializer.INSTANCE.serialize(component);
+      return SpongeApiComponentSerializer.get().serialize(component);
     }
 
     @Override
@@ -73,7 +74,7 @@ import org.spongepowered.api.world.Locatable;
 
     @Override
     public Text initState(final @NonNull Component message) {
-      return SpongeComponentSerializer.INSTANCE.serialize(message);
+      return SpongeApiComponentSerializer.get().serialize(message);
     }
 
     @Override
@@ -96,8 +97,8 @@ import org.spongepowered.api.world.Locatable;
     @Override
     public void send(final @NonNull Viewer viewer, final net.kyori.adventure.title.@NonNull Title title) {
       viewer.sendTitle(org.spongepowered.api.text.title.Title.builder()
-        .title(SpongeComponentSerializer.INSTANCE.serialize(title.title()))
-        .subtitle(SpongeComponentSerializer.INSTANCE.serialize(title.subtitle()))
+        .title(SpongeApiComponentSerializer.get().serialize(title.title()))
+        .subtitle(SpongeApiComponentSerializer.get().serialize(title.subtitle()))
         .fadeIn(Titles.ticks(title.fadeInTime()))
         .fadeOut(Titles.ticks(title.fadeOutTime()))
         .stay(Titles.ticks(title.stayTime()))
@@ -177,10 +178,10 @@ import org.spongepowered.api.world.Locatable;
     @Override
     public void openBook(final @NonNull Viewer viewer, final @NonNull Book book) {
       final BookView.Builder view = BookView.builder()
-        .title(SpongeComponentSerializer.INSTANCE.serialize(book.title()))
-        .author(SpongeComponentSerializer.INSTANCE.serialize(book.author()));
+        .title(SpongeApiComponentSerializer.get().serialize(book.title()))
+        .author(SpongeApiComponentSerializer.get().serialize(book.author()));
       for(final Component page : book.pages()) {
-        view.addPage(SpongeComponentSerializer.INSTANCE.serialize(page));
+        view.addPage(SpongeApiComponentSerializer.get().serialize(page));
       }
       viewer.sendBookView(view.build());
     }

@@ -27,6 +27,7 @@ import java.util.Set;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.impl.AbstractBossBarListener;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.boss.BossBarColor;
 import org.spongepowered.api.boss.BossBarOverlay;
@@ -40,7 +41,7 @@ import org.spongepowered.api.entity.living.player.Player;
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    handle(bar, newName, (val, sponge) -> sponge.setName(SpongeComponentSerializer.INSTANCE.serialize(val)));
+    handle(bar, newName, (val, sponge) -> sponge.setName(SpongeApiComponentSerializer.get().serialize(val)));
   }
 
   @Override
@@ -71,7 +72,7 @@ import org.spongepowered.api.entity.living.player.Player;
   @Override
   protected ServerBossBar newInstance(final @NonNull BossBar adventure) {
     return ServerBossBar.builder()
-      .name(SpongeComponentSerializer.INSTANCE.serialize(adventure.name()))
+      .name(SpongeApiComponentSerializer.get().serialize(adventure.name()))
       .percent(adventure.percent())
       .color(SpongePlatform.sponge(BossBarColor.class, adventure.color(), BossBar.Color.NAMES))
       .overlay(SpongePlatform.sponge(BossBarOverlay.class, adventure.overlay(), BossBar.Overlay.NAMES))

@@ -26,10 +26,10 @@ package net.kyori.adventure.platform.bungeecord;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.common.bungee.BungeeComponentSerializer;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.Connection;
@@ -122,7 +122,7 @@ import static java.util.Objects.requireNonNull;
    * Get the component serializer appropriate to this viewer's supported content.
    * @return component serializer instance
    */
-  protected BungeeComponentSerializer serializer() {
-    return BungeeComponentSerializer.MODERN;
+  protected BungeeCordComponentSerializer serializer() {
+    return BungeeCordComponentSerializer.get();
   }
 }

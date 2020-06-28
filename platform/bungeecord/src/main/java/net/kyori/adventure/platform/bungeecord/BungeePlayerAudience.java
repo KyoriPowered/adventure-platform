@@ -29,13 +29,12 @@ import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.common.bungee.BungeeComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -140,11 +139,11 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
     this.player.sendTitle(this.platform.proxy().createTitle().reset());
   }
 
-  protected BungeeComponentSerializer serializer() {
+  protected BungeeCordComponentSerializer serializer() {
     if(this.player.getPendingConnection().getVersion() >= BungeePlatform.PROTOCOL_1_16) {
-      return BungeeComponentSerializer.MODERN;
+      return BungeeCordComponentSerializer.get();
     } else {
-      return BungeeComponentSerializer.PRE_1_16;
+      return BungeeCordComponentSerializer.legacy();
     }
   }
 }

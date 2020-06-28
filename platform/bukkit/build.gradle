@@ -12,7 +12,7 @@ dependencies {
   api "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
   api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
   implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
-  api project(":common:adventure-platform-common-bungee-chat")
+  api project(":adventure-text-serializer-bungeecord")
   implementation project(":common:adventure-platform-common-impl")
   implementation project(":common:adventure-platform-common-viaversion")
   compileOnly 'io.netty:netty-all:4.0.23.Final' // for pre-1.13 book sending

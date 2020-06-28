@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.impl.gson;
+package net.kyori.adventure.text.serializer.bungeecord;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,10 +32,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public final class GsonInjections {
+final class GsonInjections {
+  private GsonInjections() {}
 
   /**
    * Get a field from {@code klass} and make it accessible .
