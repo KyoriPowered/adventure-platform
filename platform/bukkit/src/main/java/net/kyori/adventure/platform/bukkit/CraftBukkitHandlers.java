@@ -119,7 +119,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     @Override
     public boolean isAvailable() {
       return ENABLED && super.isAvailable() && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null
-        && MinecraftComponentSerializer.INSTANCE.supported();
+        && MinecraftComponentSerializer.supported();
     }
 
     public void send(final @NonNull V player, final @Nullable Object packet) {
@@ -321,7 +321,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
 
     @Override
     public boolean isAvailable() {
-      return ENABLED && MinecraftComponentSerializer.INSTANCE.supported()
+      return ENABLED && MinecraftComponentSerializer.supported()
         && CLASS_CRAFT_BOSS_BAR != null && CRAFT_BOSS_BAR_HANDLE != null && NMS_BOSS_BATTLE_SET_NAME != null && NMS_BOSS_BATTLE_SEND_UPDATE != null;
     }
 
@@ -434,6 +434,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
 
     protected abstract void sendOpenPacket(final @NonNull Player viewer) throws Throwable;
 
+    @SuppressWarnings("deprecation")
     @Override
     public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
       final CompoundBinaryTag bookTag = tagFor(book, BukkitPlatform.GSON_SERIALIZER);

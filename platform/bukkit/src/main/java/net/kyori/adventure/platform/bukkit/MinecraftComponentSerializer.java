@@ -32,9 +32,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Comparator;
-import net.kyori.adventure.platform.PlatformComponentSerializer;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -54,7 +54,7 @@ import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
  *
  * <p>If not {@link #supported()}, an {@link IllegalStateException} will be thrown on any serialize or deserialize operations</p>
  */
-public class MinecraftComponentSerializer implements PlatformComponentSerializer<Object> {
+public class MinecraftComponentSerializer implements ComponentSerializer<Component, Component, Object> {
   public static final MinecraftComponentSerializer INSTANCE = new MinecraftComponentSerializer();
 
   /* package */ static final @Nullable Class<?> CLASS_CHAT_COMPONENT = Crafty.findNmsClass("IChatBaseComponent");
@@ -115,8 +115,7 @@ public class MinecraftComponentSerializer implements PlatformComponentSerializer
     TEXT_SERIALIZER_SERIALIZE = textSerializerSerialize;
   }
 
-  @Override
-  public boolean supported() {
+  public static boolean supported() {
     return (MC_TEXT_GSON != null || (TEXT_SERIALIZER_DESERIALIZE != null && TEXT_SERIALIZER_SERIALIZE != null)) && CLASS_CHAT_COMPONENT != null;
   }
 
