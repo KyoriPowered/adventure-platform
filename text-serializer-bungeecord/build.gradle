@@ -1,7 +1,6 @@
 dependencies {
     api "net.kyori:adventure-api:${rootProject.adventure}"
-    api "net.md-5:bungeecord-chat:1.16-R0.1"
-
+    compileOnly "net.md-5:bungeecord-chat:1.16-R0.1"
     ["legacy", "gson"].each {
       implementation "net.kyori:adventure-text-serializer-$it:${rootProject.adventure}"
     }
