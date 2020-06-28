@@ -46,7 +46,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * A tracker for phantom entities that handles sending updates as appropriate.
  */
-public class PhantomEntityTracker implements Listener {
+/* package */ class PhantomEntityTracker implements Listener {
   private final Plugin owner;
   private final Set<PhantomEntity<?>> trackedEntities = ConcurrentHashMap.newKeySet();
   private volatile boolean open = true;

@@ -54,7 +54,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * A base implementation of adventure platform.
  */
-public abstract class AdventurePlatformImpl implements AdventurePlatform {
+public abstract class AbstractAdventurePlatform implements AudienceFactory {
 
   private Audience all;
   private Audience console;
@@ -67,7 +67,7 @@ public abstract class AdventurePlatformImpl implements AdventurePlatform {
   private AdventureRenderer renderer;
   private volatile boolean closed;
 
-  protected AdventurePlatformImpl() {
+  protected AbstractAdventurePlatform() {
     this.senderSet = ConcurrentHashMap.newKeySet();
     this.all = (MultiAudience) () -> this.senderSet;
     this.playerMap = new ConcurrentHashMap<>();

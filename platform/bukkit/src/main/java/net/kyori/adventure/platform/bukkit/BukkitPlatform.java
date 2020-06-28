@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AdventurePlatformImpl;
+import net.kyori.adventure.platform.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
@@ -66,7 +66,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
-public final class BukkitPlatform extends AdventurePlatformImpl implements Listener {
+/* package */ final class BukkitPlatform extends AbstractAdventurePlatform implements BukkitAudienceFactory, Listener {
 
   private static final Map<String, BukkitPlatform> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
@@ -128,7 +128,7 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     }
   }
 
-  public static BukkitPlatform of(final @NonNull Plugin plugin) {
+  /* package */ static BukkitPlatform getInstance(final @NonNull Plugin plugin) {
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
     BukkitPlatform platform = INSTANCES.get(key);
     if(platform == null) {
@@ -235,10 +235,12 @@ public final class BukkitPlatform extends AdventurePlatformImpl implements Liste
     this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.chat, null, null, null, null, null));
   }
 
+  @Override
   public @NonNull Audience player(final @NonNull Player player) {
     return player(requireNonNull(player, "player").getUniqueId());
   }
 
+  @Override
   public @NonNull Audience audience(final @NonNull CommandSender sender) {
     requireNonNull(sender, "sender");
 

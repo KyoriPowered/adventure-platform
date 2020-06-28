@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AdventurePlatformImpl;
+import net.kyori.adventure.platform.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.md_5.bungee.api.CommandSender;
@@ -42,7 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-public class BungeePlatform extends AdventurePlatformImpl implements Listener {
+/* package */ class BungeePlatform extends AbstractAdventurePlatform implements BungeeAudienceFactory, Listener {
 
   static final int PROTCOOL_1_9 = 107;
   static final int PROTOCOL_1_16 = 735;
@@ -53,7 +53,7 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
     Knobs.logger(new JDKLogHandler());
   }
 
-  public static BungeePlatform of(final @NonNull Plugin plugin) {
+  /* package */ static BungeePlatform getInstance(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "A plugin instance is required");
 
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
@@ -106,7 +106,13 @@ public class BungeePlatform extends AdventurePlatformImpl implements Listener {
     this.bossBars.hideAll(event.getPlayer());
   }
 
-  public Audience audience(final @NonNull CommandSender sender)  {
+  @Override
+  public @NonNull Audience player(@NonNull ProxiedPlayer player) {
+    return player(requireNonNull(player, "player").getUniqueId());
+  }
+
+  @Override
+  public @NonNull Audience audience(final @NonNull CommandSender sender)  {
     requireNonNull(sender, "sender");
     if(sender instanceof ProxiedPlayer) {
       return player(((ProxiedPlayer) sender).getUniqueId());

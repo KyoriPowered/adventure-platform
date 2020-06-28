@@ -52,7 +52,6 @@ public class BungeeComponentSerializer implements PlatformComponentSerializer<Ba
     this.maker = maker;
   }
 
-
   private static boolean bind() {
     try {
       final Field gsonField = GsonInjections.field(net.md_5.bungee.chat.ComponentSerializer.class, "gson");
@@ -90,6 +89,7 @@ public class BungeeComponentSerializer implements PlatformComponentSerializer<Ba
     }
   }
 }
+
 class AdapterComponent extends BaseComponent implements SelfSerializable {
   private static final GsonComponentSerializer GSON = GsonComponentSerializer.gson();
   private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder().hexColors().build();
