@@ -11,6 +11,7 @@ dependencies {
   api project(":common:adventure-platform-common-api")
   api "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
   api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+  implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
   api project(":common:adventure-platform-common-bungee-chat")
   implementation project(":common:adventure-platform-common-impl")
   implementation project(":common:adventure-platform-common-viaversion")

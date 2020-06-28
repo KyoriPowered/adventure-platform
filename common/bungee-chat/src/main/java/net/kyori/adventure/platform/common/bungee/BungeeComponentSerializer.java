@@ -42,7 +42,7 @@ import static java.util.Objects.requireNonNull;
 public class BungeeComponentSerializer implements PlatformComponentSerializer<BaseComponent[]> {
   public static final boolean SUPPORTED = bind();
   public static final BungeeComponentSerializer MODERN = new BungeeComponentSerializer(GsonComponentSerializer.gson(), AdapterComponent::new);
-  public static final BungeeComponentSerializer PRE_1_16 = new BungeeComponentSerializer(GsonComponentSerializer.gsonDownsampleColor(), DownsamplingAdapterComponent::new);
+  public static final BungeeComponentSerializer PRE_1_16 = new BungeeComponentSerializer(GsonComponentSerializer.colorDownsamplingGson(), DownsamplingAdapterComponent::new);
 
   private final GsonComponentSerializer serializer;
   private final Function<Component, AdapterComponent> maker;
@@ -134,7 +134,7 @@ class AdapterComponent extends BaseComponent implements SelfSerializable {
 }
 
 final class DownsamplingAdapterComponent extends AdapterComponent {
-  private static final GsonComponentSerializer GSON = GsonComponentSerializer.gsonDownsampleColor();
+  private static final GsonComponentSerializer GSON = GsonComponentSerializer.colorDownsamplingGson();
   private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacy();
 
   DownsamplingAdapterComponent(final Component component) {

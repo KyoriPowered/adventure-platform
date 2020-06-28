@@ -44,7 +44,7 @@ public final class SpongeComponentSerializer implements ComponentSerializer<Comp
     @NonNull
     @Override
     public Text serialize(@NonNull Component component) {
-        return TextSerializers.JSON.deserialize(GsonComponentSerializer.gsonDownsampleColor().serialize(requireNonNull(component, "component")));
+        return TextSerializers.JSON.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
     }
 
 }

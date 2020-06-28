@@ -86,7 +86,7 @@ public interface ViaAPIProvider<V> {
     if(protocolVersion >= ProtocolVersion.v1_16.getId()) {
       return GsonComponentSerializer.gson();
     } else {
-      return GsonComponentSerializer.gsonDownsampleColor();
+      return GsonComponentSerializer.colorDownsamplingGson();
     }
   }
 }

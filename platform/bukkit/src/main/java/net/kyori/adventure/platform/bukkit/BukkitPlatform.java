@@ -82,7 +82,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       GSON_SERIALIZER = GsonComponentSerializer.gson();
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().build();
     } else {
-      GSON_SERIALIZER = GsonComponentSerializer.gsonDownsampleColor();
+      GSON_SERIALIZER = GsonComponentSerializer.colorDownsamplingGson();
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
     }
   }

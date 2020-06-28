@@ -223,7 +223,7 @@ public final class ViaVersionHandlers {
 
     @Override
     protected GsonComponentSerializer serializer() {
-      return GsonComponentSerializer.gsonDownsampleColor();
+      return GsonComponentSerializer.colorDownsamplingGson();
     }
 
     @Override

@@ -73,7 +73,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 
   @Override
   public @NonNull GsonComponentSerializer serializer(final @NonNull Object viewer) {
-    if(!isAvailable()) return GsonComponentSerializer.gsonDownsampleColor();
+    if(!isAvailable()) return GsonComponentSerializer.colorDownsamplingGson();
     return ViaAPIProvider.super.serializer(viewer);
   }
 }
