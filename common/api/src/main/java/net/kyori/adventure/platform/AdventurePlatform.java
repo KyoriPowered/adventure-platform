@@ -25,16 +25,16 @@ package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.Locale;
 import java.util.UUID;
 
 /**
- * A factory for getting and creating {@link Audience}s.
- *
- * @see AdventureRenderer for customizing text per-player
+ * A platform for Adventure.
  */
-public interface AudienceFactory {
+public interface AdventurePlatform {
   /**
    * Gets an audience for all online players, including the server's console.
    *
@@ -120,7 +120,7 @@ public interface AudienceFactory {
    *
    * @return a component renderer
    */
-  @NonNull AdventureRenderer renderer();
+  @NonNull ComponentRenderer<Locale> localeRenderer();
 
   /**
    * Closes the factory and releases any resources.

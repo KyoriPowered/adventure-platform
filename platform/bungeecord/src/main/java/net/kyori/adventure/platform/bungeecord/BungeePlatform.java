@@ -42,18 +42,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ class BungeePlatform extends AbstractAdventurePlatform implements BungeeAudienceFactory, Listener {
+public final class BungeePlatform extends AbstractAdventurePlatform implements Listener {
 
-  static final int PROTCOOL_1_9 = 107;
-  static final int PROTOCOL_1_16 = 735;
-
-  private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
-  
-  static {
-    Knobs.logger(new JDKLogHandler());
-  }
-
-  /* package */ static BungeePlatform getInstance(final @NonNull Plugin plugin) {
+  public static BungeePlatform of(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "A plugin instance is required");
 
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
@@ -67,6 +58,15 @@ import static java.util.Objects.requireNonNull;
       platform.init();
     }
     return platform;
+  }
+
+  static final int PROTCOOL_1_9 = 107;
+  static final int PROTOCOL_1_16 = 735;
+
+  private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
+  
+  static {
+    Knobs.logger(new JDKLogHandler());
   }
 
   private final String key;
@@ -106,12 +106,24 @@ import static java.util.Objects.requireNonNull;
     this.bossBars.hideAll(event.getPlayer());
   }
 
-  @Override
+  /**
+   * Gets an audience for an individual player.
+   *
+   * <p>If the player is not online, messages are silently dropped.</p>
+   *
+   * @param player a player
+   * @return a player audience
+   */
   public @NonNull Audience player(@NonNull ProxiedPlayer player) {
     return player(requireNonNull(player, "player").getUniqueId());
   }
 
-  @Override
+  /**
+   * Gets an audience for a command sender.
+   *
+   * @param sender the sender
+   * @return an audience
+   */
   public @NonNull Audience audience(final @NonNull CommandSender sender)  {
     requireNonNull(sender, "sender");
     if(sender instanceof ProxiedPlayer) {

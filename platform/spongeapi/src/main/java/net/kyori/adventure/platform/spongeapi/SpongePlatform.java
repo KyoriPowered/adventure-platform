@@ -56,8 +56,14 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongePlatform extends AbstractAdventurePlatform implements SpongeAudienceFactory {
-  
+public final class SpongePlatform extends AbstractAdventurePlatform {
+
+  public static SpongePlatform of(final @NonNull PluginContainer container, final Game game) {
+    final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
+    platform.init(container);
+    return platform;
+  }
+
   static { // init
     Knobs.logger(new Slf4jLogHandler());
   }
@@ -78,12 +84,6 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   /* package */ static <S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
     return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
-  }
-
-  /* package */ static SpongePlatform getInstance(final @NonNull PluginContainer container, final Game game) {
-    final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
-    platform.init(container);
-    return platform;
   }
 
   private final EventManager eventManager;
@@ -174,12 +174,24 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     }
   }
 
-  @Override
+  /**
+   * Gets an audience for an individual player.
+   *
+   * <p>If the player is not online, messages are silently dropped.</p>
+   *
+   * @param player a player
+   * @return a player audience
+   */
   public @NonNull Audience player(@NonNull Player player) {
     return player(requireNonNull(player, "player").getUniqueId());
   }
 
-  @Override
+  /**
+   * Gets an audience for a message receiver.
+   *
+   * @param source the source
+   * @return an audience
+   */
   public @NonNull Audience audience(final @NonNull MessageReceiver source) {
     if(source instanceof Player) {
       return player(((Player) source).getUniqueId());

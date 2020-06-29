@@ -66,7 +66,21 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
-/* package */ final class BukkitPlatform extends AbstractAdventurePlatform implements BukkitAudienceFactory, Listener {
+public final class BukkitPlatform extends AbstractAdventurePlatform implements Listener {
+
+  public static BukkitPlatform of(final @NonNull Plugin plugin) {
+    final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
+    BukkitPlatform platform = INSTANCES.get(key);
+    if(platform == null) {
+      platform = new BukkitPlatform(plugin);
+      final BukkitPlatform existing = INSTANCES.putIfAbsent(key, platform);
+      if(existing != null) {
+        return existing;
+      }
+      platform.init();
+    }
+    return platform;
+  }
 
   private static final Map<String, BukkitPlatform> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
@@ -126,20 +140,6 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     } catch(Throwable error) { // fail silently
       Knobs.logError("injecting soft-dependency", error);
     }
-  }
-
-  /* package */ static BukkitPlatform getInstance(final @NonNull Plugin plugin) {
-    final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
-    BukkitPlatform platform = INSTANCES.get(key);
-    if(platform == null) {
-      platform = new BukkitPlatform(plugin);
-      final BukkitPlatform existing = INSTANCES.putIfAbsent(key, platform);
-      if(existing != null) {
-        return existing;
-      }
-      platform.init();
-    }
-    return platform;
   }
 
   private final Plugin plugin;
@@ -235,12 +235,24 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.chat, null, null, null, null, null));
   }
 
-  @Override
+  /**
+   * Gets an audience for an individual player.
+   *
+   * <p>If the player is not online, messages are silently dropped.</p>
+   *
+   * @param player a player
+   * @return a player audience
+   */
   public @NonNull Audience player(final @NonNull Player player) {
     return player(requireNonNull(player, "player").getUniqueId());
   }
 
-  @Override
+  /**
+   * Gets an audience for a command sender.
+   *
+   * @param sender the sender
+   * @return an audience
+   */
   public @NonNull Audience audience(final @NonNull CommandSender sender) {
     requireNonNull(sender, "sender");
 
