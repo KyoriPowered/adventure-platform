@@ -72,7 +72,8 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) { this.platform.bossBars().show(this.player, bar);
+  public void showBossBar(final @NonNull BossBar bar) {
+    this.platform.bossBars().show(this.player, bar);
   }
 
   @Override
