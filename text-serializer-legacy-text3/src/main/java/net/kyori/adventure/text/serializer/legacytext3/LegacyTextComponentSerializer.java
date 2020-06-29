@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.serializer.legacytext;
+package net.kyori.adventure.text.serializer.legacytext3;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
@@ -52,7 +52,7 @@ public final class LegacyTextComponentSerializer implements ComponentSerializer<
     public Component deserialize(net.kyori.text.@NonNull Component input) {
         return GsonComponentSerializer.gson().deserialize(net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.serialize(requireNonNull(input, "text")));
     }
-
+    
     @Override
     public net.kyori.text.@NonNull Component serialize(@NonNull Component component) {
         return net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
