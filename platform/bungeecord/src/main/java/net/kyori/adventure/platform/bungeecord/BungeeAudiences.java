@@ -34,31 +34,31 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * A provider of {@link Audience}s for the BungeeCord API.
  */
 public interface BungeeAudiences extends AudienceProvider {
-    /**
-     * Creates a {@link BungeeAudiences} provider for the given plugin.
-     *
-     * @param plugin the plugin
-     * @return the audience factory
-     */
-    static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
-        return BungeePlatform.getInstance(plugin);
-    }
+  /**
+   * Creates a {@link BungeeAudiences} provider for the given plugin.
+   *
+   * @param plugin the plugin
+   * @return the audience factory
+   */
+  static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
+    return BungeePlatform.getInstance(plugin);
+  }
 
-    /**
-     * Gets an audience for an individual player.
-     *
-     * <p>If the player is not online, messages are silently dropped.</p>
-     *
-     * @param player a player
-     * @return a player audience
-     */
-    @NonNull Audience player(final @NonNull ProxiedPlayer player);
+  /**
+   * Gets an audience for an individual player.
+   *
+   * <p>If the player is not online, messages are silently dropped.</p>
+   *
+   * @param player a player
+   * @return a player audience
+   */
+  @NonNull Audience player(final @NonNull ProxiedPlayer player);
 
-    /**
-     * Gets an audience for a command sender.
-     *
-     * @param sender the sender
-     * @return an audience
-     */
-    @NonNull Audience audience(final @NonNull CommandSender sender);
+  /**
+   * Gets an audience for a command sender.
+   *
+   * @param sender the sender
+   * @return an audience
+   */
+  @NonNull Audience audience(final @NonNull CommandSender sender);
 }

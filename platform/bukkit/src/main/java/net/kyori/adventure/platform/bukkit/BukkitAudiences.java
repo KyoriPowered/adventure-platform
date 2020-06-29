@@ -34,31 +34,31 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * A provider of {@link Audience}s for the Bukkit API.
  */
 public interface BukkitAudiences extends AudienceProvider {
-    /**
-     * Creates a {@link BukkitAudiences} provider for the given plugin.
-     *
-     * @param plugin the plugin
-     * @return the audience factory
-     */
-    static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
-        return BukkitPlatform.getInstance(plugin);
-    }
+  /**
+   * Creates a {@link BukkitAudiences} provider for the given plugin.
+   *
+   * @param plugin the plugin
+   * @return the audience factory
+   */
+  static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
+    return BukkitPlatform.getInstance(plugin);
+  }
 
-    /**
-     * Gets an audience for an individual player.
-     *
-     * <p>If the player is not online, messages are silently dropped.</p>
-     *
-     * @param player a player
-     * @return a player audience
-     */
-    @NonNull Audience player(final @NonNull Player player);
+  /**
+   * Gets an audience for an individual player.
+   *
+   * <p>If the player is not online, messages are silently dropped.</p>
+   *
+   * @param player a player
+   * @return a player audience
+   */
+  @NonNull Audience player(final @NonNull Player player);
 
-    /**
-     * Gets an audience for a command sender.
-     *
-     * @param sender the sender
-     * @return an audience
-     */
-    @NonNull Audience audience(final @NonNull CommandSender sender);
+  /**
+   * Gets an audience for a command sender.
+   *
+   * @param sender the sender
+   * @return an audience
+   */
+  @NonNull Audience audience(final @NonNull CommandSender sender);
 }

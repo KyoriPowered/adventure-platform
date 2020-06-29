@@ -38,34 +38,34 @@ import org.spongepowered.api.text.channel.MessageReceiver;
  */
 @ImplementedBy(SpongePlatform.class)
 public interface SpongeAudiences extends AudienceProvider {
-    /**
-     * Creates a {@link SpongeAudiences} provider for the given plugin.
-     *
-     * <p>Prefer obtaining an instance using Guice.</p>
-     *
-     * @param container the plugin container
-     * @param game the game
-     * @return the audience factory
-     */
-    static @NonNull SpongeAudiences create(final @NonNull PluginContainer container, final @NonNull Game game) {
-        return SpongePlatform.getInstance(container, game);
-    }
+  /**
+   * Creates a {@link SpongeAudiences} provider for the given plugin.
+   *
+   * <p>Prefer obtaining an instance using Guice.</p>
+   *
+   * @param container the plugin container
+   * @param game the game
+   * @return the audience factory
+   */
+  static @NonNull SpongeAudiences create(final @NonNull PluginContainer container, final @NonNull Game game) {
+    return SpongePlatform.getInstance(container, game);
+  }
 
-    /**
-     * Gets an audience for an individual player.
-     *
-     * <p>If the player is not online, messages are silently dropped.</p>
-     *
-     * @param player a player
-     * @return a player audience
-     */
-    @NonNull Audience player(final @NonNull Player player);
+  /**
+   * Gets an audience for an individual player.
+   *
+   * <p>If the player is not online, messages are silently dropped.</p>
+   *
+   * @param player a player
+   * @return a player audience
+   */
+  @NonNull Audience player(final @NonNull Player player);
 
-    /**
-     * Gets an audience for a message receiver.
-     *
-     * @param source the source
-     * @return an audience
-     */
-    @NonNull Audience audience(final @NonNull MessageReceiver source);
+  /**
+   * Gets an audience for a message receiver.
+   *
+   * @param source the source
+   * @return an audience
+   */
+  @NonNull Audience audience(final @NonNull MessageReceiver source);
 }
