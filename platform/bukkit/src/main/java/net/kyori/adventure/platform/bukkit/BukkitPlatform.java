@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.AbstractAudienceProvider;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
@@ -66,7 +66,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
-/* package */ final class BukkitPlatform extends AbstractAdventurePlatform implements BukkitAudiences, Listener {
+/* package */ final class BukkitPlatform extends AbstractAudienceProvider implements BukkitAudiences, Listener {
 
   /* package */ static BukkitPlatform getInstance(final @NonNull Plugin plugin) {
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);

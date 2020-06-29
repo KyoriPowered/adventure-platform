@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.AbstractAudienceProvider;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
@@ -56,7 +56,7 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongePlatform extends AbstractAdventurePlatform implements SpongeAudiences {
+/* package */ final class SpongePlatform extends AbstractAudienceProvider implements SpongeAudiences {
 
   /* package */ static SpongePlatform getInstance(final @NonNull PluginContainer container, final Game game) {
     final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);

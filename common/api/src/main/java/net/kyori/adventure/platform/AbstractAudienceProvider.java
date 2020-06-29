@@ -48,7 +48,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * A base implementation of {@link AudienceProvider} on a given platform.
  */
-public abstract class AbstractAdventurePlatform implements AudienceProvider {
+public abstract class AbstractAudienceProvider implements AudienceProvider {
 
   private Audience all;
   private Audience console;
@@ -61,7 +61,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   private ComponentRenderer<Locale> localeRenderer;
   private volatile boolean closed;
 
-  protected AbstractAdventurePlatform() {
+  protected AbstractAudienceProvider() {
     this.senderSet = ConcurrentHashMap.newKeySet();
     this.all = (MultiAudience) () -> this.senderSet;
     this.playerMap = new ConcurrentHashMap<>();

@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.AbstractAudienceProvider;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.md_5.bungee.api.CommandSender;
@@ -42,7 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ final class BungeePlatform extends AbstractAdventurePlatform implements BungeeAudiences, Listener {
+/* package */ final class BungeePlatform extends AbstractAudienceProvider implements BungeeAudiences, Listener {
 
   /* package */ static BungeePlatform getInstance(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "A plugin instance is required");
