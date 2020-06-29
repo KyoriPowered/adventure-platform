@@ -100,7 +100,9 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
    */
   protected void remove(UUID playerId) {
     final Audience removed = this.playerMap.remove(playerId);
-    this.senderSet.remove(removed);
+    if(removed != null) {
+      this.senderSet.remove(removed);
+    }
   }
 
   @Override
