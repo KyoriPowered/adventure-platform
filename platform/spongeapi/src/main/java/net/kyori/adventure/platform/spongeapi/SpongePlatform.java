@@ -102,8 +102,13 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     this.eventManager = eventManager;
     this.plugins = plugins;
     this.events = new Events(game);
-    if(Sponge.getGame().getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
+    if(game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
       setupHandlers();
+      if(game.isServerAvailable()) {
+        for(final Player player : game.getServer().getOnlinePlayers()) {
+          this.add(new SpongePlayerAudience(player, this.chat, this.actionBar, this.title, this.bossBar, this.sound, this.books));
+        }
+      }
     }
   }
 

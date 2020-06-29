@@ -84,7 +84,10 @@ import static java.util.Objects.requireNonNull;
     } catch(Exception ex) {
       Knobs.logError("registering events with plugin", ex);
     }
-    add(new BungeeSenderAudience(this.plugin.getProxy().getConsole()));
+    this.add(new BungeeSenderAudience(this.plugin.getProxy().getConsole()));
+    for(final ProxiedPlayer player : this.plugin.getProxy().getPlayers()) {
+      this.add(new BungeePlayerAudience(this, player));
+    }
   }
 
   /* package */ ProxyServer proxy() {

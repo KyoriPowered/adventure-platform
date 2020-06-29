@@ -209,10 +209,18 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     this.plugin.getServer().getPluginManager().registerEvent(type, this, priority, (listener, event) -> handler.accept((T) event), this.plugin, true);
   }
 
+  private void addPlayer(final @NonNull Player player) {
+    this.add(new BukkitPlayerAudience(player, this.chat, this.actionBar, this.title, this.bossBar, this.playSound, this.books));
+  }
+
   private void init() {
     registerEvent(PlayerJoinEvent.class, EventPriority.LOWEST, event -> {
-      this.add(new BukkitPlayerAudience(event.getPlayer(), chat, actionBar, title, bossBar, playSound, books));
+      this.addPlayer(event.getPlayer());
     });
+    for(final Player player : this.plugin.getServer().getOnlinePlayers()) {
+      this.addPlayer(player);
+    }
+
     registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
       for(Handler.BossBars<Player> handler : this.bossBar) {
