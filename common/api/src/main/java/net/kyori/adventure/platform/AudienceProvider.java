@@ -32,9 +32,9 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * A platform for Adventure.
+ * A provider of {@link Audience}s.
  */
-public interface AdventurePlatform {
+public interface AudienceProvider {
   /**
    * Gets an audience for all online players, including the server's console.
    *

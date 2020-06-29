@@ -46,9 +46,9 @@ import java.util.UUID;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A base implementation of adventure platform.
+ * A base implementation of {@link AudienceProvider} on a given platform.
  */
-public abstract class AbstractAdventurePlatform implements AdventurePlatform {
+public abstract class AbstractAdventurePlatform implements AudienceProvider {
 
   private Audience all;
   private Audience console;
