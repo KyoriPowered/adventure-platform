@@ -23,24 +23,16 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.audience.AdventureAudience;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.platform.impl.AbstractAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
-import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.Connection;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ class BungeeSenderAudience implements AdventureAudience {
+/* package */ class BungeeSenderAudience extends AbstractAudience {
 
   private final CommandSender sender;
 
@@ -49,73 +41,18 @@ import static java.util.Objects.requireNonNull;
   }
 
   @Override
-  public @Nullable Locale locale() {
-    return null;
-  }
-
-  @Override
   public boolean hasPermission(@NonNull String permission) {
     return this.sender.hasPermission(requireNonNull(permission, "permission"));
   }
 
   @Override
-  public boolean console() {
+  public boolean isConsole() {
     return !(this.sender instanceof Connection);
   }
 
   @Override
   public void sendMessage(final @NonNull Component message) {
     this.sender.sendMessage(serializer().serialize(requireNonNull(message, "message")));
-  }
-
-  @Override
-  public void showBossBar(final @NonNull BossBar bar) {
-    // No-op
-  }
-
-  @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
-    // No-op
-  }
-
-  @Override
-  public void sendActionBar(final @NonNull Component message) {
-    // No-op
-  }
-
-  @Override
-  public void playSound(final @NonNull Sound sound) {
-    // No-op
-  }
-
-  @Override
-  public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
-    // No-op
-  }
-
-  @Override
-  public void stopSound(final @NonNull SoundStop stop) {
-    // No-op
-  }
-
-  @Override
-  public void openBook(final @NonNull Book book) {
-
-  }
-
-  @Override
-  public void showTitle(final @NonNull Title title) {
-    // No-op
-  }
-
-  @Override
-  public void clearTitle() {
-    // No-op
-  }
-
-  @Override
-  public void resetTitle() {
-    // No-op
   }
 
   /**

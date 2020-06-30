@@ -32,7 +32,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * A provider of {@link Audience}s.
+ * An {@link Audience} provider.
  */
 public interface AudienceProvider {
   /**
@@ -120,7 +120,7 @@ public interface AudienceProvider {
    *
    * @return a component renderer
    */
-  @NonNull ComponentRenderer<Locale> localeRenderer();
+  @NonNull ComponentRenderer<AudienceInfo> renderer();
 
   /**
    * Closes the factory and releases any resources.

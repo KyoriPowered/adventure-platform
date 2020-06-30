@@ -25,7 +25,6 @@ package net.kyori.adventure.platform;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,8 +33,6 @@ import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventureAudience;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -48,17 +45,17 @@ import static java.util.Objects.requireNonNull;
 /**
  * A base implementation of {@link AudienceProvider} on a given platform.
  */
-public abstract class AbstractAudienceProvider implements AudienceProvider {
+public abstract class AbstractAudienceProvider<A extends Audience & AudienceInfo> implements AudienceProvider {
 
   private Audience all;
   private Audience console;
   private Audience players;
-  private Map<UUID, AdventurePlayerAudience> playerMap;
-  private Set<AdventureAudience> senderSet;
+  private Map<UUID, A> playerMap;
+  private Set<A> senderSet;
   private Map<String, Audience> permissionMap;
   private Map<Key, Audience> worldMap;
   private Map<String, Audience> serverMap;
-  private ComponentRenderer<Locale> localeRenderer;
+  private ComponentRenderer<AudienceInfo> renderer;
   private volatile boolean closed;
 
   protected AbstractAudienceProvider() {
@@ -70,9 +67,9 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
     this.permissionMap = new ConcurrentHashMap<>();
     this.worldMap = new ConcurrentHashMap<>();
     this.serverMap = new ConcurrentHashMap<>();
-    this.localeRenderer = new ComponentRenderer<Locale>() {
+    this.renderer = new ComponentRenderer<AudienceInfo>() {
       @Override
-      public @NonNull Component render(@NonNull Component component, @NonNull Locale context) {
+      public @NonNull Component render(@NonNull Component component, @NonNull AudienceInfo info) {
         return component; // TODO: allow this to be customized
       }
     };
@@ -84,12 +81,12 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
    *
    * @param audience an audience
    */
-  protected void add(AdventureAudience audience) {
+  protected void add(A audience) {
     if (closed) return;
 
     this.senderSet.add(audience);
-    if (audience instanceof AdventurePlayerAudience) {
-      this.playerMap.put(((AdventurePlayerAudience) audience).id(), (AdventurePlayerAudience) audience);
+    if(audience.isPlayer()) {
+      this.playerMap.put(audience.getId(), audience);
     }
   }
 
@@ -99,7 +96,7 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
    * @param playerId a player id
    */
   protected void remove(UUID playerId) {
-    final Audience removed = this.playerMap.remove(playerId);
+    final A removed = this.playerMap.remove(playerId);
     this.senderSet.remove(removed);
   }
 
@@ -109,7 +106,7 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
   }
 
   private class ConsoleAudience implements MultiAudience {
-    private final Iterable<AdventureAudience> console = filter(senderSet, AdventureAudience::console);
+    private final Iterable<A> console = filter(senderSet, A::isConsole);
     @Override
     public @NonNull Iterable<? extends Audience> audiences() {
       return this.console;
@@ -128,19 +125,19 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
 
   @Override
   public @NonNull Audience player(@NonNull UUID playerId) {
-    final AdventurePlayerAudience player = this.playerMap.get(playerId);
+    final A player = this.playerMap.get(playerId);
     return player == null ? Audience.empty() : player;
   }
 
   private class PermissionAudience implements MultiAudience {
-    private final Iterable<AdventureAudience> filtered = filter(senderSet, this::hasPermission);
+    private final Iterable<A> filtered = filter(senderSet, this::hasPermission);
     private final String permission;
 
     private PermissionAudience(final @NonNull String permission) {
       this.permission = requireNonNull(permission, "permission");
     }
 
-    private boolean hasPermission(AdventureAudience audience) {
+    private boolean hasPermission(A audience) {
       return audience.hasPermission(this.permission);
     }
 
@@ -159,15 +156,15 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
   }
 
   private class WorldAudience implements MultiAudience {
-    private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::inWorld);
+    private final Iterable<A> filtered = filter(playerMap.values(), this::inWorld);
     private final Key world;
 
     private WorldAudience(final @NonNull Key world) {
       this.world = requireNonNull(world, "world id");
     }
 
-    private boolean inWorld(AdventurePlayerAudience audience) {
-      return this.world.equals(audience.world());
+    private boolean inWorld(A audience) {
+      return this.world.equals(audience.getWorld());
     }
 
     @Override
@@ -182,15 +179,15 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
   }
 
   private class ServerAudience implements MultiAudience {
-    private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::isOnServer);
+    private final Iterable<A> filtered = filter(playerMap.values(), this::isOnServer);
     private final String serverName;
 
     private ServerAudience(final @NonNull String serverName) {
       this.serverName = requireNonNull(serverName, "server name");
     }
 
-    private boolean isOnServer(AdventurePlayerAudience audience) {
-      return this.serverName.equals(audience.serverName());
+    private boolean isOnServer(A audience) {
+      return this.serverName.equals(audience.getServer());
     }
 
     @Override
@@ -205,8 +202,8 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
   }
 
   @Override
-  public @NonNull ComponentRenderer<Locale> localeRenderer() {
-    return this.localeRenderer;
+  public @NonNull ComponentRenderer<AudienceInfo> renderer() {
+    return this.renderer;
   }
 
   @Override
@@ -221,6 +218,7 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
       this.permissionMap = Collections.emptyMap();
       this.worldMap = Collections.emptyMap();
       this.serverMap = Collections.emptyMap();
+      // TODO: this.renderer = no-op
     }
   }
 

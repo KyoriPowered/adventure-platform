@@ -27,14 +27,13 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements AdventurePlayerAudience {
+class BukkitPlayerAudience extends BukkitSenderAudience<Player> {
 
     private Locale locale;
     private String localeRaw;
@@ -50,23 +49,18 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Adven
     }
 
     @Override
-    public @NonNull UUID id() {
+    public @NonNull UUID getId() {
         return this.viewer.getUniqueId();
     }
 
     @Override
-    public @Nullable Key world() {
+    public @Nullable Key getWorld() {
         return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName()); // TODO: handle Keys
-    }
-
-    @Override
-    public @Nullable String serverName() {
-        return null;
     }
 
     @Nullable
     @Override
-    public Locale locale() {
+    public Locale getLocale() {
         final String newLocaleRaw = this.viewer.getLocale();
         if (!Objects.equals(localeRaw, newLocaleRaw)) {
             locale = toLocale(localeRaw = newLocaleRaw);
@@ -74,23 +68,26 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Adven
         return locale;
     }
 
+    @Override
+    public boolean isPlayer() {
+        return true;
+    }
+
     /**
      * Take a locale string provided from a minecraft client and attempt to parse it as a locale.
      * These are not strictly compliant with the iso standard, so we try to make things a bit more normalized.
      *
-     * @param mcLocale The locale string, in the format provided by the Minecraft client
-     * @return A Locale object matching the provided locale string
+     * @param locale a locale string, in the format provided by the Minecraft client
+     * @return a locale object matching the provided locale string
      */
-    /* package */ static @Nullable Locale toLocale(final @Nullable String mcLocale) {
-        if(mcLocale == null) return null;
-
-        final String[] parts = mcLocale.split("_", 3);
+     /* package */ static @Nullable Locale toLocale(final @Nullable String locale) {
+        if(locale == null) return null;
+        final String[] parts = locale.split("_", 3);
         switch(parts.length) {
-            case 0: return null;
             case 1: return parts[0].isEmpty() ? null : new Locale(parts[0]);
             case 2: return new Locale(parts[0], parts[1]);
             case 3: return new Locale(parts[0], parts[1], parts[2]);
             default: return null;
         }
-    }
+     }
 }

@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -32,11 +31,9 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.Locale;
-
 import static java.util.Objects.requireNonNull;
 
-class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements AdventureAudience {
+class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> {
 
     BukkitSenderAudience(final @NonNull S sender,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
@@ -49,18 +46,12 @@ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> i
     }
 
     @Override
-    public @Nullable Locale locale() {
-        return null;
-    }
-
-    @Override
     public boolean hasPermission(final @NonNull String permission) {
-        return this.viewer.hasPermission(requireNonNull(permission, "permission"));
+        return this.viewer.hasPermission(permission);
     }
 
     @Override
-    public boolean console() {
+    public boolean isConsole() {
         return this.viewer instanceof ConsoleCommandSender;
     }
-
 }

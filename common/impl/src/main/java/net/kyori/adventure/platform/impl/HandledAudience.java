@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.impl;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.sound.Sound;
@@ -35,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
-public class HandledAudience<V> implements Audience {
+public class HandledAudience<V> extends AbstractAudience {
   protected final V viewer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
   private final Handler.@Nullable ActionBar<? super V, ?> actionBarHandler;

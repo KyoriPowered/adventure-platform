@@ -26,8 +26,6 @@ package net.kyori.adventure.platform.bungeecord;
 import java.util.Locale;
 import java.util.UUID;
 
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -40,7 +38,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
-/* package */ class BungeePlayerAudience extends BungeeSenderAudience implements AdventurePlayerAudience {
+/* package */ class BungeePlayerAudience extends BungeeSenderAudience {
 
   private final BungeePlatform platform;
   private final ProxiedPlayer player;
@@ -52,23 +50,32 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   }
 
   @Override
-  public @NonNull UUID id() {
+  protected BungeeCordComponentSerializer serializer() {
+    if(this.player.getPendingConnection().getVersion() >= BungeePlatform.PROTOCOL_1_16) {
+      return BungeeCordComponentSerializer.get();
+    } else {
+      return BungeeCordComponentSerializer.legacy();
+    }
+  }
+
+  @Override
+  public @NonNull UUID getId() {
     return this.player.getUniqueId();
   }
 
   @Override
-  public @Nullable Key world() {
-    return null; // Bungee does not know about a player's world
-  }
-
-  @Override
-  public @Nullable String serverName() {
+  public @Nullable String getServer() {
     return this.player.isConnected() ? this.player.getServer().getInfo().getName() : null;
   }
 
   @Override
-  public @Nullable Locale locale() {
+  public @Nullable Locale getLocale() {
     return this.player.getLocale();
+  }
+
+  @Override
+  public boolean isPlayer() {
+    return true;
   }
 
   @Override
@@ -138,13 +145,5 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   @Override
   public void resetTitle() {
     this.player.sendTitle(this.platform.proxy().createTitle().reset());
-  }
-
-  protected BungeeCordComponentSerializer serializer() {
-    if(this.player.getPendingConnection().getVersion() >= BungeePlatform.PROTOCOL_1_16) {
-      return BungeeCordComponentSerializer.get();
-    } else {
-      return BungeeCordComponentSerializer.legacy();
-    }
   }
 }

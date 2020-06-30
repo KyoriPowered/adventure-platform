@@ -25,14 +25,13 @@ package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.Player;
 
-/* package */ final class SpongePlayerAudience extends SpongeSenderAudience<Player> implements AdventurePlayerAudience {
+/* package */ final class SpongePlayerAudience extends SpongeSenderAudience<Player> {
   public SpongePlayerAudience(final @NonNull Player viewer, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, 
@@ -44,17 +43,17 @@ import org.spongepowered.api.entity.living.player.Player;
   }
 
   @Override
-  public @NonNull UUID id() {
+  public @NonNull UUID getId() {
     return this.viewer.getUniqueId();
   }
 
   @Override
-  public @NonNull Key world() {
+  public @NonNull Key getWorld() {
     return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName());
   }
 
   @Override
-  public @Nullable String serverName() {
-    return null;
+  public boolean isPlayer() {
+    return true;
   }
 }

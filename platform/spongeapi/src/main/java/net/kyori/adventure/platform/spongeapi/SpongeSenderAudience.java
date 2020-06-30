@@ -24,7 +24,7 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.Locale;
-import net.kyori.adventure.platform.audience.AdventureAudience;
+
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -35,7 +35,7 @@ import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
-/* package */ class SpongeSenderAudience<V extends MessageReceiver> extends HandledAudience<V> implements AdventureAudience {
+/* package */ class SpongeSenderAudience<V extends MessageReceiver> extends HandledAudience<V> {
   
   public SpongeSenderAudience(@NonNull final V viewer, 
                               final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat, 
@@ -48,7 +48,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
   }
 
   @Override
-  public @Nullable Locale locale() {
+  public @Nullable Locale getLocale() {
     return this.viewer instanceof CommandSource ? ((CommandSource) viewer).getLocale() : null;
   }
 
@@ -58,7 +58,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
   }
 
   @Override
-  public boolean console() {
+  public boolean isConsole() {
     return this.viewer instanceof ConsoleSource;
   }
 }
