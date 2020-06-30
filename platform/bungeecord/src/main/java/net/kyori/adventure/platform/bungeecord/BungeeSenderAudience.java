@@ -23,10 +23,13 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.impl.AbstractAudience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -35,9 +38,20 @@ import static java.util.Objects.requireNonNull;
 /* package */ class BungeeSenderAudience extends AbstractAudience {
 
   private final CommandSender sender;
+  private final ComponentRenderer<AudienceInfo> renderer;
 
-  /* package */ BungeeSenderAudience(final @NonNull CommandSender sender) {
+  /* package */ BungeeSenderAudience(final @NonNull CommandSender sender, final @NonNull ComponentRenderer<AudienceInfo> renderer) {
     this.sender = requireNonNull(sender, "command sender");
+    this.renderer = requireNonNull(renderer, "renderer");
+  }
+
+  protected BungeeCordComponentSerializer serializer() {
+    return BungeeCordComponentSerializer.get();
+  }
+
+  protected BaseComponent[] render(final @NonNull Component component) {
+    requireNonNull(component, "component");
+    return serializer().serialize(renderer.render(component, this));
   }
 
   @Override
@@ -52,14 +66,6 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    this.sender.sendMessage(serializer().serialize(requireNonNull(message, "message")));
-  }
-
-  /**
-   * Get the component serializer appropriate to this viewer's supported content.
-   * @return component serializer instance
-   */
-  protected BungeeCordComponentSerializer serializer() {
-    return BungeeCordComponentSerializer.get();
+    this.sender.sendMessage(this.render(message));
   }
 }

@@ -25,9 +25,11 @@ package net.kyori.adventure.platform.impl;
 
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -36,6 +38,7 @@ import static java.util.Objects.requireNonNull;
 
 public class HandledAudience<V> extends AbstractAudience {
   protected final V viewer;
+  protected final ComponentRenderer<AudienceInfo> renderer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
   private final Handler.@Nullable ActionBar<? super V, ?> actionBarHandler;
   private final Handler.Titles<? super V> titleHandler;
@@ -45,6 +48,7 @@ public class HandledAudience<V> extends AbstractAudience {
 
   public HandledAudience(
     final @NonNull V viewer,
+    final @NonNull ComponentRenderer<AudienceInfo> renderer,
     final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat,
     final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
     final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title,
@@ -53,6 +57,7 @@ public class HandledAudience<V> extends AbstractAudience {
     final @Nullable HandlerCollection<? super V, ? extends Handler.Books<? super V>> books
   ) {
     this.viewer = requireNonNull(viewer, "viewer");
+    this.renderer = requireNonNull(renderer, "renderer");
     this.chatHandler = handler(chat, viewer);
     this.actionBarHandler = handler(actionBar, viewer);
     this.titleHandler = handler(title, viewer);

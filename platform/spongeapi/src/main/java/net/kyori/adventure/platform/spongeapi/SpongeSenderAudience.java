@@ -25,9 +25,11 @@ package net.kyori.adventure.platform.spongeapi;
 
 import java.util.Locale;
 
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.command.CommandSource;
@@ -37,14 +39,15 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 
 /* package */ class SpongeSenderAudience<V extends MessageReceiver> extends HandledAudience<V> {
   
-  public SpongeSenderAudience(@NonNull final V viewer, 
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat, 
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar, 
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title, 
+  public SpongeSenderAudience(@NonNull final V viewer,
+                              final @NonNull ComponentRenderer<AudienceInfo> renderer,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.BossBars<? super V>> bossBar,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.Books<? super V>> books) {
-    super(viewer, chat, actionBar, title, bossBar, sound, books);
+    super(viewer, renderer, chat, actionBar, title, bossBar, sound, books);
   }
 
   @Override

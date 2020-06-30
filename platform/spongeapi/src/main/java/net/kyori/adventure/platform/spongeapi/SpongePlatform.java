@@ -56,7 +56,7 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongePlatform extends AbstractAudienceProvider implements SpongeAudiences {
+/* package */ final class SpongePlatform extends AbstractAudienceProvider<SpongeSenderAudience> implements SpongeAudiences {
 
   /* package */ static SpongePlatform getInstance(final @NonNull PluginContainer container, final Game game) {
     final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
@@ -150,7 +150,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener(order = Order.FIRST)
     public void join(final ClientConnectionEvent.@NonNull Join event) {
-      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), chat, actionBar, title, bossBar, sound, books));
+      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), renderer(), chat, actionBar, title, bossBar, sound, books));
     }
 
     @Listener(order = Order.LAST)
@@ -165,7 +165,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener
     public void serverStart(final @NonNull GameStartingServerEvent event) {
-      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), chat, actionBar, null, null, null, null));
+      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), renderer(), chat, actionBar, null, null, null, null));
     }
 
     @Listener
@@ -186,9 +186,9 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     } else if(source instanceof ConsoleSource) {
       return console();
     } else if(source instanceof Viewer) {
-      return new SpongeSenderAudience<>((Viewer & MessageReceiver) source, this.chat, this.actionBar, this.title, null, this.sound, this.books);
+      return new SpongeSenderAudience<>((Viewer & MessageReceiver) source, this.renderer(), this.chat, this.actionBar, this.title, null, this.sound, this.books);
     } else {
-      return new SpongeSenderAudience<>(source, this.chat, this.actionBar, null, null, null, null);
+      return new SpongeSenderAudience<>(source, this.renderer(), this.chat, this.actionBar, null, null, null, null);
     }
   }
 

@@ -44,7 +44,7 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   private final ProxiedPlayer player;
 
   /* package */ BungeePlayerAudience(final @NonNull BungeePlatform platform, final @NonNull ProxiedPlayer player) {
-    super(player);
+    super(player, platform.renderer());
     this.platform = platform;
     this.player = player;
   }
@@ -90,7 +90,7 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    this.player.sendMessage(ChatMessageType.ACTION_BAR, serializer().serialize(message));
+    this.player.sendMessage(ChatMessageType.ACTION_BAR, this.render(message));
   }
 
   /*@Override
@@ -124,10 +124,10 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   public void showTitle(final @NonNull Title title) {
     final net.md_5.bungee.api.Title bungee = this.platform.proxy().createTitle();
     if (title.title() != TextComponent.empty()) {
-      bungee.title(serializer().serialize(title.title()));
+      bungee.title(this.render(title.title()));
     }
     if (title.subtitle() != TextComponent.empty()) {
-      bungee.subTitle(serializer().serialize(title.subtitle()));
+      bungee.subTitle(this.render(title.subtitle()));
     }
 
     bungee.fadeIn(ticks(title.fadeInTime()))

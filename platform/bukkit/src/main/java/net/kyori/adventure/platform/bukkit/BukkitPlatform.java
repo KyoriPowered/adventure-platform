@@ -211,7 +211,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
   private void init() {
     registerEvent(PlayerJoinEvent.class, EventPriority.LOWEST, event -> {
-      this.add(new BukkitPlayerAudience(event.getPlayer(), chat, actionBar, title, bossBar, playSound, books));
+      this.add(new BukkitPlayerAudience(event.getPlayer(), this.renderer(), chat, actionBar, title, bossBar, playSound, books));
     });
     registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
@@ -232,7 +232,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       }
     });
 
-    this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.chat, null, null, null, null, null));
+    this.add(new BukkitSenderAudience<>(this.plugin.getServer().getConsoleSender(), this.renderer(), this.chat, null, null, null, null, null));
   }
 
   @Override
@@ -249,7 +249,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     } else if(sender instanceof ConsoleCommandSender) {
       return console();
     } else {
-      return new BukkitSenderAudience<>(sender, this.chat, null, null, null, null, null);
+      return new BukkitSenderAudience<>(sender, this.renderer(), this.chat, null, null, null, null, null);
     }
   }
 

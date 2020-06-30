@@ -23,9 +23,11 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -36,13 +38,14 @@ import static java.util.Objects.requireNonNull;
 class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> {
 
     BukkitSenderAudience(final @NonNull S sender,
+                         final @NonNull ComponentRenderer<AudienceInfo> renderer,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Titles<? super S>> title,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.BossBars<? super S>> bossBar,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound,
                          final @Nullable HandlerCollection<? super S, ? extends Handler.Books<? super  S>> books) {
-        super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound, books);
+        super(requireNonNull(sender, "command sender"), renderer, chat, actionBar, title, bossBar, sound, books);
     }
 
     @Override
