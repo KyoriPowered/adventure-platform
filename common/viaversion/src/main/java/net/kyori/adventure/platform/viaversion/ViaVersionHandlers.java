@@ -176,41 +176,37 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void send(final @NonNull V viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      final int fadeIn = Titles.ticks(title.fadeInTime());
-      final int stay = Titles.ticks(title.stayTime());
-      final int fadeOut = Titles.ticks(title.fadeOutTime());
-      if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
+    public void showTitle(@NonNull V viewer, @NonNull Component title, @NonNull Component subtitle, int inTicks, int stayTicks, int outTicks) {
+      if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
         final PacketWrapper wrapper = make(viewer, ACTION_TIMES);
-        wrapper.write(Type.INT, fadeIn);
-        wrapper.write(Type.INT, stay);
-        wrapper.write(Type.INT, fadeOut);
+        wrapper.write(Type.INT, inTicks);
+        wrapper.write(Type.INT, stayTicks);
+        wrapper.write(Type.INT, outTicks);
         send(wrapper);
       }
 
-      if(title.subtitle() != TextComponent.empty()) {
-        final String subtitleJson = GsonComponentSerializer.gson().serialize(title.subtitle());
+      if(subtitle != TextComponent.empty()) {
+        final String subtitleJson = GsonComponentSerializer.gson().serialize(subtitle);
         final PacketWrapper wrapper = make(viewer, ACTION_SUBTITLE);
         wrapper.write(Type.STRING, subtitleJson);
         send(wrapper);
       }
 
-      if(title.title() != TextComponent.empty()) {
-        final String titleJson = GsonComponentSerializer.gson().serialize(title.title());
+      if(title != TextComponent.empty()) {
+        final String titleJson = GsonComponentSerializer.gson().serialize(title);
         final PacketWrapper wrapper = make(viewer, ACTION_TITLE);
         wrapper.write(Type.STRING, titleJson);
         send(wrapper);
       }
-
     }
 
     @Override
-    public void clear(final @NonNull V viewer) {
+    public void clearTitle(final @NonNull V viewer) {
       send(make(viewer, ACTION_CLEAR)); // no extra data
     }
 
     @Override
-    public void reset(final @NonNull V viewer) {
+    public void resetTitle(final @NonNull V viewer) {
       send(make(viewer, ACTION_RESET)); // no extra data
     }
   }

@@ -84,11 +84,11 @@ public interface Handler<V> {
      */
     int DURATION_PRESERVE = -1;
 
-    void send(final @NonNull V viewer, final @NonNull Title title);
+    void showTitle(final @NonNull V viewer, final @NonNull Component title, final @NonNull Component subtitle, final int inTicks, final int stayTicks, final int outTicks);
 
-    void clear(final @NonNull V viewer);
+    void clearTitle(final @NonNull V viewer);
 
-    void reset(final @NonNull V viewer);
+    void resetTitle(final @NonNull V viewer);
     
     static int ticks(final @NonNull Duration time) {
       return time.isNegative() ? DURATION_PRESERVE : (int) Math.ceil(time.toMillis() / 50.0);

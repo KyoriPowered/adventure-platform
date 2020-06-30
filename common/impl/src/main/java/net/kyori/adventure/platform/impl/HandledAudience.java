@@ -35,10 +35,11 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
 public class HandledAudience<V> extends AbstractAudience {
   protected final V viewer;
-  protected final ComponentRenderer<AudienceInfo> renderer;
+  private final ComponentRenderer<AudienceInfo> renderer;
   private final Handler.@Nullable Chat<? super V, ?> chatHandler;
   private final Handler.@Nullable ActionBar<? super V, ?> actionBarHandler;
   private final Handler.Titles<? super V> titleHandler;
@@ -77,7 +78,7 @@ public class HandledAudience<V> extends AbstractAudience {
 
   private <S> void sendMessage0(final Handler.@Nullable Chat<? super V, S> handler, final @NonNull Component message) {
     if(handler != null) {
-      handler.send(this.viewer, handler.initState(message));
+      handler.send(this.viewer, handler.initState(this.renderer.render(message, this)));
     }
   }
 
@@ -102,7 +103,7 @@ public class HandledAudience<V> extends AbstractAudience {
 
   private <S> void sendActionBar0(final Handler.@Nullable ActionBar<? super V, S> handler, final @NonNull Component message) {
     if(handler != null) {
-      handler.send(this.viewer, handler.initState(message));
+      handler.send(this.viewer, handler.initState(this.renderer.render(message, this)));
     }
   }
 
@@ -137,21 +138,22 @@ public class HandledAudience<V> extends AbstractAudience {
   @Override
   public void showTitle(final @NonNull Title title) {
     if(this.titleHandler != null) {
-      this.titleHandler.send(this.viewer, requireNonNull(title, "title"));
+      requireNonNull(title, "title");
+      this.titleHandler.showTitle(this.viewer, title.title(), title.subtitle(), ticks(title.fadeInTime()), ticks(title.stayTime()), ticks(title.fadeOutTime()));
     }
   }
 
   @Override
   public void clearTitle() {
     if(this.titleHandler != null) {
-      this.titleHandler.clear(this.viewer);
+      this.titleHandler.clearTitle(this.viewer);
     }
   }
 
   @Override
   public void resetTitle() {
     if(this.titleHandler != null) {
-      this.titleHandler.reset(this.viewer);
+      this.titleHandler.resetTitle(this.viewer);
     }
   }
 }

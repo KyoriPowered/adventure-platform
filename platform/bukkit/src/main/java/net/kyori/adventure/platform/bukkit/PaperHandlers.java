@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.util.function.IntConsumer;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -47,37 +48,26 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
 
     @Override
-    public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
+    public void showTitle(@NonNull Player viewer, @NonNull Component title, @NonNull Component subtitle, int inTicks, int stayTicks, int outTicks) {
       final Title.Builder paperTitle = Title.builder()
-        .title(SpigotHandlers.SERIALIZER.serialize(title.title()))
-        .subtitle(SpigotHandlers.SERIALIZER.serialize(title.subtitle()));
+              .title(SpigotHandlers.SERIALIZER.serialize(title))
+              .subtitle(SpigotHandlers.SERIALIZER.serialize(title));
 
-      applyTime(title.fadeInTime(), paperTitle::fadeIn);
-      applyTime(title.stayTime(), paperTitle::stay);
-      applyTime(title.fadeOutTime(), paperTitle::fadeOut);
+      // Paper will reject negative durations
+      if (inTicks >= 0) paperTitle.fadeIn(inTicks);
+      if (stayTicks >= 0) paperTitle.stay(stayTicks);
+      if (outTicks >= 0) paperTitle.fadeOut(outTicks);
 
       viewer.sendTitle(paperTitle.build());
     }
 
-    /**
-     * Paper will reject negative durations, so we have to resort to every send assigning default times.
-     * @param time The time to send
-     * @param consumer Time builder
-     */
-    private static void applyTime(final Duration time, final IntConsumer consumer) {
-      final int ticks = Titles.ticks(time);
-      if(ticks != Titles.DURATION_PRESERVE) {
-        consumer.accept(ticks);
-      }
-    }
-
     @Override
-    public void clear(final @NonNull Player viewer) {
+    public void clearTitle(final @NonNull Player viewer) {
       viewer.hideTitle();
     }
 
     @Override
-    public void reset(final @NonNull Player viewer) {
+    public void resetTitle(final @NonNull Player viewer) {
       viewer.resetTitle();
     }
   }

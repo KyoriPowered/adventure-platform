@@ -254,20 +254,16 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
 
     @Override
-    public void send(final @NonNull Player viewer, final @NonNull Title title) {
-      final Object nmsTitleText = mcTextFromComponent(title.title());
-      final Object nmsSubtitleText = mcTextFromComponent(title.subtitle());
+    public void showTitle(@NonNull Player viewer, @NonNull Component title, @NonNull Component subtitle, int inTicks, int stayTicks, int outTicks) {
+      final Object nmsTitleText = mcTextFromComponent(title);
+      final Object nmsSubtitleText = mcTextFromComponent(title);
       try {
         final Object titlePacket = CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_TITLE, nmsTitleText);
         final Object subtitlePacket = CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_SUBTITLE, nmsSubtitleText);
         Object timesPacket = null;
 
-        final int fadeIn = Titles.ticks(title.fadeInTime());
-        final int stay = Titles.ticks(title.stayTime());
-        final int fadeOut = Titles.ticks(title.fadeOutTime());
-
-        if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
-          timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(fadeIn, stay, fadeOut);
+        if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
+          timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(inTicks, stayTicks, outTicks);
         }
 
         send(viewer, subtitlePacket);
@@ -281,12 +277,12 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
 
     @Override
-    public void clear(final @NonNull Player viewer) {
+    public void clearTitle(final @NonNull Player viewer) {
       viewer.sendTitle("", "", -1, -1, -1);
     }
 
     @Override
-    public void reset(final @NonNull Player viewer) {
+    public void resetTitle(final @NonNull Player viewer) {
       viewer.resetTitle();
     }
   }

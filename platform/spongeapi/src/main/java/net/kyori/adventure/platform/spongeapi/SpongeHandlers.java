@@ -95,23 +95,23 @@ import org.spongepowered.api.world.Locatable;
     }
 
     @Override
-    public void send(final @NonNull Viewer viewer, final net.kyori.adventure.title.@NonNull Title title) {
+    public void showTitle(@NonNull Viewer viewer, @NonNull Component title, @NonNull Component subtitle, int inTicks, int stayTicks, int outTicks) {
       viewer.sendTitle(org.spongepowered.api.text.title.Title.builder()
-        .title(SpongeApiComponentSerializer.get().serialize(title.title()))
-        .subtitle(SpongeApiComponentSerializer.get().serialize(title.subtitle()))
-        .fadeIn(Titles.ticks(title.fadeInTime()))
-        .fadeOut(Titles.ticks(title.fadeOutTime()))
-        .stay(Titles.ticks(title.stayTime()))
-        .build());
+              .title(SpongeApiComponentSerializer.get().serialize(title))
+              .subtitle(SpongeApiComponentSerializer.get().serialize(title))
+              .fadeIn(inTicks)
+              .stay(stayTicks)
+              .fadeOut(outTicks)
+              .build());
     }
 
     @Override
-    public void clear(final @NonNull Viewer viewer) {
+    public void clearTitle(final @NonNull Viewer viewer) {
       viewer.clearTitle();
     }
 
     @Override
-    public void reset(final @NonNull Viewer viewer) {
+    public void resetTitle(final @NonNull Viewer viewer) {
       viewer.resetTitle();
     }
   }
