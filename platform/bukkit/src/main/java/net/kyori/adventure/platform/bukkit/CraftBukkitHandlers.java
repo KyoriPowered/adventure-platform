@@ -31,6 +31,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
@@ -432,8 +433,8 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
 
     @SuppressWarnings("deprecation")
     @Override
-    public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
-      final CompoundBinaryTag bookTag = tagFor(book, BukkitPlatform.GSON_SERIALIZER);
+    public void openBook(@NonNull Player viewer, @NonNull Component title, @NonNull Component author, @NonNull Iterable<Component> pages) {
+      final CompoundBinaryTag bookTag = tagFor(title, author, pages, BukkitPlatform.GSON_SERIALIZER);
       final ItemStack current = viewer.getInventory().getItemInHand(); // TODO: Do this with packets instead -- sync ids have changed between versions
       try {
         // apply item to inventory
@@ -453,22 +454,15 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     private static final String BOOK_PAGES = "pages";
     private static final String BOOK_RESOLVED = "resolved"; // set resolved to save on a parse as MC Components for Parseable texts
 
-    /**
-     * Create a tag with necessary data for showing a book
-     *
-     * @param book The book to show
-     * @param serializer serializer appropriately versioned for the viewer
-     * @return NBT compound
-     */
-    private static CompoundBinaryTag tagFor(final @NonNull Book book, final @NonNull GsonComponentSerializer serializer) {
-      final ListBinaryTag.Builder<StringBinaryTag> pages = ListBinaryTag.builder(BinaryTagTypes.STRING);
-      for(final Component page : book.pages()) {
-        pages.add(StringBinaryTag.of(serializer.serialize(page)));
+    private static CompoundBinaryTag tagFor(final @NonNull Component title, final @NonNull Component author, final @NonNull Iterable<Component> pages, final @NonNull GsonComponentSerializer serializer) {
+      final ListBinaryTag.Builder<StringBinaryTag> builder = ListBinaryTag.builder(BinaryTagTypes.STRING);
+      for(final Component page : pages) {
+        builder.add(StringBinaryTag.of(serializer.serialize(page)));
       }
       return CompoundBinaryTag.builder()
-        .putString(BOOK_TITLE, serializer.serialize(book.title()))
-        .putString(BOOK_AUTHOR, serializer.serialize(book.author()))
-        .put(BOOK_PAGES, pages.build())
+        .putString(BOOK_TITLE, serializer.serialize(title))
+        .putString(BOOK_AUTHOR, serializer.serialize(author))
+        .put(BOOK_PAGES, builder.build())
         .putByte(BOOK_RESOLVED, (byte) 1)
         .build();
     }

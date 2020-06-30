@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.impl;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
@@ -172,6 +173,6 @@ public interface Handler<V> {
   }
 
   interface Books<V> extends Handler<V> {
-    void openBook(final @NonNull V viewer, final @NonNull Book book);
+    void openBook(final @NonNull V viewer, final @NonNull Component title, final @NonNull Component author, final @NonNull Iterable<Component> pages);
   }
 }

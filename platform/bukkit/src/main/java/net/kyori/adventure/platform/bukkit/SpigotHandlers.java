@@ -38,6 +38,8 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.List;
+
 /* package */ class SpigotHandlers {
 
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
@@ -118,24 +120,21 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       return BOUND & SUPPORTED;
     }
 
-    public ItemStack createBook(final @NonNull Book book) {
-      final ItemStack stack = new ItemStack(Material.WRITTEN_BOOK);
-      final ItemMeta meta = stack.getItemMeta();
+    @Override
+    public void openBook(@NonNull Player viewer, @NonNull Component title, @NonNull Component author, @NonNull Iterable<Component> pages) {
+      final ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+      final ItemMeta meta = book.getItemMeta();
       if(meta instanceof BookMeta) {
         final BookMeta spigot = (BookMeta) meta;
-        for(final Component page : book.pages()) {
+        for(final Component page : pages) {
           spigot.spigot().addPage(SERIALIZER.serialize(page));
         }
-        spigot.setAuthor(BukkitPlatform.LEGACY_SERIALIZER.serialize(book.author()));
-        spigot.setTitle(BukkitPlatform.LEGACY_SERIALIZER.serialize(book.title())); // todo: don't use legacy
-        stack.setItemMeta(spigot);
+        spigot.setAuthor(BukkitPlatform.LEGACY_SERIALIZER.serialize(author));
+        spigot.setTitle(BukkitPlatform.LEGACY_SERIALIZER.serialize(title)); // TODO: don't use legacy
+        book.setItemMeta(spigot);
       }
-      return stack;
-    }
 
-    @Override
-    public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
-      viewer.openBook(createBook(book));
+      viewer.openBook(book);
     }
   }
 }

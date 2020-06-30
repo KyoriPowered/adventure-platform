@@ -43,6 +43,8 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.Locatable;
 
+import java.util.List;
+
 /* package */ final class SpongeHandlers {
   
   private SpongeHandlers() {}
@@ -176,11 +178,11 @@ import org.spongepowered.api.world.Locatable;
     }
 
     @Override
-    public void openBook(final @NonNull Viewer viewer, final @NonNull Book book) {
+    public void openBook(@NonNull Viewer viewer, @NonNull Component title, @NonNull Component author, @NonNull Iterable<Component> pages) {
       final BookView.Builder view = BookView.builder()
-        .title(SpongeApiComponentSerializer.get().serialize(book.title()))
-        .author(SpongeApiComponentSerializer.get().serialize(book.author()));
-      for(final Component page : book.pages()) {
+              .title(SpongeApiComponentSerializer.get().serialize(title))
+              .author(SpongeApiComponentSerializer.get().serialize(author));
+      for(final Component page : pages) {
         view.addPage(SpongeApiComponentSerializer.get().serialize(page));
       }
       viewer.sendBookView(view.build());

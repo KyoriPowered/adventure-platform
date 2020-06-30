@@ -130,8 +130,8 @@ public class HandledAudience<V> extends AbstractAudience {
 
   @Override
   public void openBook(final @NonNull Book book) {
-    if(this.bookHandler != null) {
-      this.bookHandler.openBook(this.viewer, book);
+    if(this.bookHandler != null) { // TODO: render pages, may want to move that lazy iterable into a util somewheree
+      this.bookHandler.openBook(this.viewer, this.renderer.render(book.title(), this), this.renderer.render(book.author(), this), book.pages());
     }
   }
 
@@ -139,7 +139,7 @@ public class HandledAudience<V> extends AbstractAudience {
   public void showTitle(final @NonNull Title title) {
     if(this.titleHandler != null) {
       requireNonNull(title, "title");
-      this.titleHandler.showTitle(this.viewer, title.title(), title.subtitle(), ticks(title.fadeInTime()), ticks(title.stayTime()), ticks(title.fadeOutTime()));
+      this.titleHandler.showTitle(this.viewer, this.renderer.render(title.title(), this), this.renderer.render(title.subtitle(), this), ticks(title.fadeInTime()), ticks(title.stayTime()), ticks(title.fadeOutTime()));
     }
   }
 
