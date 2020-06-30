@@ -39,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   private BukkitHandlers() {}
 
   /* package */ static String legacy(final @NonNull Component component) {
-      return BukkitPlatform.LEGACY_SERIALIZER.serialize(component);
+      return BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(component);
   }
 
   /* package */ static class Chat implements Handler.Chat<CommandSender, String> {

@@ -126,7 +126,7 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
     }
     if(MC_TEXT_GSON != null) {
       final JsonElement element = MC_TEXT_GSON.toJsonTree(input);
-      return BukkitPlatform.GSON_SERIALIZER.serializer().fromJson(element, Component.class);
+      return BukkitAudienceProvider.GSON_SERIALIZER.serializer().fromJson(element, Component.class);
     } else { // when we don't share a Gson instance
       try {
         return GsonComponentSerializer.gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
@@ -143,7 +143,7 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
       throw new IllegalStateException("Not supported");
     }
     if(MC_TEXT_GSON != null) {
-      final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializer().toJsonTree(component);
+      final JsonElement json = BukkitAudienceProvider.GSON_SERIALIZER.serializer().toJsonTree(component);
       try {
         return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
       } catch(Throwable error) {
@@ -152,7 +152,7 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
       }
     } else {
       try {
-        return TEXT_SERIALIZER_DESERIALIZE.invoke(BukkitPlatform.GSON_SERIALIZER.serialize(component));
+        return TEXT_SERIALIZER_DESERIALIZE.invoke(BukkitAudienceProvider.GSON_SERIALIZER.serialize(component));
       } catch(Throwable error) {
         Knobs.logError("converting adventure Component to MC Component (via 1.7 String serialization)", error);
         throw new RuntimeException(error); // unrecoverable

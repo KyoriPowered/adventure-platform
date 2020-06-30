@@ -28,10 +28,9 @@ import net.kyori.adventure.platform.impl.Knobs;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 
 /* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
+  private final Logger logger = LoggerFactory.getLogger(SpongeAudienceProvider.class);
   
   @Override
   public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {

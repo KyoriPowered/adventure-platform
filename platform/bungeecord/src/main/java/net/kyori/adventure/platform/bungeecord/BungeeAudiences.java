@@ -24,11 +24,14 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A provider of {@link Audience}s for the BungeeCord API.
@@ -37,11 +40,12 @@ public interface BungeeAudiences extends AudienceProvider {
   /**
    * Creates a {@link BungeeAudiences} provider for the given plugin.
    *
-   * @param plugin the plugin
-   * @return the audience factory
+   * @param plugin a plugin
+   * @param renderer a component renderer
+   * @return an audience factory
    */
-  static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
-    return BungeePlatform.getInstance(plugin);
+  static @NonNull BungeeAudiences create(final @NonNull Plugin plugin, final @Nullable ComponentRenderer<AudienceInfo> renderer) {
+    return new BungeeAudienceProvider(plugin, renderer);
   }
 
   /**

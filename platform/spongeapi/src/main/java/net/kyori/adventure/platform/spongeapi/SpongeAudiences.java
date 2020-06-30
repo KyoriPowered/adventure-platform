@@ -26,8 +26,11 @@ package net.kyori.adventure.platform.spongeapi;
 import com.google.inject.ImplementedBy;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -36,19 +39,20 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 /**
  * A provider of {@link Audience}s for the Sponge API.
  */
-@ImplementedBy(SpongePlatform.class)
+@ImplementedBy(SpongeAudienceProvider.class)
 public interface SpongeAudiences extends AudienceProvider {
   /**
    * Creates a {@link SpongeAudiences} provider for the given plugin.
    *
    * <p>Prefer obtaining an instance using Guice.</p>
    *
-   * @param container the plugin container
-   * @param game the game
-   * @return the audience factory
+   * @param container a plugin container
+   * @param game a game
+   * @param renderer a component renderer
+   * @return an audience factory
    */
-  static @NonNull SpongeAudiences create(final @NonNull PluginContainer container, final @NonNull Game game) {
-    return SpongePlatform.getInstance(container, game);
+  static @NonNull SpongeAudiences create(final @NonNull PluginContainer container, final @NonNull Game game, final @Nullable ComponentRenderer<AudienceInfo> renderer) {
+    return SpongeAudienceProvider.create(container, game, renderer);
   }
 
   /**

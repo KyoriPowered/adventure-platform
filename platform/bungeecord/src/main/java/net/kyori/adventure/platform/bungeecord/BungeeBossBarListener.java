@@ -33,7 +33,6 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static net.kyori.adventure.platform.impl.Handler.BossBars.color;
@@ -162,6 +161,6 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
    * @return if the player has a client with boss bar support
    */
   private static boolean canSeeBossBars(final @NonNull ProxiedPlayer player) {
-    return player.getPendingConnection().getVersion() >= BungeePlatform.PROTCOOL_1_9;
+    return player.getPendingConnection().getVersion() >= BungeeAudienceProvider.PROTCOOL_1_9;
   }
 }

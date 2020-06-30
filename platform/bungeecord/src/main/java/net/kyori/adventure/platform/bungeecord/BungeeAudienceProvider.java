@@ -23,13 +23,12 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AbstractAudienceProvider;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -42,40 +41,23 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ final class BungeePlatform extends AbstractAudienceProvider<BungeeSenderAudience> implements BungeeAudiences, Listener {
-
-  /* package */ static BungeePlatform getInstance(final @NonNull Plugin plugin) {
-    requireNonNull(plugin, "A plugin instance is required");
-
-    final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
-    BungeePlatform platform = INSTANCES.get(key);
-    if(platform == null) {
-      platform = new BungeePlatform(key, plugin);
-      final BungeePlatform existing = INSTANCES.putIfAbsent(key, platform);
-      if(existing != null) {
-        return existing;
-      }
-      platform.init();
-    }
-    return platform;
-  }
+/* package */ final class BungeeAudienceProvider extends AbstractAudienceProvider<BungeeSenderAudience> implements BungeeAudiences, Listener {
 
   static final int PROTCOOL_1_9 = 107;
   static final int PROTOCOL_1_16 = 735;
-
-  private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
   
   static {
     Knobs.logger(new JDKLogHandler());
   }
 
-  private final String key;
   private final Plugin plugin;
   private final BungeeBossBarListener bossBars = new BungeeBossBarListener();
 
-  BungeePlatform(final String key, final Plugin plugin) {
-    this.key = requireNonNull(key, "key");
+  BungeeAudienceProvider(final Plugin plugin, final ComponentRenderer<AudienceInfo> renderer) {
+    super(renderer);
     this.plugin = requireNonNull(plugin, "plugin");
+
+    init();
   }
 
   private void init() {
@@ -125,7 +107,6 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void close() {
-    INSTANCES.remove(this.key);
     this.plugin.getProxy().getPluginManager().unregisterListener(this);
     this.bossBars.hideAllBossBars();
     super.close();

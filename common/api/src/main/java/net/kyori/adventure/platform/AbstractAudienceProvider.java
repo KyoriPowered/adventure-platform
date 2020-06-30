@@ -33,9 +33,9 @@ import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MultiAudience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
@@ -58,7 +58,7 @@ public abstract class AbstractAudienceProvider<A extends Audience & AudienceInfo
   private ComponentRenderer<AudienceInfo> renderer;
   private volatile boolean closed;
 
-  protected AbstractAudienceProvider() {
+  protected AbstractAudienceProvider(final @Nullable ComponentRenderer<AudienceInfo> renderer) {
     this.senderSet = ConcurrentHashMap.newKeySet();
     this.all = (MultiAudience) () -> this.senderSet;
     this.playerMap = new ConcurrentHashMap<>();
@@ -67,12 +67,7 @@ public abstract class AbstractAudienceProvider<A extends Audience & AudienceInfo
     this.permissionMap = new ConcurrentHashMap<>();
     this.worldMap = new ConcurrentHashMap<>();
     this.serverMap = new ConcurrentHashMap<>();
-    this.renderer = new ComponentRenderer<AudienceInfo>() {
-      @Override
-      public @NonNull Component render(@NonNull Component component, @NonNull AudienceInfo info) {
-        return component; // TODO: allow this to be customized
-      }
-    };
+    this.renderer = renderer != null ? renderer : (component, info) -> component;
     this.closed = false;
   }
 
@@ -218,7 +213,7 @@ public abstract class AbstractAudienceProvider<A extends Audience & AudienceInfo
       this.permissionMap = Collections.emptyMap();
       this.worldMap = Collections.emptyMap();
       this.serverMap = Collections.emptyMap();
-      // TODO: this.renderer = no-op
+      this.renderer = (component, info) -> component;
     }
   }
 

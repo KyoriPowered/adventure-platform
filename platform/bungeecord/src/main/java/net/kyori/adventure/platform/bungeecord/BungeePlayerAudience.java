@@ -40,10 +40,10 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
 /* package */ class BungeePlayerAudience extends BungeeSenderAudience {
 
-  private final BungeePlatform platform;
+  private final BungeeAudienceProvider platform;
   private final ProxiedPlayer player;
 
-  /* package */ BungeePlayerAudience(final @NonNull BungeePlatform platform, final @NonNull ProxiedPlayer player) {
+  /* package */ BungeePlayerAudience(final @NonNull BungeeAudienceProvider platform, final @NonNull ProxiedPlayer player) {
     super(player, platform.renderer());
     this.platform = platform;
     this.player = player;
@@ -51,7 +51,7 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
   @Override
   protected BungeeCordComponentSerializer serializer() {
-    if(this.player.getPendingConnection().getVersion() >= BungeePlatform.PROTOCOL_1_16) {
+    if(this.player.getPendingConnection().getVersion() >= BungeeAudienceProvider.PROTOCOL_1_16) {
       return BungeeCordComponentSerializer.get();
     } else {
       return BungeeCordComponentSerializer.legacy();

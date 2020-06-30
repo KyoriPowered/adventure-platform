@@ -24,11 +24,14 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A provider of {@link Audience}s for the Bukkit API.
@@ -37,11 +40,12 @@ public interface BukkitAudiences extends AudienceProvider {
   /**
    * Creates a {@link BukkitAudiences} provider for the given plugin.
    *
-   * @param plugin the plugin
-   * @return the audience factory
+   * @param plugin a plugin
+   * @param renderer a component renderer
+   * @return an audience factory
    */
-  static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
-    return BukkitPlatform.getInstance(plugin);
+  static @NonNull BukkitAudiences create(final @NonNull Plugin plugin, final @Nullable ComponentRenderer<AudienceInfo> renderer) {
+    return new BukkitAudienceProvider(plugin, renderer);
   }
 
   /**

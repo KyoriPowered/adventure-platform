@@ -27,13 +27,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.graph.MutableGraph;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AbstractAudienceProvider;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
@@ -41,6 +39,7 @@ import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.platform.viaversion.ViaAccess;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
@@ -61,30 +60,14 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
 
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
-/* package */ final class BukkitPlatform extends AbstractAudienceProvider implements BukkitAudiences, Listener {
-
-  /* package */ static BukkitPlatform getInstance(final @NonNull Plugin plugin) {
-    final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
-    BukkitPlatform platform = INSTANCES.get(key);
-    if(platform == null) {
-      platform = new BukkitPlatform(plugin);
-      final BukkitPlatform existing = INSTANCES.putIfAbsent(key, platform);
-      if(existing != null) {
-        return existing;
-      }
-      platform.init();
-    }
-    return platform;
-  }
-
-  private static final Map<String, BukkitPlatform> INSTANCES = new ConcurrentHashMap<>();
+/* package */ final class BukkitAudienceProvider extends AbstractAudienceProvider<BukkitSenderAudience<?>> implements BukkitAudiences, Listener {
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
-
 
   /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
   /* package */ static final GsonComponentSerializer GSON_SERIALIZER;
@@ -152,7 +135,8 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
   private final HandlerCollection<Player, Handler.Books<Player>> books;
 
-  public BukkitPlatform(final @NonNull Plugin plugin) {
+  public BukkitAudienceProvider(final @NonNull Plugin plugin, final @Nullable ComponentRenderer<AudienceInfo> renderer) {
+    super(renderer);
     this.plugin = requireNonNull(plugin, "plugin");
     this.entityTracker = new PhantomEntityTracker(plugin);
     injectSoftdepend(this.plugin, "ViaVersion");
@@ -191,6 +175,8 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       new CraftBukkitHandlers.Books(),
       new CraftBukkitHandlers.Books_Pre1_13() // 1.8-1.13 (sending book open doesn't exist on 1.7.10)
     );
+
+    init();
   }
 
   /**
@@ -312,7 +298,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       if(isAvailable()) {
         return ViaAPIProvider.super.serializer(viewer);
       }
-      return BukkitPlatform.GSON_SERIALIZER;
+      return BukkitAudienceProvider.GSON_SERIALIZER;
     }
 
     /* package */ void dirtyVia() {

@@ -28,12 +28,15 @@ import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AbstractAudienceProvider;
+import net.kyori.adventure.platform.AudienceInfo;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.util.Index;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.GameState;
@@ -56,10 +59,10 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongePlatform extends AbstractAudienceProvider<SpongeSenderAudience> implements SpongeAudiences {
+/* package */ final class SpongeAudienceProvider extends AbstractAudienceProvider<SpongeSenderAudience> implements SpongeAudiences {
 
-  /* package */ static SpongePlatform getInstance(final @NonNull PluginContainer container, final Game game) {
-    final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
+  /* package */ static SpongeAudienceProvider create(final @NonNull PluginContainer container, final Game game, final ComponentRenderer<AudienceInfo> renderer) {
+    final SpongeAudienceProvider platform = new SpongeAudienceProvider(game.getEventManager(), game.getPluginManager(), game, renderer);
     platform.init(container);
     return platform;
   }
@@ -98,7 +101,8 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private HandlerCollection<Viewer, Handler.Books<Viewer>> books;
 
   @Inject
-  /* package */ SpongePlatform(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
+  /* package */ SpongeAudienceProvider(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game, final @Nullable ComponentRenderer<AudienceInfo> renderer) {
+    super(renderer);
     this.eventManager = eventManager;
     this.plugins = plugins;
     this.events = new Events(game);
@@ -145,17 +149,17 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener
     public void setupHandlers(final @NonNull GamePostInitializationEvent event) { // set up handlers so that we don't start too early for ViaVersion
-      SpongePlatform.this.setupHandlers();
+      SpongeAudienceProvider.this.setupHandlers();
     }
 
     @Listener(order = Order.FIRST)
     public void join(final ClientConnectionEvent.@NonNull Join event) {
-      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), renderer(), chat, actionBar, title, bossBar, sound, books));
+      SpongeAudienceProvider.this.add(new SpongePlayerAudience(event.getTargetEntity(), renderer(), chat, actionBar, title, bossBar, sound, books));
     }
 
     @Listener(order = Order.LAST)
     public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
-      SpongePlatform.this.remove(event.getTargetEntity().getUniqueId());
+      SpongeAudienceProvider.this.remove(event.getTargetEntity().getUniqueId());
       if(bossBar != null) {
         for(Handler.BossBars<Player> handler : bossBar) {
           handler.hideAllBossBars(event.getTargetEntity());
@@ -165,7 +169,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener
     public void serverStart(final @NonNull GameStartingServerEvent event) {
-      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), renderer(), chat, actionBar, null, null, null, null));
+      SpongeAudienceProvider.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), renderer(), chat, actionBar, null, null, null, null));
     }
 
     @Listener

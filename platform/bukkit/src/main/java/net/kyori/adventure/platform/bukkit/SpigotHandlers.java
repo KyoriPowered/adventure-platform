@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.Component;
@@ -38,13 +37,11 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.List;
-
 /* package */ class SpigotHandlers {
 
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
-  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BukkitPlatform.IS_1_16 ? BungeeCordComponentSerializer.get() : BungeeCordComponentSerializer.legacy();
+  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BukkitAudienceProvider.IS_1_16 ? BungeeCordComponentSerializer.get() : BungeeCordComponentSerializer.legacy();
 
   private static class WithBungeeText<T extends CommandSender> implements Handler<T> {
 
@@ -129,8 +126,8 @@ import java.util.List;
         for(final Component page : pages) {
           spigot.spigot().addPage(SERIALIZER.serialize(page));
         }
-        spigot.setAuthor(BukkitPlatform.LEGACY_SERIALIZER.serialize(author));
-        spigot.setTitle(BukkitPlatform.LEGACY_SERIALIZER.serialize(title)); // TODO: don't use legacy
+        spigot.setAuthor(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(author));
+        spigot.setTitle(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(title)); // TODO: don't use legacy
         book.setItemMeta(spigot);
       }
 
