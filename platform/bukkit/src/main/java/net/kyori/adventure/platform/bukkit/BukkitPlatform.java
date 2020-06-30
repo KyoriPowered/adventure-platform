@@ -216,7 +216,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
       for(Handler.BossBars<Player> handler : this.bossBar) {
-        handler.hideAll(event.getPlayer());
+        handler.hideAllBossBars(event.getPlayer());
       }
     });
     
@@ -257,7 +257,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   public void close() {
     HandlerList.unregisterAll(this);
     for(Handler.BossBars<Player> handler : this.bossBar) {
-      handler.hideAll();
+      handler.hideAllBossBars();
     }
     super.close();
   }

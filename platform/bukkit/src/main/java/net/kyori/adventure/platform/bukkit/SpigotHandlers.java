@@ -67,7 +67,7 @@ import java.util.List;
     }
 
     @Override
-    public void send(@NonNull final CommandSender target, final BaseComponent @NonNull [] message) {
+    public void sendMessage(@NonNull final CommandSender target, final BaseComponent @NonNull [] message) {
       target.spigot().sendMessage(message);
     }
   }
@@ -80,7 +80,7 @@ import java.util.List;
     }
 
     @Override
-    public void send(final @NonNull CommandSender target, final BaseComponent @NonNull [] message) {
+    public void sendMessage(final @NonNull CommandSender target, final BaseComponent @NonNull [] message) {
       ((Player) target).spigot().sendMessage(message);
     }
   }
@@ -107,7 +107,7 @@ import java.util.List;
 
     @Override
     @SuppressWarnings("deprecation") // pls stop
-    public void send(final @NonNull Player viewer, final BaseComponent @NonNull [] message) {
+    public void sendActionBar(final @NonNull Player viewer, final BaseComponent @NonNull [] message) {
       viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }

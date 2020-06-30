@@ -103,7 +103,7 @@ import static java.util.Objects.requireNonNull;
   @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
   public void onQuit(PlayerDisconnectEvent event) {
     this.remove(event.getPlayer().getUniqueId());
-    this.bossBars.hideAll(event.getPlayer());
+    this.bossBars.hideAllBossBars(event.getPlayer());
   }
 
   @Override
@@ -127,7 +127,7 @@ import static java.util.Objects.requireNonNull;
   public void close() {
     INSTANCES.remove(this.key);
     this.plugin.getProxy().getPluginManager().unregisterListener(this);
-    this.bossBars.hideAll();
+    this.bossBars.hideAllBossBars();
     super.close();
   }
 }

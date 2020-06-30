@@ -35,7 +35,7 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
   private final Map<BossBar, I> bars = Collections.synchronizedMap(new IdentityHashMap<>());
 
   @Override
-  public void show(@NonNull final V viewer, final @NonNull BossBar bar) {
+  public void showBossBar(@NonNull final V viewer, final @NonNull BossBar bar) {
     final I instance = this.bars.computeIfAbsent(bar, adventure -> {
       adventure.addListener(this);
       return newInstance(adventure);
@@ -57,7 +57,7 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
   protected abstract void hideFromAll(final @NonNull I bar);
 
   @Override
-  public void hide(@NonNull final V viewer, final @NonNull BossBar bar) {
+  public void hideBossBar(@NonNull final V viewer, final @NonNull BossBar bar) {
     this.bars.computeIfPresent(bar, (adventure, existing) -> {
       hide(viewer, existing);
       if(isEmpty(existing)) {
@@ -69,7 +69,7 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
   }
 
   @Override
-  public void hideAll(@NonNull final V viewer) {
+  public void hideAllBossBars(@NonNull final V viewer) {
     for(Iterator<Map.Entry<BossBar, I>> it = this.bars.entrySet().iterator(); it.hasNext();) {
       final Map.Entry<BossBar, I> entry = it.next();
       if(hide(viewer, entry.getValue())) {
@@ -82,7 +82,7 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
   }
 
   @Override
-  public void hideAll() {
+  public void hideAllBossBars() {
     for(Map.Entry<BossBar, I> entry : this.bars.entrySet()) {
       entry.getKey().removeListener(this);
       hideFromAll(entry.getValue());

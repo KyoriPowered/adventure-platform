@@ -24,7 +24,6 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
-import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.sound.Sound;
@@ -43,8 +42,6 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.Locatable;
 
-import java.util.List;
-
 /* package */ final class SpongeHandlers {
   
   private SpongeHandlers() {}
@@ -62,7 +59,7 @@ import java.util.List;
     }
 
     @Override
-    public void send(final @NonNull MessageReceiver target, final @NonNull Text message) {
+    public void sendMessage(final @NonNull MessageReceiver target, final @NonNull Text message) {
       target.sendMessage(message);
     }
   }
@@ -80,7 +77,7 @@ import java.util.List;
     }
 
     @Override
-    public void send(final @NonNull MessageReceiver viewer, final @NonNull Text message) {
+    public void sendActionBar(final @NonNull MessageReceiver viewer, final @NonNull Text message) {
       if(viewer instanceof ChatTypeMessageReceiver) {
         ((ChatTypeMessageReceiver) viewer).sendMessage(ChatTypes.ACTION_BAR, message);
       } else {
@@ -126,27 +123,27 @@ import java.util.List;
     }
 
     @Override
-    public void play(final @NonNull Viewer viewer, final @NonNull Sound sound) {
+    public void playSound(final @NonNull Viewer viewer, final @NonNull Sound sound) {
       Vector3d loc = Vector3d.ZERO;
       if(viewer instanceof Locatable) {
         loc = ((Locatable) viewer).getLocation().getPosition();
       }
-      play(viewer, sound, loc);
+      playSound(viewer, sound, loc);
     }
 
     @Override
-    public void play(final @NonNull Viewer viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
-      play(viewer, sound, new Vector3d(x, y, z));
+    public void playSound(final @NonNull Viewer viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
+      playSound(viewer, sound, new Vector3d(x, y, z));
     }
 
-    private void play(final @NonNull Viewer viewer, final @NonNull Sound sound, final @NonNull Vector3d position) {
+    private void playSound(final @NonNull Viewer viewer, final @NonNull Sound sound, final @NonNull Vector3d position) {
       final SoundType type = sponge(sound.name());
       final SoundCategory category = sponge(sound.source());
       viewer.playSound(type, category, position, sound.volume(), sound.pitch());
     }
 
     @Override
-    public void stop(final @NonNull Viewer viewer, final @NonNull SoundStop stop) {
+    public void stopSound(final @NonNull Viewer viewer, final @NonNull SoundStop stop) {
       final SoundType type = sponge(stop.sound());
       final SoundCategory category = sponge(stop.source());
 

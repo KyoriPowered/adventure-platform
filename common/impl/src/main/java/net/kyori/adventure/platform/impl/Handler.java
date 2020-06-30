@@ -70,13 +70,13 @@ public interface Handler<V> {
 
     S initState(final @NonNull Component component);
     
-    void send(final @NonNull V target, final @NonNull S message);
+    void sendMessage(final @NonNull V target, final @NonNull S message);
   }
 
   interface ActionBar<V, S> extends Handler<V> {
     S initState(final @NonNull Component message);
     
-    void send(final @NonNull V viewer, final @NonNull S message);
+    void sendActionBar(final @NonNull V viewer, final @NonNull S message);
   }
 
   interface Titles<V> extends Handler<V> {
@@ -148,28 +148,28 @@ public interface Handler<V> {
       }
     }
 
-    void show(final @NonNull V viewer, final @NonNull BossBar bar);
-    void hide(final @NonNull V viewer, final @NonNull BossBar bar);
+    void showBossBar(final @NonNull V viewer, final @NonNull BossBar bar);
+    void hideBossBar(final @NonNull V viewer, final @NonNull BossBar bar);
 
     /**
      * Remove the viewer from all handled boss bars
      *
      * @param viewer viewer to hide all boss bars for.
      */
-    void hideAll(final @NonNull V viewer);
+    void hideAllBossBars(final @NonNull V viewer);
 
     /**
      * Hide every boss bar from every associated viewer
      */
-    void hideAll();
+    void hideAllBossBars();
   }
   
   interface PlaySound<V> extends Handler<V> {
-    void play(final @NonNull V viewer, final @NonNull Sound sound);
+    void playSound(final @NonNull V viewer, final @NonNull Sound sound);
     
-    void play(final @NonNull V viewer, final @NonNull Sound sound, final double x, final double y, final double z);
+    void playSound(final @NonNull V viewer, final @NonNull Sound sound, final double x, final double y, final double z);
     
-    void stop(final @NonNull V viewer, final @NonNull SoundStop sound);
+    void stopSound(final @NonNull V viewer, final @NonNull SoundStop sound);
   }
 
   interface Books<V> extends Handler<V> {

@@ -54,7 +54,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @Override
-    public void send(final @NonNull CommandSender target, final @NonNull String message) {
+    public void sendMessage(final @NonNull CommandSender target, final @NonNull String message) {
       target.sendMessage(message);
     }
   }
@@ -76,16 +76,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     private static final boolean IS_AT_LEAST_113 = Crafty.hasClass("org.bukkit.NamespacedKey");
 
     @Override
-    public void play(final @NonNull Player viewer, final @NonNull Sound sound) {
-      play(viewer, sound, viewer.getLocation());
+    public void playSound(final @NonNull Player viewer, final @NonNull Sound sound) {
+      playSound(viewer, sound, viewer.getLocation());
     }
 
     @Override
-    public void play(final @NonNull Player viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
-      play(viewer, sound, new Location(viewer.getWorld(), x, y, z));
+    public void playSound(final @NonNull Player viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
+      playSound(viewer, sound, new Location(viewer.getWorld(), x, y, z));
     }
     
-    protected abstract void play(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position);
+    protected abstract void playSound(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position);
 
     static @NonNull String name(final @Nullable Key name) {
       if(name == null) {
@@ -109,14 +109,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @Override
-    protected void play(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position) {
+    protected void playSound(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position) {
       final String name = name(sound.name());
       final SoundCategory category = category(sound.source());
       viewer.playSound(position, name, category, sound.volume(), sound.pitch());
     }
 
     @Override
-    public void stop(final @NonNull Player viewer, final @NonNull SoundStop stop) {
+    public void stopSound(final @NonNull Player viewer, final @NonNull SoundStop stop) {
       final String soundName = name(stop.sound());
       final Sound./* @Nullable */ Source source = stop.source();
       final SoundCategory category = source == null ? null : category(source);
@@ -149,12 +149,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @Override
-    protected void play(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position) {
+    protected void playSound(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position) {
       viewer.playSound(position, name(sound.name()), sound.volume(), sound.pitch());
     }
 
     @Override
-    public void stop(final @NonNull Player viewer, final @NonNull SoundStop sound) {
+    public void stopSound(final @NonNull Player viewer, final @NonNull SoundStop sound) {
       if(!SOUND_STOP_SUPPORTED) {
         return;
       }

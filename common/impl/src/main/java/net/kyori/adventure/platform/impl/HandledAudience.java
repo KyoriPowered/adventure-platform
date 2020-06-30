@@ -78,21 +78,21 @@ public class HandledAudience<V> extends AbstractAudience {
 
   private <S> void sendMessage0(final Handler.@Nullable Chat<? super V, S> handler, final @NonNull Component message) {
     if(handler != null) {
-      handler.send(this.viewer, handler.initState(this.renderer.render(message, this)));
+      handler.sendMessage(this.viewer, handler.initState(this.renderer.render(message, this)));
     }
   }
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
     if(this.bossBarHandler != null) {
-      this.bossBarHandler.show(this.viewer, requireNonNull(bar, "bar"));
+      this.bossBarHandler.showBossBar(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
   @Override
   public void hideBossBar(final @NonNull BossBar bar) {
     if(this.bossBarHandler != null) {
-      this.bossBarHandler.hide(this.viewer, requireNonNull(bar, "bar"));
+      this.bossBarHandler.hideBossBar(this.viewer, requireNonNull(bar, "bar"));
     }
   }
 
@@ -103,28 +103,28 @@ public class HandledAudience<V> extends AbstractAudience {
 
   private <S> void sendActionBar0(final Handler.@Nullable ActionBar<? super V, S> handler, final @NonNull Component message) {
     if(handler != null) {
-      handler.send(this.viewer, handler.initState(this.renderer.render(message, this)));
+      handler.sendActionBar(this.viewer, handler.initState(this.renderer.render(message, this)));
     }
   }
 
   @Override
   public void playSound(final @NonNull Sound sound) {
     if(this.soundHandler != null) {
-      this.soundHandler.play(this.viewer, requireNonNull(sound, "sound"));
+      this.soundHandler.playSound(this.viewer, requireNonNull(sound, "sound"));
     }
   }
 
   @Override
   public void playSound(final @NonNull Sound sound, final double x, final double y, final double z) {
     if(this.soundHandler != null) {
-      this.soundHandler.play(this.viewer, requireNonNull(sound, "sound"), x, y, z);
+      this.soundHandler.playSound(this.viewer, requireNonNull(sound, "sound"), x, y, z);
     }
   }
 
   @Override
   public void stopSound(final @NonNull SoundStop stop) {
     if(this.soundHandler != null) {
-      this.soundHandler.stop(this.viewer, requireNonNull(stop, "stop"));
+      this.soundHandler.stopSound(this.viewer, requireNonNull(stop, "stop"));
     }
   }
 

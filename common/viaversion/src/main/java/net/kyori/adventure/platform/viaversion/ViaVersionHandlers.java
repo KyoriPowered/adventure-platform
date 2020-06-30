@@ -142,7 +142,7 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void send(@NonNull final V target, @NonNull final String message) {
+    public void sendMessage(@NonNull final V target, @NonNull final String message) {
       final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.CHAT_MESSAGE.ordinal(), null, connection(target));
       wrapper.write(Type.STRING, message);
       wrapper.write(Type.BYTE, this.chatType);
@@ -154,6 +154,11 @@ public final class ViaVersionHandlers {
   public static final class ActionBar<V> extends Chat<V> implements Handler.ActionBar<V, String> {
     public ActionBar(final ViaAPIProvider<? super V> provider) {
       super(provider, TYPE_ACTIONBAR);
+    }
+
+    @Override
+    public void sendActionBar(@NonNull V viewer, @NonNull String message) {
+      sendMessage(viewer, message); // Same as chat, but with different type
     }
   }
 
@@ -258,7 +263,7 @@ public final class ViaVersionHandlers {
     protected abstract GsonComponentSerializer serializer();
 
     @Override
-    public void show(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void showBossBar(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       final Instance barInstance = this.bars.computeIfAbsent(bar, adventure -> {
         adventure.addListener(this);
         return new Instance();
@@ -275,7 +280,7 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void hide(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void hideBossBar(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       this.bars.computeIfPresent(bar, (adventure, instance) -> {
         if(instance.subscribedPlayers.remove(this.via.id(viewer))) {
           send(instance.make(connection(viewer), ACTION_REMOVE));
@@ -290,7 +295,7 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void hideAll(@NonNull final V viewer) {
+    public void hideAllBossBars(@NonNull final V viewer) {
       final UUID id = this.via.id(viewer);
       for(Iterator<Map.Entry<BossBar, Instance>> it = this.bars.entrySet().iterator(); it.hasNext();) {
         final Map.Entry<BossBar, Instance> entry = it.next();
@@ -307,7 +312,7 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void hideAll() {
+    public void hideAllBossBars() {
       for(Map.Entry<BossBar, Instance> entry : this.bars.entrySet()) {
         entry.getValue().sendToSubscribers(entry.getKey(), ACTION_REMOVE, (pkt, bar) -> {});
         entry.getKey().removeListener(this);
@@ -407,15 +412,15 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void play(@NonNull final V viewer, @NonNull final Sound sound) {
+    public void playSound(@NonNull final V viewer, @NonNull final Sound sound) {
       final Pos position = this.positionGetter.apply(viewer);
       if(position != null) {
-        play(viewer, sound, position.x, position.y, position.z);
+        playSound(viewer, sound, position.x, position.y, position.z);
       }
     }
 
     @Override
-    public void play(@NonNull final V viewer, @NonNull final Sound sound, final double x, final double y, final double z) {
+    public void playSound(@NonNull final V viewer, @NonNull final Sound sound, final double x, final double y, final double z) {
       final PacketWrapper playSound = new PacketWrapper(ClientboundPackets1_9_3.NAMED_SOUND.ordinal(), null, connection(viewer));
 
       playSound.write(Type.STRING, sound.name().asString());
@@ -434,7 +439,7 @@ public final class ViaVersionHandlers {
     }
 
     @Override
-    public void stop(@NonNull final V viewer, @NonNull final SoundStop sound) {
+    public void stopSound(@NonNull final V viewer, @NonNull final SoundStop sound) {
       final PacketWrapper pkt = new PacketWrapper(ClientboundPackets1_9_3.PLUGIN_MESSAGE.ordinal(), null, connection(viewer));
       pkt.write(Type.STRING, "MC|StopSound");
       pkt.write(Type.STRING, name(sound.sound()));

@@ -158,7 +158,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       SpongePlatform.this.remove(event.getTargetEntity().getUniqueId());
       if(bossBar != null) {
         for(Handler.BossBars<Player> handler : bossBar) {
-          handler.hideAll(event.getTargetEntity());
+          handler.hideAllBossBars(event.getTargetEntity());
         }
       }
     }
@@ -196,7 +196,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   public void close() {
     this.eventManager.unregisterListeners(this.events);
     for(Handler.BossBars<Player> handler : this.bossBar) {
-      handler.hideAll();
+      handler.hideAllBossBars();
     }
     super.close();
   }

@@ -31,10 +31,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.List;
 import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.nbt.impl.BinaryTagIO;
 import net.kyori.adventure.nbt.impl.BinaryTagTypes;
 import net.kyori.adventure.nbt.impl.CompoundBinaryTag;
@@ -47,7 +45,6 @@ import net.kyori.adventure.platform.impl.TypedHandler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -123,7 +120,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
         && MinecraftComponentSerializer.supported();
     }
 
-    public void send(final @NonNull V player, final @Nullable Object packet) {
+    public void sendMessage(final @NonNull V player, final @Nullable Object packet) {
       sendPacket((Player) player, packet);
     }
   }
@@ -225,6 +222,11 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
         return null;
       }
     }
+
+    @Override
+    public void sendActionBar(@NonNull Player viewer, @NonNull Object message) {
+      sendMessage(viewer, message);
+    }
   }
 
   /* package */ static class ActionBar1_8thru1_11 extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
@@ -244,6 +246,11 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
         Knobs.logError("constructing legacy MC action bar packet", throwable);
         return null;
       }
+    }
+
+    @Override
+    public void sendActionBar(@NonNull Player viewer, @NonNull Object message) {
+      sendMessage(viewer, message);
     }
   }
 
@@ -267,11 +274,11 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
           timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(inTicks, stayTicks, outTicks);
         }
 
-        send(viewer, subtitlePacket);
+        sendMessage(viewer, subtitlePacket);
         if(timesPacket != null) {
-          send(viewer, timesPacket);
+          sendMessage(viewer, timesPacket);
         }
-        send(viewer, titlePacket);
+        sendMessage(viewer, titlePacket);
       } catch(Throwable throwable) {
         Knobs.logError("constructing legacy MC title packet", throwable);
       }
@@ -556,7 +563,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
 
     @Override
     protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
-      send(viewer, NEW_PACKET_OPEN_BOOK.invoke(HAND_MAIN));
+      sendMessage(viewer, NEW_PACKET_OPEN_BOOK.invoke(HAND_MAIN));
     }
   }
 
@@ -581,7 +588,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
       final ByteBuf data = Unpooled.buffer();
       data.writeByte(HAND_MAIN);
       final Object packetByteBuf = NEW_PACKET_BYTE_BUF.invoke(data);
-      send(viewer, NEW_PACKET_CUSTOM_PAYLOAD.invoke(PACKET_TYPE_BOOK_OPEN, packetByteBuf));
+      sendMessage(viewer, NEW_PACKET_CUSTOM_PAYLOAD.invoke(PACKET_TYPE_BOOK_OPEN, packetByteBuf));
     }
   }
 }
