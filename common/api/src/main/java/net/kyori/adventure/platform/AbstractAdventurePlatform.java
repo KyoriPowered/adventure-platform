@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MultiAudience;
+import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.audience.AdventureAudience;
 import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
@@ -63,9 +63,9 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
 
   protected AbstractAdventurePlatform() {
     this.senderSet = ConcurrentHashMap.newKeySet();
-    this.all = (MultiAudience) () -> this.senderSet;
+    this.all = (ForwardingAudience) () -> this.senderSet;
     this.playerMap = new ConcurrentHashMap<>();
-    this.players = (MultiAudience) () -> this.playerMap.values();
+    this.players = (ForwardingAudience) () -> this.playerMap.values();
     this.console = new ConsoleAudience();
     this.permissionMap = new ConcurrentHashMap<>();
     this.worldMap = new ConcurrentHashMap<>();
@@ -110,7 +110,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
     return this.all;
   }
 
-  private class ConsoleAudience implements MultiAudience {
+  private class ConsoleAudience implements ForwardingAudience {
     private final Iterable<AdventureAudience> console = filter(senderSet, AdventureAudience::console);
     @Override
     public @NonNull Iterable<? extends Audience> audiences() {
@@ -134,7 +134,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
     return player == null ? Audience.empty() : player;
   }
 
-  private class PermissionAudience implements MultiAudience {
+  private class PermissionAudience implements ForwardingAudience {
     private final Iterable<AdventureAudience> filtered = filter(senderSet, this::hasPermission);
     private final String permission;
 
@@ -160,7 +160,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
     return this.permissionMap.computeIfAbsent(permission, PermissionAudience::new);
   }
 
-  private class WorldAudience implements MultiAudience {
+  private class WorldAudience implements ForwardingAudience {
     private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::inWorld);
     private final Key world;
 
@@ -183,7 +183,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
     return this.worldMap.computeIfAbsent(world, WorldAudience::new);
   }
 
-  private class ServerAudience implements MultiAudience {
+  private class ServerAudience implements ForwardingAudience {
     private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::isOnServer);
     private final String serverName;
 
