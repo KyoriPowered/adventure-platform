@@ -42,7 +42,7 @@ import static java.util.Objects.requireNonNull;
 public final class BungeeCordComponentSerializer implements ComponentSerializer<Component, Component, BaseComponent[]> {
   private static final boolean SUPPORTED = bind();
   private static final BungeeCordComponentSerializer MODERN = new BungeeCordComponentSerializer(GsonComponentSerializer.gson(), LegacyComponentSerializer.builder().hexColors().build());
-  private static final BungeeCordComponentSerializer PRE_1_16 = new BungeeCordComponentSerializer(GsonComponentSerializer.colorDownsamplingGson(), LegacyComponentSerializer.legacy());
+  private static final BungeeCordComponentSerializer PRE_1_16 = new BungeeCordComponentSerializer(GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(), LegacyComponentSerializer.legacy());
 
   /**
    * Gets whether the component serializer has native support.
@@ -71,6 +71,17 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
    */
   public static BungeeCordComponentSerializer legacy() {
     return PRE_1_16;
+  }
+
+  /**
+   * Create a component serializer with custom serialization properties.
+   * 
+   * @param serializer The serializer creating a JSON representation of the component
+   * @param legacySerializer The serializer creating a representation of the component with legacy formatting codes
+   * @return a new serializer
+   */
+  public static BungeeCordComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
+    return new BungeeCordComponentSerializer(requireNonNull(serializer, "serializer"), requireNonNull(legacySerializer, "legacySerializer"));
   }
 
   private final GsonComponentSerializer serializer;

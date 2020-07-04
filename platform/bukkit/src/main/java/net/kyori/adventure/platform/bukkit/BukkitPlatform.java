@@ -38,6 +38,7 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.platform.viaversion.ViaAccess;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
@@ -91,13 +92,16 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
   static {
     Knobs.logger(new JDKLogHandler());
+    final GsonComponentSerializer.Builder builder = GsonComponentSerializer.builder()
+      .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE);
     if(IS_1_16) { // we are 1.16
-      GSON_SERIALIZER = GsonComponentSerializer.gson();
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().build();
     } else {
-      GSON_SERIALIZER = GsonComponentSerializer.colorDownsamplingGson();
+      builder.downsampleColors()
+        .emitLegacyHoverEvent();
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
     }
+    GSON_SERIALIZER = builder.build();
   }
 
   /**
@@ -167,7 +171,6 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       new CraftBukkitHandlers.ActionBarModern(),
       new CraftBukkitHandlers.ActionBar1_8thru1_11());
     this.title = HandlerCollection.of(
-      // TODO: ViaVersion titles for 1.8-1.5
       via("Titles", this.viaProvider, Handler.Titles.class),
       new PaperHandlers.Titles(),
       new CraftBukkitHandlers.Titles());
