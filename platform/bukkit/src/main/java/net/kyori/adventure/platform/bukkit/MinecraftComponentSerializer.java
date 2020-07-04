@@ -130,7 +130,7 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
     } else { // when we don't share a Gson instance
       try {
         return GsonComponentSerializer.gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
-      } catch(Throwable throwable) {
+      } catch(final Throwable throwable) {
         Knobs.logError("converting MC component to Adventure component", throwable);
         throw new RuntimeException(throwable);
       }
@@ -146,14 +146,14 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
       final JsonElement json = BukkitPlatform.GSON_SERIALIZER.serializer().toJsonTree(component);
       try {
         return MC_TEXT_GSON.fromJson(json, CLASS_CHAT_COMPONENT);
-      } catch(Throwable error) {
+      } catch(final Throwable error) {
         Knobs.logError("converting adventure Component to MC Component", error);
         throw new RuntimeException(error); // unrecoverable
       }
     } else {
       try {
         return TEXT_SERIALIZER_DESERIALIZE.invoke(BukkitPlatform.GSON_SERIALIZER.serialize(component));
-      } catch(Throwable error) {
+      } catch(final Throwable error) {
         Knobs.logError("converting adventure Component to MC Component (via 1.7 String serialization)", error);
         throw new RuntimeException(error); // unrecoverable
       }

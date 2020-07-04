@@ -45,7 +45,8 @@ import org.spongepowered.api.world.Locatable;
 
 /* package */ final class SpongeHandlers {
   
-  private SpongeHandlers() {}
+  private SpongeHandlers() {
+  }
   
   /* package */ static class Chat implements Handler.Chat<MessageReceiver, Text> {
 
@@ -129,12 +130,12 @@ import org.spongepowered.api.world.Locatable;
       if(viewer instanceof Locatable) {
         loc = ((Locatable) viewer).getLocation().getPosition();
       }
-      play(viewer, sound, loc);
+      this.play(viewer, sound, loc);
     }
 
     @Override
     public void play(final @NonNull Viewer viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
-      play(viewer, sound, new Vector3d(x, y, z));
+      this.play(viewer, sound, new Vector3d(x, y, z));
     }
 
     private void play(final @NonNull Viewer viewer, final @NonNull Sound sound, final @NonNull Vector3d position) {

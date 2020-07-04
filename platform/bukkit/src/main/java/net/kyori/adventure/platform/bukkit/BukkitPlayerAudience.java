@@ -34,63 +34,63 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements AdventurePlayerAudience {
+/* package */ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements AdventurePlayerAudience {
 
-    private Locale locale;
-    private String localeRaw;
+  private Locale locale;
+  private String localeRaw;
 
-    BukkitPlayerAudience(final @NonNull Player sender,
-                         final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat,
-                         final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar,
-                         final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title,
-                         final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar,
-                         final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound,
-                         final @Nullable HandlerCollection<? super Player, ? extends Handler.Books<? super Player>> books) {
-        super(sender, chat, actionBar, title, bossBar, sound, books);
+  /* package */ BukkitPlayerAudience(final @NonNull Player sender,
+                                     final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat,
+                                     final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar,
+                                     final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title,
+                                     final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar,
+                                     final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound,
+                                     final @Nullable HandlerCollection<? super Player, ? extends Handler.Books<? super Player>> books) {
+    super(sender, chat, actionBar, title, bossBar, sound, books);
+  }
+
+  @Override
+  public @NonNull UUID id() {
+    return this.viewer.getUniqueId();
+  }
+
+  @Override
+  public @Nullable Key world() {
+    return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName()); // TODO: handle Keys
+  }
+
+  @Override
+  public @Nullable String serverName() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public Locale locale() {
+    final String newLocaleRaw = this.viewer.getLocale();
+    if(!Objects.equals(this.localeRaw, newLocaleRaw)) {
+      this.locale = toLocale(this.localeRaw = newLocaleRaw);
     }
+    return this.locale;
+  }
 
-    @Override
-    public @NonNull UUID id() {
-        return this.viewer.getUniqueId();
+  /**
+   * Take a locale string provided from a minecraft client and attempt to parse it as a locale.
+   * These are not strictly compliant with the iso standard, so we try to make things a bit more normalized.
+   *
+   * @param mcLocale The locale string, in the format provided by the Minecraft client
+   * @return A Locale object matching the provided locale string
+   */
+  /* package */ static @Nullable Locale toLocale(final @Nullable String mcLocale) {
+    if(mcLocale == null) return null;
+
+    final String[] parts = mcLocale.split("_", 3);
+    switch(parts.length) {
+      case 0: return null;
+      case 1: return parts[0].isEmpty() ? null : new Locale(parts[0]);
+      case 2: return new Locale(parts[0], parts[1]);
+      case 3: return new Locale(parts[0], parts[1], parts[2]);
+      default: return null;
     }
-
-    @Override
-    public @Nullable Key world() {
-        return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName()); // TODO: handle Keys
-    }
-
-    @Override
-    public @Nullable String serverName() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Locale locale() {
-        final String newLocaleRaw = this.viewer.getLocale();
-        if (!Objects.equals(localeRaw, newLocaleRaw)) {
-            locale = toLocale(localeRaw = newLocaleRaw);
-        }
-        return locale;
-    }
-
-    /**
-     * Take a locale string provided from a minecraft client and attempt to parse it as a locale.
-     * These are not strictly compliant with the iso standard, so we try to make things a bit more normalized.
-     *
-     * @param mcLocale The locale string, in the format provided by the Minecraft client
-     * @return A Locale object matching the provided locale string
-     */
-    /* package */ static @Nullable Locale toLocale(final @Nullable String mcLocale) {
-        if(mcLocale == null) return null;
-
-        final String[] parts = mcLocale.split("_", 3);
-        switch(parts.length) {
-            case 0: return null;
-            case 1: return parts[0].isEmpty() ? null : new Locale(parts[0]);
-            case 2: return new Locale(parts[0], parts[1]);
-            case 3: return new Locale(parts[0], parts[1], parts[2]);
-            default: return null;
-        }
-    }
+  }
 }

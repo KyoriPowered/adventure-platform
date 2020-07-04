@@ -48,7 +48,7 @@ public interface SpongeAudiences extends AudienceProvider {
    * @return the audience factory
    */
   static @NonNull SpongeAudiences create(final @NonNull PluginContainer container, final @NonNull Game game) {
-    return SpongePlatform.getInstance(container, game);
+    return SpongePlatform.of(container, game);
   }
 
   /**

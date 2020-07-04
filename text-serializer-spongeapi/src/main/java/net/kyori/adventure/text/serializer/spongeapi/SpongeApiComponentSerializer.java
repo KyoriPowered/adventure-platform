@@ -39,39 +39,38 @@ import static java.util.Objects.requireNonNull;
  * A component serializer for Sponge API's {@link Text}.
  */
 public final class SpongeApiComponentSerializer implements ComponentSerializer<Component, Component, Text> {
-    private static final SpongeApiComponentSerializer INSTANCE = new SpongeApiComponentSerializer();
-    private static final MinecraftVersion VERSION = Sponge.getPlatform().getMinecraftVersion();
+  private static final SpongeApiComponentSerializer INSTANCE = new SpongeApiComponentSerializer();
+  private static final MinecraftVersion VERSION = Sponge.getPlatform().getMinecraftVersion();
 
-    /**
-     * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.
-     *
-     * @return a component serializer
-     */
-    public static SpongeApiComponentSerializer get() {
-        return of(VERSION);
-    }
+  /**
+   * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.
+   *
+   * @return a component serializer
+   */
+  public static SpongeApiComponentSerializer get() {
+    return of(VERSION);
+  }
 
-    /**
-     * Gets a component serializer for a specific {@link MinecraftVersion}.
-     *
-     * @param version a minecraft version
-     * @return a component serializer
-     */
-    public static SpongeApiComponentSerializer of(final @NonNull MinecraftVersion version) {
-        return INSTANCE;
-    }
+  /**
+   * Gets a component serializer for a specific {@link MinecraftVersion}.
+   *
+   * @param version a minecraft version
+   * @return a component serializer
+   */
+  public static SpongeApiComponentSerializer of(final @NonNull MinecraftVersion version) {
+    return INSTANCE;
+  }
 
-    private SpongeApiComponentSerializer() {}
+  private SpongeApiComponentSerializer() {
+  }
 
-    @NonNull
-    @Override
-    public Component deserialize(@NonNull Text input) {
-        return GsonComponentSerializer.gson().deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
-    }
+  @Override
+  public @NonNull Component deserialize(final @NonNull Text input) {
+    return GsonComponentSerializer.gson().deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
+  }
 
-    @NonNull
-    @Override
-    public Text serialize(@NonNull Component component) {
-        return TextSerializers.JSON.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
-    }
+  @Override
+  public @NonNull Text serialize(final @NonNull Component component) {
+    return TextSerializers.JSON.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
+  }
 }

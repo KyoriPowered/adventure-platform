@@ -35,11 +35,12 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ class BukkitHandlers {
-  private BukkitHandlers() {}
+/* package */ final class BukkitHandlers {
+  private BukkitHandlers() {
+  }
 
   /* package */ static String legacy(final @NonNull Component component) {
-      return BukkitPlatform.LEGACY_SERIALIZER.serialize(component);
+    return BukkitPlatform.LEGACY_SERIALIZER.serialize(component);
   }
 
   /* package */ static class Chat implements Handler.Chat<CommandSender, String> {
@@ -62,7 +63,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
 
     @Override
-    public void setName(final org.bukkit.boss.@NonNull BossBar bar, final @NonNull Component name) {
+    public void name(final org.bukkit.boss.@NonNull BossBar bar, final @NonNull Component name) {
       bar.setTitle(legacy(name));
     }
 
@@ -77,17 +78,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     @Override
     public void play(final @NonNull Player viewer, final @NonNull Sound sound) {
-      play(viewer, sound, viewer.getLocation());
+      this.play(viewer, sound, viewer.getLocation());
     }
 
     @Override
     public void play(final @NonNull Player viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
-      play(viewer, sound, new Location(viewer.getWorld(), x, y, z));
+      this.play(viewer, sound, new Location(viewer.getWorld(), x, y, z));
     }
     
     protected abstract void play(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position);
 
-    static @NonNull String name(final @Nullable Key name) {
+    /* package */ static @NonNull String name(final @Nullable Key name) {
       if(name == null) {
         return "";
       }

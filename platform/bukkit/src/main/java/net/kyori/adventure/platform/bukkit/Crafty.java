@@ -57,7 +57,7 @@ import static java.util.Objects.requireNonNull;
   private static final @Nullable String VERSION;
 
   static {
-    Class<?> serverClass = Bukkit.getServer().getClass();
+    final Class<?> serverClass = Bukkit.getServer().getClass();
     if(!serverClass.getSimpleName().equals(CRAFT_SERVER)) {
       Knobs.logError("finding CraftServer", null);
       VERSION = null;
@@ -75,8 +75,8 @@ import static java.util.Objects.requireNonNull;
     try {
       Class.forName(clazz);
       return true;
-    } catch(ClassNotFoundException e) {
-      Knobs.logError("finding class", e);
+    } catch(final ClassNotFoundException ex) {
+      Knobs.logError("finding class", ex);
       return false;
     }
   }
@@ -84,14 +84,14 @@ import static java.util.Objects.requireNonNull;
   /* package */ static @Nullable Class<?> findClass(final @NonNull String clazz) {
     try {
       return Class.forName(clazz);
-    } catch(ClassNotFoundException ex) {
+    } catch(final ClassNotFoundException ex) {
       Knobs.logError("finding class", ex);
       return null;
     }
   }
 
   /* package */ static boolean hasMethod(final @NonNull Class<?> klass, final @NonNull String methodName, final @Nullable Class<?> @NonNull ... parameters) {
-    for(Class<?> param : parameters) {
+    for(final Class<?> param : parameters) {
       if(param == null) {
         return false;
       }
@@ -100,24 +100,24 @@ import static java.util.Objects.requireNonNull;
     try {
       klass.getMethod(methodName, parameters);
       return true;
-    } catch(NoSuchMethodException e) {
+    } catch(final NoSuchMethodException e) {
       Knobs.logError("finding method", e);
       return false;
     }
   }
 
-  /* package */ static @Nullable MethodHandle findConstructor(final @Nullable Class<?> target, final @Nullable Class<?>@NonNull... pTypes) {
+  /* package */ static @Nullable MethodHandle findConstructor(final @Nullable Class<?> target, final @Nullable Class<?> @NonNull... pTypes) {
     if(target == null) {
       return null;
     }
-    for(Class<?> clazz : pTypes) {
+    for(final Class<?> clazz : pTypes) {
       if(clazz == null) return null;
     }
 
     try {
       return LOOKUP.findConstructor(target, MethodType.methodType(void.class, pTypes));
-    } catch(NoSuchMethodException | IllegalAccessException e) {
-      Knobs.logError("finding constructor", e);
+    } catch(final NoSuchMethodException | IllegalAccessException ex) {
+      Knobs.logError("finding constructor", ex);
       return null;
     }
   }
@@ -125,14 +125,14 @@ import static java.util.Objects.requireNonNull;
   /* package */ static @Nullable MethodHandle findMethod(final @Nullable Class<?> holder, final String methodName, final Class<?> rType, final Class<?>... pTypes) {
     if(holder == null) return null;
     if(rType == null) return null;
-    for(Class<?> clazz : pTypes) {
+    for(final Class<?> clazz : pTypes) {
       if(clazz == null) return null;
     }
 
     try {
       return LOOKUP.findVirtual(holder, methodName, MethodType.methodType(rType, pTypes));
-    } catch(NoSuchMethodException | IllegalAccessException e) {
-      Knobs.logError("finding method", e);
+    } catch(final NoSuchMethodException | IllegalAccessException ex) {
+      Knobs.logError("finding method", ex);
       return null;
     }
   }
@@ -140,14 +140,14 @@ import static java.util.Objects.requireNonNull;
   /* package */ static @Nullable MethodHandle findStatic(final @Nullable Class<?> holder, final String methodName, final Class<?> rType, final Class<?>... pTypes) {
     if(holder == null) return null;
     if(rType == null) return null;
-    for(Class<?> clazz : pTypes) {
+    for(final Class<?> clazz : pTypes) {
       if(clazz == null) return null;
     }
 
     try {
       return LOOKUP.findStatic(holder, methodName, MethodType.methodType(rType, pTypes));
-    } catch(NoSuchMethodException | IllegalAccessException e) {
-      Knobs.logError("finding method", e);
+    } catch(final NoSuchMethodException | IllegalAccessException ex) {
+      Knobs.logError("finding method", ex);
       return null;
     }
   }
@@ -166,7 +166,7 @@ import static java.util.Objects.requireNonNull;
     return field;
   }
 
-  /* package */ static @Nullable Object enumValue(final @Nullable Class<?> klass, String name) {
+  /* package */ static @Nullable Object enumValue(final @Nullable Class<?> klass, final String name) {
     return enumValue(klass, name, Integer.MAX_VALUE);
   }
 
@@ -181,7 +181,7 @@ import static java.util.Objects.requireNonNull;
 
     try {
       return Enum.valueOf(klass.asSubclass(Enum.class), name);
-    } catch(IllegalArgumentException ex) {
+    } catch(final IllegalArgumentException ex) {
       final Object[] constants = klass.getEnumConstants();
       if(constants.length > ordinal) {
         return constants[ordinal];
@@ -225,7 +225,7 @@ import static java.util.Objects.requireNonNull;
 
   @ForName
   /* package */ static @Nullable Class<?> findCraftClass(final @NonNull String name) {
-    final @Nullable String className = craftClassName(name);
+    final /* @Nullable */ String className = craftClassName(name);
     if(className == null) {
       return null;
     }
@@ -234,9 +234,9 @@ import static java.util.Objects.requireNonNull;
   }
   
   @ForName
-  static <T> @Nullable Class<? extends T> findCraftClass(final @NonNull String name, final @Nonnegative Class<T> parentType) {
-    final @Nullable Class<?> clazz = findCraftClass(name);
-    if (clazz == null || !requireNonNull(parentType, "parentType").isAssignableFrom(clazz)) {
+  /* package */ static <T> @Nullable Class<? extends T> findCraftClass(final @NonNull String name, final @Nonnegative Class<T> parentType) {
+    final /* @Nullable */ Class<?> clazz = findCraftClass(name);
+    if(clazz == null || !requireNonNull(parentType, "parentType").isAssignableFrom(clazz)) {
       return null;
     }
     return clazz.asSubclass(parentType);
@@ -244,7 +244,7 @@ import static java.util.Objects.requireNonNull;
 
   @ForName
   /* package */ static @Nullable Class<?> findNmsClass(final @NonNull String name) {
-    final @Nullable String className = nmsClassName(name);
+    final /* @Nullable */ String className = nmsClassName(name);
     if(className == null) {
       return null;
     }
@@ -265,12 +265,12 @@ import static java.util.Objects.requireNonNull;
   // Events //
   private static final Listener EVENT_LISTENER = new Listener() {};
 
-  static <T extends Event> void registerEvent(final @NonNull Plugin owner, final Class<T> type, final Consumer<T> handler) {
+  /* package */ static <T extends Event> void registerEvent(final @NonNull Plugin owner, final Class<T> type, final Consumer<T> handler) {
     registerEvent(owner, type, EventPriority.NORMAL, true, handler);
   }
 
   @SuppressWarnings("unchecked")
-  static <T extends Event> void registerEvent(final @NonNull Plugin owner, final Class<T> type, final EventPriority priority, final boolean ignoreCancelled, final Consumer<T> handler) {
+  /* package */ static <T extends Event> void registerEvent(final @NonNull Plugin owner, final Class<T> type, final EventPriority priority, final boolean ignoreCancelled, final Consumer<T> handler) {
     requireNonNull(handler, "handler");
     Bukkit.getServer().getPluginManager().registerEvent(type, EVENT_LISTENER, priority, (listener, event) -> handler.accept((T) event), owner, ignoreCancelled);
   }

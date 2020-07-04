@@ -52,7 +52,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 
   @Override
   public ViaPlatform<?> platform() {
-    if(!isAvailable()) {
+    if(!this.isAvailable()) {
       return null;
     }
     ViaPlatform<?> platform = this.platform;
@@ -73,7 +73,7 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 
   @Override
   public @NonNull GsonComponentSerializer serializer(final @NonNull Object viewer) {
-    if(!isAvailable()) return GsonComponentSerializer.colorDownsamplingGson();
+    if(!this.isAvailable()) return GsonComponentSerializer.colorDownsamplingGson();
     return ViaAPIProvider.super.serializer(viewer);
   }
 }

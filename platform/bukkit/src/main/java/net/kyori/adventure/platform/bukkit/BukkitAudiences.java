@@ -41,7 +41,7 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return the audience factory
    */
   static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
-    return BukkitPlatform.getInstance(plugin);
+    return BukkitPlatform.of(plugin);
   }
 
   /**

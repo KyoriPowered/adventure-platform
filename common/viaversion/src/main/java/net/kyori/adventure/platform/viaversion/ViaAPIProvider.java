@@ -54,8 +54,8 @@ public interface ViaAPIProvider<V> {
   ViaPlatform<? extends V> platform();
 
   default @Nullable UserConnection connection(final @NonNull V viewer) {
-    final UUID viewerId = id(viewer);
-    return viewerId == null ? null : platform().getConnectionManager().getConnectedClient(viewerId);
+    final UUID viewerId = this.id(viewer);
+    return viewerId == null ? null : this.platform().getConnectionManager().getConnectedClient(viewerId);
   }
 
   /**
@@ -78,9 +78,9 @@ public interface ViaAPIProvider<V> {
    */
   default @NonNull GsonComponentSerializer serializer(final @NonNull V viewer) {
     int protocolVersion = ProtocolRegistry.SERVER_PROTOCOL;
-    final UUID id = id(viewer);
+    final UUID id = this.id(viewer);
     if(id != null) {
-      protocolVersion = platform().getApi().getPlayerVersion(id);
+      protocolVersion = this.platform().getApi().getPlayerVersion(id);
     }
 
     if(protocolVersion >= ProtocolVersion.v1_16.getId()) {

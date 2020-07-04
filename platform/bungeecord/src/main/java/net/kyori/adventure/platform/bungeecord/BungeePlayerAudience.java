@@ -72,7 +72,8 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) { this.platform.bossBars().show(this.player, bar);
+  public void showBossBar(final @NonNull BossBar bar) {
+    this.platform.bossBars().show(this.player, bar);
   }
 
   @Override
@@ -82,7 +83,7 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
 
   @Override
   public void sendActionBar(final @NonNull Component message) {
-    this.player.sendMessage(ChatMessageType.ACTION_BAR, serializer().serialize(message));
+    this.player.sendMessage(ChatMessageType.ACTION_BAR, this.serializer().serialize(message));
   }
 
   /*@Override
@@ -115,11 +116,11 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
   @Override
   public void showTitle(final @NonNull Title title) {
     final net.md_5.bungee.api.Title bungee = this.platform.proxy().createTitle();
-    if (title.title() != TextComponent.empty()) {
-      bungee.title(serializer().serialize(title.title()));
+    if(title.title() != TextComponent.empty()) {
+      bungee.title(this.serializer().serialize(title.title()));
     }
-    if (title.subtitle() != TextComponent.empty()) {
-      bungee.subTitle(serializer().serialize(title.subtitle()));
+    if(title.subtitle() != TextComponent.empty()) {
+      bungee.subTitle(this.serializer().serialize(title.subtitle()));
     }
 
     bungee.fadeIn(ticks(title.fadeInTime()))
@@ -139,6 +140,7 @@ import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
     this.player.sendTitle(this.platform.proxy().createTitle().reset());
   }
 
+  @Override
   protected BungeeCordComponentSerializer serializer() {
     if(this.player.getPendingConnection().getVersion() >= BungeePlatform.PROTOCOL_1_16) {
       return BungeeCordComponentSerializer.get();

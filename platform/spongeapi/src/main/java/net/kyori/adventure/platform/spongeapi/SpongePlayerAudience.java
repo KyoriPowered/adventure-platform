@@ -33,7 +33,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.Player;
 
 /* package */ final class SpongePlayerAudience extends SpongeSenderAudience<Player> implements AdventurePlayerAudience {
-  public SpongePlayerAudience(final @NonNull Player viewer, 
+  /* package */ SpongePlayerAudience(final @NonNull Player viewer, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, 
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title, 

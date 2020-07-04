@@ -38,9 +38,9 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
   public void show(@NonNull final V viewer, final @NonNull BossBar bar) {
     final I instance = this.bars.computeIfAbsent(bar, adventure -> {
       adventure.addListener(this);
-      return newInstance(adventure);
+      return this.newInstance(adventure);
     });
-    show(viewer, instance);
+    this.show(viewer, instance);
   }
 
   protected <T> void handle(final BossBar adventure, final T changedValue, final BiConsumer<T, I> handler) {
@@ -51,16 +51,20 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
   }
 
   protected abstract @NonNull I newInstance(final @NonNull BossBar adventure);
+
   protected abstract void show(final @NonNull V viewer, final @NonNull I bar);
+
   protected abstract boolean hide(final @NonNull V viewer, final @NonNull I bar);
+
   protected abstract boolean isEmpty(final @NonNull I bar);
+
   protected abstract void hideFromAll(final @NonNull I bar);
 
   @Override
   public void hide(@NonNull final V viewer, final @NonNull BossBar bar) {
     this.bars.computeIfPresent(bar, (adventure, existing) -> {
-      hide(viewer, existing);
-      if(isEmpty(existing)) {
+      this.hide(viewer, existing);
+      if(this.isEmpty(existing)) {
         return null;
       } else {
         return existing;
@@ -70,10 +74,10 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
 
   @Override
   public void hideAll(@NonNull final V viewer) {
-    for(Iterator<Map.Entry<BossBar, I>> it = this.bars.entrySet().iterator(); it.hasNext();) {
+    for(final Iterator<Map.Entry<BossBar, I>> it = this.bars.entrySet().iterator(); it.hasNext();) {
       final Map.Entry<BossBar, I> entry = it.next();
-      if(hide(viewer, entry.getValue())) {
-        if(isEmpty(entry.getValue())) {
+      if(this.hide(viewer, entry.getValue())) {
+        if(this.isEmpty(entry.getValue())) {
           entry.getKey().removeListener(this);
           it.remove();
         }
@@ -83,9 +87,9 @@ public abstract class AbstractBossBarListener<V, I> implements Handler.BossBars<
 
   @Override
   public void hideAll() {
-    for(Map.Entry<BossBar, I> entry : this.bars.entrySet()) {
+    for(final Map.Entry<BossBar, I> entry : this.bars.entrySet()) {
       entry.getKey().removeListener(this);
-      hideFromAll(entry.getValue());
+      this.hideFromAll(entry.getValue());
     }
     this.bars.clear();
   }

@@ -36,31 +36,31 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements AdventureAudience {
+/* package */ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements AdventureAudience {
 
-    BukkitSenderAudience(final @NonNull S sender,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.Titles<? super S>> title,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.BossBars<? super S>> bossBar,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound,
-                         final @Nullable HandlerCollection<? super S, ? extends Handler.Books<? super  S>> books) {
-        super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound, books);
-    }
+  BukkitSenderAudience(final @NonNull S sender,
+                       final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,
+                       final @Nullable HandlerCollection<? super S, ? extends Handler.ActionBar<? super S, ?>> actionBar,
+                       final @Nullable HandlerCollection<? super S, ? extends Handler.Titles<? super S>> title,
+                       final @Nullable HandlerCollection<? super S, ? extends Handler.BossBars<? super S>> bossBar,
+                       final @Nullable HandlerCollection<? super S, ? extends Handler.PlaySound<? super S>> sound,
+                       final @Nullable HandlerCollection<? super S, ? extends Handler.Books<? super S>> books) {
+    super(requireNonNull(sender, "command sender"), chat, actionBar, title, bossBar, sound, books);
+  }
 
-    @Override
-    public @Nullable Locale locale() {
-        return null;
-    }
+  @Override
+  public @Nullable Locale locale() {
+    return null;
+  }
 
-    @Override
-    public boolean hasPermission(final @NonNull String permission) {
-        return this.viewer.hasPermission(requireNonNull(permission, "permission"));
-    }
+  @Override
+  public boolean hasPermission(final @NonNull String permission) {
+    return this.viewer.hasPermission(requireNonNull(permission, "permission"));
+  }
 
-    @Override
-    public boolean console() {
-        return this.viewer instanceof ConsoleCommandSender;
-    }
+  @Override
+  public boolean console() {
+    return this.viewer instanceof ConsoleCommandSender;
+  }
 
 }

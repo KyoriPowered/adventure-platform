@@ -38,11 +38,14 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ class SpigotHandlers {
+/* package */ final class SpigotHandlers {
 
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
   /* package */ static final BungeeCordComponentSerializer SERIALIZER = BukkitPlatform.IS_1_16 ? BungeeCordComponentSerializer.get() : BungeeCordComponentSerializer.legacy();
+  
+  private SpigotHandlers() {
+  }
 
   private static class WithBungeeText<T extends CommandSender> implements Handler<T> {
 
@@ -87,7 +90,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public boolean isAvailable() {
-      if (!super.isAvailable() || Crafty.hasCraftBukkit()) {
+      if(!super.isAvailable() || Crafty.hasCraftBukkit()) {
         return false;
       }
       try {
@@ -98,7 +101,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
           return false;
         }
         return Crafty.hasMethod(spigotClass, "sendMessage", chatMessageType, baseComponent);
-      } catch(NoSuchMethodException e) {
+      } catch(final NoSuchMethodException e) {
         return false;
       }
     }
@@ -135,7 +138,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
-      viewer.openBook(createBook(book));
+      viewer.openBook(this.createBook(book));
     }
   }
 }

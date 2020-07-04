@@ -36,10 +36,11 @@ public final class ViaAccess {
    */
   private static final String PAGKAGE_NAME = ViaAccess.class.getPackage().getName();
 
-  private ViaAccess() {}
+  private ViaAccess() {
+  }
 
   @SuppressWarnings("unchecked")
-  public static <V, T extends Handler<V>> @Nullable T via(final @NonNull String handlerName, final @NonNull ViaAPIProvider<? super V> provider, final @NonNull Class<?> expectedParent)  {
+  public static <V, T extends Handler<V>> @Nullable T via(final @NonNull String handlerName, final @NonNull ViaAPIProvider<? super V> provider, final @NonNull Class<?> expectedParent) {
     try {
       final Class<?> clazz = Class.forName(PAGKAGE_NAME + ".ViaVersionHandlers$" + handlerName);
       if(expectedParent.isAssignableFrom(clazz)) {

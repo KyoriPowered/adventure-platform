@@ -58,7 +58,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 @Singleton // one instance per plugin module
 /* package */ final class SpongePlatform extends AbstractAdventurePlatform implements SpongeAudiences {
 
-  /* package */ static SpongePlatform getInstance(final @NonNull PluginContainer container, final Game game) {
+  /* package */ static SpongePlatform of(final @NonNull PluginContainer container, final Game game) {
     final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
     platform.init(container);
     return platform;
@@ -68,13 +68,13 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     Knobs.logger(new Slf4jLogHandler());
   }
 
-  /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements)  {
+  /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements) {
     return Sponge.getRegistry().getType(spongeType, elements.key(requireNonNull(value, "value")))
       .orElseThrow(() -> new IllegalArgumentException("Value " + value + " could not be found in Sponge type " + spongeType));
   }
 
   /* package */ static <K, S extends CatalogType> K adventure(final @NonNull S sponge, final @NonNull Index<String, K> values) {
-    K value = values.value(requireNonNull(sponge, "sponge").getId());
+    final K value = values.value(requireNonNull(sponge, "sponge").getId());
     if(value == null) {
       throw new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent");
     }
@@ -103,7 +103,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     this.plugins = plugins;
     this.events = new Events(game);
     if(game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
-      setupHandlers();
+      this.setupHandlers();
       if(game.isServerAvailable()) {
         for(final Player player : game.getServer().getOnlinePlayers()) {
           this.add(new SpongePlayerAudience(player, this.chat, this.actionBar, this.title, this.bossBar, this.sound, this.books));
@@ -113,7 +113,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   }
 
   @Inject
-  void init(final PluginContainer container) {
+  /* package */ void init(final PluginContainer container) {
     this.eventManager.registerListeners(container, this.events);
   }
 
@@ -136,6 +136,10 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     this.sound = HandlerCollection.of(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
     this.books = HandlerCollection.of(new SpongeHandlers.Books());
   }
+  
+  private void addPlayer(final @NonNull Player target) {
+    this.add(new SpongePlayerAudience(target, this.chat, this.actionBar, this.title, this.bossBar, this.sound, this.books));
+  }
 
   /**
    * Internal event wrapper class, do not use.
@@ -155,14 +159,14 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener(order = Order.FIRST)
     public void join(final ClientConnectionEvent.@NonNull Join event) {
-      SpongePlatform.this.add(new SpongePlayerAudience(event.getTargetEntity(), chat, actionBar, title, bossBar, sound, books));
+      SpongePlatform.this.addPlayer(event.getTargetEntity());
     }
 
     @Listener(order = Order.LAST)
     public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
       SpongePlatform.this.remove(event.getTargetEntity().getUniqueId());
-      if(bossBar != null) {
-        for(Handler.BossBars<Player> handler : bossBar) {
+      if(SpongePlatform.this.bossBar != null) {
+        for(final Handler.BossBars<Player> handler : SpongePlatform.this.bossBar) {
           handler.hideAll(event.getTargetEntity());
         }
       }
@@ -170,7 +174,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener
     public void serverStart(final @NonNull GameStartingServerEvent event) {
-      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), chat, actionBar, null, null, null, null));
+      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), SpongePlatform.this.chat, SpongePlatform.this.actionBar, null, null, null, null));
     }
 
     @Listener
@@ -180,16 +184,16 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   }
 
   @Override
-  public @NonNull Audience player(@NonNull Player player) {
-    return player(requireNonNull(player, "player").getUniqueId());
+  public @NonNull Audience player(final @NonNull Player player) {
+    return this.player(requireNonNull(player, "player").getUniqueId());
   }
 
   @Override
   public @NonNull Audience audience(final @NonNull MessageReceiver source) {
     if(source instanceof Player) {
-      return player(((Player) source).getUniqueId());
+      return this.player(((Player) source).getUniqueId());
     } else if(source instanceof ConsoleSource) {
-      return console();
+      return this.console();
     } else if(source instanceof Viewer) {
       return new SpongeSenderAudience<>((Viewer & MessageReceiver) source, this.chat, this.actionBar, this.title, null, this.sound, this.books);
     } else {
@@ -200,7 +204,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   @Override
   public void close() {
     this.eventManager.unregisterListeners(this.events);
-    for(Handler.BossBars<Player> handler : this.bossBar) {
+    for(final Handler.BossBars<Player> handler : this.bossBar) {
       handler.hideAll();
     }
     super.close();

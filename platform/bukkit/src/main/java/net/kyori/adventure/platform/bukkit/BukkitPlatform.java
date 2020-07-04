@@ -68,7 +68,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 /* package */ final class BukkitPlatform extends AbstractAdventurePlatform implements BukkitAudiences, Listener {
 
-  /* package */ static BukkitPlatform getInstance(final @NonNull Plugin plugin) {
+  /* package */ static BukkitPlatform of(final @NonNull Plugin plugin) {
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
     BukkitPlatform platform = INSTANCES.get(key);
     if(platform == null) {
@@ -84,7 +84,6 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
   private static final Map<String, BukkitPlatform> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
-
 
   /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
   /* package */ static final GsonComponentSerializer GSON_SERIALIZER;
@@ -118,9 +117,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   @SuppressWarnings("unchecked")
   private static void injectSoftdepend(final @NonNull Plugin plugin, final @NonNull String pluginName) { // begone, warnings!
     try {
-      //final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitPlatform.class);
-
-      PluginDescriptionFile pdf = plugin.getDescription();
+      final PluginDescriptionFile pdf = plugin.getDescription();
       if(pdf.getName().equals(pluginName)) return; // don't depend on ourselves?
 
       final Field softdepend = Crafty.field(pdf.getClass(), "softDepend");
@@ -133,11 +130,11 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
       // add to dependency graph (added 14c9d275141 during MC 1.15).
       // even if this fails (on older versions), we'll still have added ourselves to the PluginDescriptionFile
-      PluginManager manager = plugin.getServer().getPluginManager();
+      final PluginManager manager = plugin.getServer().getPluginManager();
       final Field dependencyGraphField = Crafty.field(manager.getClass(), "dependencyGraph");
       final MutableGraph<String> graph = (MutableGraph<String>) dependencyGraphField.get(manager);
       graph.putEdge(pdf.getName(), pluginName);
-    } catch(Throwable error) { // fail silently
+    } catch(final Throwable error) { // fail silently
       Knobs.logError("injecting soft-dependency", error);
     }
   }
@@ -152,7 +149,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
   private final HandlerCollection<Player, Handler.Books<Player>> books;
 
-  public BukkitPlatform(final @NonNull Plugin plugin) {
+  /* package */ BukkitPlatform(final @NonNull Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
     this.entityTracker = new PhantomEntityTracker(plugin);
     injectSoftdepend(this.plugin, "ViaVersion");
@@ -214,27 +211,27 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   }
 
   private void init() {
-    registerEvent(PlayerJoinEvent.class, EventPriority.LOWEST, event -> {
+    this.registerEvent(PlayerJoinEvent.class, EventPriority.LOWEST, event -> {
       this.addPlayer(event.getPlayer());
     });
     for(final Player player : this.plugin.getServer().getOnlinePlayers()) {
       this.addPlayer(player);
     }
 
-    registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
+    this.registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event -> {
       this.remove(event.getPlayer().getUniqueId());
-      for(Handler.BossBars<Player> handler : this.bossBar) {
+      for(final Handler.BossBars<Player> handler : this.bossBar) {
         handler.hideAll(event.getPlayer());
       }
     });
 
     // ViaVersion
-    registerEvent(PluginEnableEvent.class, EventPriority.NORMAL, event -> {
+    this.registerEvent(PluginEnableEvent.class, EventPriority.NORMAL, event -> {
       if(event.getPlugin().getName().equals(PLUGIN_VIAVERSION)) {
         this.viaProvider.platform(); // init
       }
     });
-    registerEvent(PluginDisableEvent.class, EventPriority.NORMAL, event -> {
+    this.registerEvent(PluginDisableEvent.class, EventPriority.NORMAL, event -> {
       if(event.getPlugin().getName().equals(PLUGIN_VIAVERSION)) {
         this.viaProvider.dirtyVia();
       }
@@ -245,7 +242,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
   @Override
   public @NonNull Audience player(final @NonNull Player player) {
-    return player(requireNonNull(player, "player").getUniqueId());
+    return this.player(requireNonNull(player, "player").getUniqueId());
   }
 
   @Override
@@ -253,9 +250,9 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     requireNonNull(sender, "sender");
 
     if(sender instanceof Player) {
-      return player(((Player) sender).getUniqueId());
+      return this.player(((Player) sender).getUniqueId());
     } else if(sender instanceof ConsoleCommandSender) {
-      return console();
+      return this.console();
     } else {
       return new BukkitSenderAudience<>(sender, this.chat, null, null, null, null, null);
     }
@@ -264,9 +261,10 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   @Override
   public void close() {
     HandlerList.unregisterAll(this);
-    for(Handler.BossBars<Player> handler : this.bossBar) {
+    for(final Handler.BossBars<Player> handler : this.bossBar) {
       handler.hideAll();
     }
+    this.entityTracker.close();
     super.close();
   }
 
@@ -290,7 +288,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
         if(owningPlugin != null && owningPlugin.getName().equals(PLUGIN_VIAVERSION)) {
           return true;
         }
-      } catch(Exception error) {
+      } catch(final Exception error) {
         Knobs.logError("detecting ViaVersion", error);
       }
       return false;
@@ -317,7 +315,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Override
     public @NonNull GsonComponentSerializer serializer(final @NonNull CommandSender viewer) {
-      if(isAvailable()) {
+      if(this.isAvailable()) {
         return ViaAPIProvider.super.serializer(viewer);
       }
       return BukkitPlatform.GSON_SERIALIZER;

@@ -54,7 +54,7 @@ import static java.util.Objects.requireNonNull;
   }
 
   @Override
-  public boolean hasPermission(@NonNull String permission) {
+  public boolean hasPermission(final @NonNull String permission) {
     return this.sender.hasPermission(requireNonNull(permission, "permission"));
   }
 
@@ -65,7 +65,7 @@ import static java.util.Objects.requireNonNull;
 
   @Override
   public void sendMessage(final @NonNull Component message) {
-    this.sender.sendMessage(serializer().serialize(requireNonNull(message, "message")));
+    this.sender.sendMessage(this.serializer().serialize(requireNonNull(message, "message")));
   }
 
   @Override

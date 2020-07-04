@@ -39,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @param <H> handler type
  */
-public class HandlerCollection<V, H extends Handler<V>> implements Iterable<H> {
+public final class HandlerCollection<V, H extends Handler<V>> implements Iterable<H> {
   private final @NonNull List<H> handlers;
 
   @SafeVarargs

@@ -132,8 +132,9 @@ public interface Handler<V> {
         case YELLOW: return 4;
         case WHITE: return 6;
         case PURPLE: /* fall-through, out of order */
-        default: return 5;
+        default:
       }
+      return 5;
     }
 
     static int overlay(final BossBar.Overlay overlay) {
@@ -143,11 +144,13 @@ public interface Handler<V> {
         case NOTCHED_12: return 3;
         case NOTCHED_20: return 4;
         case PROGRESS: /* fall-through */
-        default: return 0;
+        default: 
       }
+      return 0;
     }
 
     void show(final @NonNull V viewer, final @NonNull BossBar bar);
+    
     void hide(final @NonNull V viewer, final @NonNull BossBar bar);
 
     /**

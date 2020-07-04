@@ -49,7 +49,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     this.handle(bar, newName, (val, bukkit) -> {
       final NameSetter setter = SET_NAME.get(bukkit);
       if(setter != null) {
-        setter.setName(bukkit, val);
+        setter.name(bukkit, val);
       }
     });
   }
@@ -134,7 +134,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     final org.bukkit.boss.BossBar ret = Bukkit.createBossBar("", bukkit(adventure.color()), bukkit(adventure.overlay()));
     final NameSetter nameSetter = SET_NAME.get(ret);
     if(nameSetter != null) {
-      nameSetter.setName(ret, adventure.name());
+      nameSetter.name(ret, adventure.name());
     }
     ret.setProgress(adventure.percent());
     return ret;
@@ -147,7 +147,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
   @Override
   protected boolean hide(final @NonNull Player viewer, final org.bukkit.boss.@NonNull BossBar bar) {
-    boolean has = bar.getPlayers().contains(viewer);
+    final boolean has = bar.getPlayers().contains(viewer);
     bar.removePlayer(viewer);
     return has;
   }
@@ -170,7 +170,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   /**
    * Set the name on a Bukkit boss bar.
    */
-  interface NameSetter extends Handler<org.bukkit.boss.BossBar> {
-    void setName(org.bukkit.boss.@NonNull BossBar bar, @NonNull Component name);
+  /* package */ interface NameSetter extends Handler<org.bukkit.boss.BossBar> {
+    void name(org.bukkit.boss.@NonNull BossBar bar, @NonNull Component name);
   }
 }

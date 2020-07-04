@@ -44,7 +44,7 @@ import static java.util.Objects.requireNonNull;
 
 /* package */ final class BungeePlatform extends AbstractAdventurePlatform implements BungeeAudiences, Listener {
 
-  /* package */ static BungeePlatform getInstance(final @NonNull Plugin plugin) {
+  /* package */ static BungeePlatform of(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "A plugin instance is required");
 
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
@@ -64,7 +64,7 @@ import static java.util.Objects.requireNonNull;
   static final int PROTOCOL_1_16 = 735;
 
   private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
-  
+
   static {
     Knobs.logger(new JDKLogHandler());
   }
@@ -81,7 +81,7 @@ import static java.util.Objects.requireNonNull;
   private void init() {
     try {
       this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this);
-    } catch(Exception ex) {
+    } catch(final Exception ex) {
       Knobs.logError("registering events with plugin", ex);
     }
     this.add(new BungeeSenderAudience(this.plugin.getProxy().getConsole()));
@@ -99,28 +99,28 @@ import static java.util.Objects.requireNonNull;
   }
 
   @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
-  public void onLogin(PostLoginEvent event) {
+  public void onLogin(final PostLoginEvent event) {
     this.add(new BungeePlayerAudience(this, event.getPlayer()));
   }
 
   @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
-  public void onQuit(PlayerDisconnectEvent event) {
+  public void onQuit(final PlayerDisconnectEvent event) {
     this.remove(event.getPlayer().getUniqueId());
     this.bossBars.hideAll(event.getPlayer());
   }
 
   @Override
-  public @NonNull Audience player(@NonNull ProxiedPlayer player) {
-    return player(requireNonNull(player, "player").getUniqueId());
+  public @NonNull Audience player(final @NonNull ProxiedPlayer player) {
+    return this.player(requireNonNull(player, "player").getUniqueId());
   }
 
   @Override
-  public @NonNull Audience audience(final @NonNull CommandSender sender)  {
+  public @NonNull Audience audience(final @NonNull CommandSender sender) {
     requireNonNull(sender, "sender");
     if(sender instanceof ProxiedPlayer) {
-      return player(((ProxiedPlayer) sender).getUniqueId());
+      return this.player(((ProxiedPlayer) sender).getUniqueId());
     } else if(sender == this.plugin.getProxy().getConsole()) {
-      return console();
+      return this.console();
     } else {
       return new BungeeSenderAudience(sender);
     }

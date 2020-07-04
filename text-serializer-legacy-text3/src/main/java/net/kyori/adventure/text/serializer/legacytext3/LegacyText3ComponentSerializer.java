@@ -34,27 +34,27 @@ import static java.util.Objects.requireNonNull;
  * Adapts between text 3.x's {@link net.kyori.text.Component} type and adventure's {@link Component} type.
  */
 public final class LegacyText3ComponentSerializer implements ComponentSerializer<Component, Component, net.kyori.text.Component> {
-    private static final LegacyText3ComponentSerializer INSTANCE = new LegacyText3ComponentSerializer();
+  private static final LegacyText3ComponentSerializer INSTANCE = new LegacyText3ComponentSerializer();
 
-    /**
-     * Gets a component serializer for adapting text 3.x components to adventure.
-     *
-     * @return a component serializer
-     */
-    public static LegacyText3ComponentSerializer get() {
-        return INSTANCE;
-    }
+  /**
+   * Gets a component serializer for adapting text 3.x components to adventure.
+   *
+   * @return a component serializer
+   */
+  public static LegacyText3ComponentSerializer get() {
+    return INSTANCE;
+  }
 
-    private LegacyText3ComponentSerializer() {}
+  private LegacyText3ComponentSerializer() {
+  }
 
-    @NonNull
-    @Override
-    public Component deserialize(net.kyori.text.@NonNull Component input) {
-        return GsonComponentSerializer.gson().deserialize(net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.serialize(requireNonNull(input, "text")));
-    }
-    
-    @Override
-    public net.kyori.text.@NonNull Component serialize(@NonNull Component component) {
-        return net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
-    }
+  @Override
+  public @NonNull Component deserialize(final net.kyori.text.@NonNull Component input) {
+    return GsonComponentSerializer.gson().deserialize(net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.serialize(requireNonNull(input, "text")));
+  }
+
+  @Override
+  public net.kyori.text.@NonNull Component serialize(final @NonNull Component component) {
+    return net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
+  }
 }

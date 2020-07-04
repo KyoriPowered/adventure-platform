@@ -41,7 +41,7 @@ public interface BungeeAudiences extends AudienceProvider {
    * @return the audience factory
    */
   static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
-    return BungeePlatform.getInstance(plugin);
+    return BungeePlatform.of(plugin);
   }
 
   /**

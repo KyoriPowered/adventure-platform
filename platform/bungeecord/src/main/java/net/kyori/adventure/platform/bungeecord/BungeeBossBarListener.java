@@ -33,7 +33,6 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static net.kyori.adventure.platform.impl.Handler.BossBars.color;
@@ -46,17 +45,17 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    handle(bar, newName, (val, inst) -> inst.sendToSubscribers(ACTION_NAME, pkt -> pkt.setTitle(GsonComponentSerializer.gson().serialize(val)))); // TODO: based on viewer
+    this.handle(bar, newName, (val, inst) -> inst.sendToSubscribers(ACTION_NAME, pkt -> pkt.setTitle(GsonComponentSerializer.gson().serialize(val)))); // TODO: based on viewer
   }
 
   @Override
   public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
-    handle(bar, newPercent, (val, inst) -> inst.sendToSubscribers(ACTION_PERCENT, pkt -> pkt.setHealth(val)));
+    this.handle(bar, newPercent, (val, inst) -> inst.sendToSubscribers(ACTION_PERCENT, pkt -> pkt.setHealth(val)));
   }
 
   @Override
   public void bossBarColorChanged(final @NonNull BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
-    handle(bar, newColor, (val, inst) -> inst.sendToSubscribers(ACTION_STYLE, pkt -> {
+    this.handle(bar, newColor, (val, inst) -> inst.sendToSubscribers(ACTION_STYLE, pkt -> {
       pkt.setColor(color(val));
       pkt.setDivision(overlay(inst.adventure.overlay()));
     }));
@@ -64,7 +63,7 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
 
   @Override
   public void bossBarOverlayChanged(final @NonNull BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
-    handle(bar, newOverlay, (val, inst) -> inst.sendToSubscribers(ACTION_STYLE, pkt -> {
+    this.handle(bar, newOverlay, (val, inst) -> inst.sendToSubscribers(ACTION_STYLE, pkt -> {
       pkt.setColor(color(inst.adventure.color()));
       pkt.setDivision(overlay(val));
     }));
@@ -72,7 +71,7 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
 
   @Override
   public void bossBarFlagsChanged(final @NonNull BossBar bar, final @NonNull Set<BossBar.Flag> oldFlags, final @NonNull Set<BossBar.Flag> newFlags) {
-    handle(bar, newFlags, (val, inst) -> inst.sendToSubscribers(ACTION_STYLE, pkt -> pkt.setFlags(BossBars.bitmaskFlags(val))));
+    this.handle(bar, newFlags, (val, inst) -> inst.sendToSubscribers(ACTION_STYLE, pkt -> pkt.setFlags(BossBars.bitmaskFlags(val))));
   }
 
   @Override
@@ -125,12 +124,12 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
     }
 
     /* package */ net.md_5.bungee.protocol.packet.@NonNull BossBar newCreatePacket() {
-      final net.md_5.bungee.protocol.packet.BossBar packet = newPacket(Handler.BossBars.ACTION_ADD);
+      final net.md_5.bungee.protocol.packet.BossBar packet = this.newPacket(Handler.BossBars.ACTION_ADD);
       packet.setTitle(GsonComponentSerializer.gson().serialize(this.adventure.name())); // TODO: Based on viewer protocol
       packet.setHealth(this.adventure.percent());
       packet.setColor(color(this.adventure.color()));
       packet.setDivision(overlay(this.adventure.overlay()));
-      packet.setFlags(BossBars.bitmaskFlags(adventure.flags()));
+      packet.setFlags(BossBars.bitmaskFlags(this.adventure.flags()));
       return packet;
     }
 
@@ -139,13 +138,13 @@ import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
     }
 
     /* package */ void sendToSubscribers(final int action, final @NonNull Consumer<net.md_5.bungee.protocol.packet.BossBar> packetModifier) {
-      final net.md_5.bungee.protocol.packet.BossBar packet = newPacket(action);
+      final net.md_5.bungee.protocol.packet.BossBar packet = this.newPacket(action);
       packetModifier.accept(packet);
-      sendToSubscribers(packet);
+      this.sendToSubscribers(packet);
     }
 
     /* package */ void sendToSubscribers(final net.md_5.bungee.protocol.packet.@NonNull BossBar packet) {
-      for(ProxiedPlayer player : this.subscribers) {
+      for(final ProxiedPlayer player : this.subscribers) {
         player.unsafe().sendPacket(packet);
       }
     }

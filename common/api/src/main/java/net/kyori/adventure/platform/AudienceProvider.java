@@ -79,7 +79,7 @@ public interface AudienceProvider {
    * @return a permissible audience
    */
   default @NonNull Audience permission(final @NonNull Key permission) {
-    return permission(permission.namespace() + '.' + permission.value());
+    return this.permission(permission.namespace() + '.' + permission.value());
   }
 
   /**

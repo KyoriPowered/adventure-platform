@@ -88,7 +88,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
         GsonComponentSerializer.gson().populator().apply(builder); // TODO: this might be unused?
         builder.registerTypeAdapterFactory(new SelfSerializable.AdapterFactory());
       });
-    } catch(Exception ex) {
+    } catch(final Exception ex) {
       return false;
     }
   }
@@ -115,7 +115,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
     }
   }
 
-  class AdapterComponent extends BaseComponent implements SelfSerializable {
+  /* package */ class AdapterComponent extends BaseComponent implements SelfSerializable {
     private final Component component;
     private volatile String legacy;
 
@@ -126,8 +126,8 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
 
     @Override
     public String toLegacyText() {
-      if (this.legacy == null) {
-        this.legacy = legacySerializer.serialize(this.component);
+      if(this.legacy == null) {
+        this.legacy = BungeeCordComponentSerializer.this.legacySerializer.serialize(this.component);
       }
       return this.legacy;
     }
@@ -139,7 +139,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
 
     @Override
     public void write(final JsonWriter out) throws IOException {
-      serializer.serializer().getAdapter(Component.class).write(out, this.component);
+      BungeeCordComponentSerializer.this.serializer.serializer().getAdapter(Component.class).write(out, this.component);
     }
   }
 }

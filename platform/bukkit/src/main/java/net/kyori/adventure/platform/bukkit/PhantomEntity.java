@@ -202,29 +202,29 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       this.entity = entity;
     }
 
-    Object nmsEntity() {
+    /* package */ Object nmsEntity() {
       if(!CLASS_CRAFT_ENTITY.isInstance(this.entity)) return null;
       try {
         return CRAFT_ENTITY_GET_HANDLE.invoke(this.entity);
-      } catch(Throwable throwable) {
+      } catch(final Throwable throwable) {
         Knobs.logError("getting CraftBukkit entity for " + this.entity, throwable);
         return null;
       }
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends Entity> T createFakeEntity(final Location pos, final Class<T> clazz) {
+    /* package */ static <T extends Entity> T createFakeEntity(final Location pos, final Class<T> clazz) {
       if(!CLASS_CRAFT_WORLD.isInstance(pos.getWorld())) return null;
 
       try {
         if(CRAFT_WORLD_CREATE_ENTITY != null) {
           final Object nmsEntity = CRAFT_WORLD_CREATE_ENTITY.invoke(pos.getWorld(), pos, clazz);
           return (T) NMS_ENTITY_GET_BUKKIT_ENTITY.invoke(nmsEntity);
-        } else if (Wither.class.isAssignableFrom(clazz) && NEW_ENTITY_WITHER != null) { // 1.7.10 compat
+        } else if(Wither.class.isAssignableFrom(clazz) && NEW_ENTITY_WITHER != null) { // 1.7.10 compat
           final Object nmsEntity = NEW_ENTITY_WITHER.invoke(CRAFT_WORLD_GET_HANDLE.invoke(pos.getWorld()));
           return (T) NMS_ENTITY_GET_BUKKIT_ENTITY.invoke(nmsEntity);
         }
-      } catch (Throwable throwable) {
+      } catch(final Throwable throwable) {
         Knobs.logError("creating fake entity for boss bar", throwable);
       }
       return null;
@@ -233,13 +233,13 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     /* package */ Object createSpawnPacket() {
       // Later versions of MC add a createSpawnPacket()Packet method on Entity -- for broader support that could be used.
       // For 1.8 and 1.7 at least, we are stuck with this.
-      if(entity() instanceof LivingEntity) {
+      if(this.entity() instanceof LivingEntity) {
         final Object mcEntity = this.nmsEntity();
         if(mcEntity != null) {
           try {
             return NEW_SPAWN_LIVING_PACKET.invoke(mcEntity);
-          } catch(Throwable throwable) {
-            Knobs.logError("creating spawn packet for fake entity " + entity(), throwable);
+          } catch(final Throwable throwable) {
+            Knobs.logError("creating spawn packet for fake entity " + this.entity(), throwable);
           }
         }
       }
@@ -248,33 +248,33 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     private Object createDespawnPacket() {
       try {
-        return NEW_ENTITY_DESTROY_PACKET.invoke(entity().getEntityId());
-      } catch(Throwable throwable) {
-        Knobs.logError("creating despawn packet for fake entity " + entity(), throwable);
+        return NEW_ENTITY_DESTROY_PACKET.invoke(this.entity().getEntityId());
+      } catch(final Throwable throwable) {
+        Knobs.logError("creating despawn packet for fake entity " + this.entity(), throwable);
         return null;
       }
     }
 
     private Object createMetadataUpdatePacket() {
       try {
-        final Object nmsEntity = nmsEntity();
+        final Object nmsEntity = this.nmsEntity();
         if(nmsEntity == null) return null;
 
         final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(nmsEntity);
         return NEW_ENTITY_METADATA_PACKET.invoke(this.entity.getEntityId(), dataWatcher, false);
-      } catch(Throwable throwable) {
-        Knobs.logError("updating metadata for fake entity " + entity(), throwable);
+      } catch(final Throwable throwable) {
+        Knobs.logError("updating metadata for fake entity " + this.entity(), throwable);
         return null;
       }
     }
 
     private Object createLocationUpdatePacket() {
       try {
-        final Object nmsEntity = nmsEntity();
+        final Object nmsEntity = this.nmsEntity();
         if(nmsEntity == null) return null;
 
         return NEW_ENTITY_TELEPORT_PACKET.invoke(nmsEntity);
-      } catch(Throwable throwable) {
+      } catch(final Throwable throwable) {
         Knobs.logError("creating location update packet", throwable);
         return null;
       }
@@ -292,7 +292,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public PhantomEntity<T> relative(final double magnitudeOffset, final double pitchOffset, final double yawOffset) {
-      final boolean wasRelative = relative();
+      final boolean wasRelative = this.relative();
       this.relativeOffsetDistance = magnitudeOffset;
       this.relativeOffsetPitch = pitchOffset;
       this.relativeOffsetYaw = yawOffset;
@@ -302,20 +302,20 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public PhantomEntity<T> location(final @NonNull Location position) {
-      final boolean wasRelative = relative();
+      final boolean wasRelative = this.relative();
       this.relativeOffsetDistance = 0;
       this.relativeOffsetPitch = 0;
       this.relativeOffsetYaw = 0;
       this.tracker.updateTrackingState(this, wasRelative);
-      location0(position);
+      this.location0(position);
       this.locationDirty = true;
       return this;
     }
 
     private void location0(final @NonNull Location position) {
       try {
-        NMS_ENTITY_SET_LOCATION.invoke(nmsEntity(), position.getX(), position.getY(), position.getZ(), position.getPitch(), position.getYaw());
-      } catch(Throwable throwable) {
+        NMS_ENTITY_SET_LOCATION.invoke(this.nmsEntity(), position.getX(), position.getY(), position.getZ(), position.getPitch(), position.getYaw());
+      } catch(final Throwable throwable) {
         Knobs.logError("setting position for phantom entity " + this.entity, throwable);
       }
     }
@@ -334,8 +334,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     public PhantomEntity<T> invisible(final boolean invisible) {
       if(NMS_ENTITY_SET_INVISIBLE != null) {
         try {
-          NMS_ENTITY_SET_INVISIBLE.invoke(nmsEntity(), invisible);
-        } catch(Throwable thr) {
+          NMS_ENTITY_SET_INVISIBLE.invoke(this.nmsEntity(), invisible);
+        } catch(final Throwable thr) {
           Knobs.logError("setting invisibility for entity", thr);
         }
       }
@@ -346,21 +346,22 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     public boolean invisible() {
       if(NMS_ENTITY_IS_INVISIBLE != null) {
         try {
-          return (boolean)NMS_ENTITY_IS_INVISIBLE.invoke(nmsEntity());
-        } catch(Throwable thr) {
+          return (boolean)NMS_ENTITY_IS_INVISIBLE.invoke(this.nmsEntity());
+        } catch(final Throwable thr) {
           Knobs.logError("getting invisibility for entity", thr);
         }
       }
       return false;
     }
 
+    @Override
     public PhantomEntity<T> data(final int position, final Object value) {
       // DataWatchers were refactored at some point and use TrackedData as their key, not ints -- but this works for 1.8
       if(DATA_WATCHER_WATCH != null) {
         try {
-          final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(nmsEntity());
+          final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(this.nmsEntity());
           DATA_WATCHER_WATCH.invoke(dataWatcher, position, value);
-        } catch(Throwable throwable) {
+        } catch(final Throwable throwable) {
           Knobs.logError("watching data", throwable);
         }
       }
@@ -370,24 +371,24 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     @Override
     public boolean add(final @NonNull Player viewer) {
       if(this.watching.add(viewer)) {
-        sendSpawnPacket(viewer);
-        this.tracker.updateTrackingState(this, relative());
+        this.sendSpawnPacket(viewer);
+        this.tracker.updateTrackingState(this, this.relative());
         return true;
       }
       return false;
     }
 
     /* package */ void sendSpawnPacket(final @NonNull Player viewer) {
-      if(relative()) {
-        this.location0(makeRelative(viewer.getLocation()));
+      if(this.relative()) {
+        this.location0(this.makeRelative(viewer.getLocation()));
       }
-      CraftBukkitHandlers.sendPacket(viewer, createSpawnPacket());
+      CraftBukkitHandlers.sendPacket(viewer, this.createSpawnPacket());
     }
 
     @Override
     public boolean remove(final @NonNull Player viewer) {
       if(this.watching.remove(viewer)) {
-        CraftBukkitHandlers.sendPacket(viewer, createDespawnPacket());
+        CraftBukkitHandlers.sendPacket(viewer, this.createDespawnPacket());
         if(this.watching.isEmpty()) {
           this.tracker.handleRemove(this);
         }
@@ -399,7 +400,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     @Override
     public void removeAll() {
       if(!this.watching.isEmpty()) {
-        final Object despawnPacket = createDespawnPacket();
+        final Object despawnPacket = this.createDespawnPacket();
         for(final Player viewer : this.watching) {
           CraftBukkitHandlers.sendPacket(viewer, despawnPacket);
         }
@@ -410,8 +411,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public void sendUpdate() {
-      final Object metadataPacket = createMetadataUpdatePacket();
-      final Object locationPacket = this.locationDirty ? createLocationUpdatePacket() : null;
+      final Object metadataPacket = this.createMetadataUpdatePacket();
+      final Object locationPacket = this.locationDirty ? this.createLocationUpdatePacket() : null;
       for(final Player ply : this.watching) {
         CraftBukkitHandlers.sendPacket(ply, metadataPacket);
         CraftBukkitHandlers.sendPacket(ply, locationPacket);
@@ -430,18 +431,16 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public void updateIfNecessary(final @NonNull Player player, final @NonNull Location playerPos) {
-      if(relative()
-        && this.watching.contains(player)) {
-        final Location pos = makeRelative(playerPos);
-        location0(pos);
-        CraftBukkitHandlers.sendPacket(player, createLocationUpdatePacket());
+      if(this.relative() && this.watching.contains(player)) {
+        final Location pos = this.makeRelative(playerPos);
+        this.location0(pos);
+        CraftBukkitHandlers.sendPacket(player, this.createLocationUpdatePacket());
       }
     }
   }
 
-
   /**
-   * Fallback handler for unsupported platforms
+   * Fallback handler for unsupported platforms.
    *
    * @param <T> entity type
    */

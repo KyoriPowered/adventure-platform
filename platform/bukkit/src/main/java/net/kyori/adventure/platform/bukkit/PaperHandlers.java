@@ -31,10 +31,9 @@ import net.kyori.adventure.platform.impl.Knobs;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ class PaperHandlers {
+/* package */ final class PaperHandlers {
   
   private static final boolean ENABLED = Knobs.enabled("paper");
-  
   
   private PaperHandlers() {
   }

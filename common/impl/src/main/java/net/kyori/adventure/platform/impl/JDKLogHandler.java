@@ -31,17 +31,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class JDKLogHandler implements Knobs.LogHandler {
   private final Logger logger = Logger.getLogger("net.kyori.adventure");
+  
   @Override
   public void info(final @NonNull String message, final Object@NonNull... params) {
-    if(logger.isLoggable(Level.INFO)) {
-      logger.log(Level.INFO, MessageFormat.format(message, params));
+    if(this.logger.isLoggable(Level.INFO)) {
+      this.logger.log(Level.INFO, MessageFormat.format(message, params));
     }
   }
 
   @Override
   public void error(final @Nullable Throwable exc, final @NonNull String message, final Object@NonNull... params) {
-    if(logger.isLoggable(Level.SEVERE)) {
-      logger.log(Level.SEVERE, MessageFormat.format(message, params), exc);
+    if(this.logger.isLoggable(Level.SEVERE)) {
+      this.logger.log(Level.SEVERE, MessageFormat.format(message, params), exc);
     }
   }
 }

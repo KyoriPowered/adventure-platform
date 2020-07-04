@@ -34,8 +34,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class GsonInjections {
-  private GsonInjections() {}
+/* package */ final class GsonInjections {
+  private GsonInjections() {
+  }
 
   /**
    * Get a field from {@code klass} and make it accessible .
@@ -81,7 +82,7 @@ final class GsonInjections {
 
       factoriesField.set(existing, modifiedFactories);
       return true;
-    } catch(NoSuchFieldException | IllegalAccessException ex) {
+    } catch(final NoSuchFieldException | IllegalAccessException ex) {
       return false;
     }
   }

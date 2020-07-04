@@ -72,7 +72,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
     this.serverMap = new ConcurrentHashMap<>();
     this.localeRenderer = new ComponentRenderer<Locale>() {
       @Override
-      public @NonNull Component render(@NonNull Component component, @NonNull Locale context) {
+      public @NonNull Component render(final @NonNull Component component, final @NonNull Locale context) {
         return component; // TODO: allow this to be customized
       }
     };
@@ -84,11 +84,11 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
    *
    * @param audience an audience
    */
-  protected void add(AdventureAudience audience) {
-    if (closed) return;
+  protected void add(final AdventureAudience audience) {
+    if(this.closed) return;
 
     this.senderSet.add(audience);
-    if (audience instanceof AdventurePlayerAudience) {
+    if(audience instanceof AdventurePlayerAudience) {
       this.playerMap.put(((AdventurePlayerAudience) audience).id(), (AdventurePlayerAudience) audience);
     }
   }
@@ -98,7 +98,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
    *
    * @param playerId a player id
    */
-  protected void remove(UUID playerId) {
+  protected void remove(final UUID playerId) {
     final Audience removed = this.playerMap.remove(playerId);
     if(removed != null) {
       this.senderSet.remove(removed);
@@ -111,7 +111,8 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   private class ConsoleAudience implements ForwardingAudience {
-    private final Iterable<AdventureAudience> console = filter(senderSet, AdventureAudience::console);
+    private final Iterable<AdventureAudience> console = filter(AbstractAdventurePlatform.this.senderSet, AdventureAudience::console);
+
     @Override
     public @NonNull Iterable<? extends Audience> audiences() {
       return this.console;
@@ -129,20 +130,20 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   @Override
-  public @NonNull Audience player(@NonNull UUID playerId) {
+  public @NonNull Audience player(final @NonNull UUID playerId) {
     final AdventurePlayerAudience player = this.playerMap.get(playerId);
     return player == null ? Audience.empty() : player;
   }
 
-  private class PermissionAudience implements ForwardingAudience {
-    private final Iterable<AdventureAudience> filtered = filter(senderSet, this::hasPermission);
+  private final class PermissionAudience implements ForwardingAudience {
+    private final Iterable<AdventureAudience> filtered = filter(AbstractAdventurePlatform.this.senderSet, this::hasPermission);
     private final String permission;
 
     private PermissionAudience(final @NonNull String permission) {
       this.permission = requireNonNull(permission, "permission");
     }
 
-    private boolean hasPermission(AdventureAudience audience) {
+    private boolean hasPermission(final @NonNull AdventureAudience audience) {
       return audience.hasPermission(this.permission);
     }
 
@@ -153,22 +154,22 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   @Override
-  public @NonNull Audience permission(@NonNull String permission) {
+  public @NonNull Audience permission(final @NonNull String permission) {
     // TODO: potential memory leak, can we limit collection size somehow?
     // the rest of the collections could run into the same issue, but this one presents the most potential for unbounded growth
     // maybe don't even cache, ask ppl to hold references?
     return this.permissionMap.computeIfAbsent(permission, PermissionAudience::new);
   }
 
-  private class WorldAudience implements ForwardingAudience {
-    private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::inWorld);
+  private final class WorldAudience implements ForwardingAudience {
+    private final Iterable<AdventurePlayerAudience> filtered = filter(AbstractAdventurePlatform.this.playerMap.values(), this::inWorld);
     private final Key world;
 
     private WorldAudience(final @NonNull Key world) {
       this.world = requireNonNull(world, "world id");
     }
 
-    private boolean inWorld(AdventurePlayerAudience audience) {
+    private boolean inWorld(final AdventurePlayerAudience audience) {
       return this.world.equals(audience.world());
     }
 
@@ -179,19 +180,19 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   @Override
-  public @NonNull Audience world(@NonNull Key world) {
+  public @NonNull Audience world(final @NonNull Key world) {
     return this.worldMap.computeIfAbsent(world, WorldAudience::new);
   }
 
-  private class ServerAudience implements ForwardingAudience {
-    private final Iterable<AdventurePlayerAudience> filtered = filter(playerMap.values(), this::isOnServer);
+  private final class ServerAudience implements ForwardingAudience {
+    private final Iterable<AdventurePlayerAudience> filtered = filter(AbstractAdventurePlatform.this.playerMap.values(), this::isOnServer);
     private final String serverName;
 
     private ServerAudience(final @NonNull String serverName) {
       this.serverName = requireNonNull(serverName, "server name");
     }
 
-    private boolean isOnServer(AdventurePlayerAudience audience) {
+    private boolean isOnServer(final AdventurePlayerAudience audience) {
       return this.serverName.equals(audience.serverName());
     }
 
@@ -202,7 +203,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   @Override
-  public @NonNull Audience server(@NonNull String serverName) {
+  public @NonNull Audience server(final @NonNull String serverName) {
     return this.serverMap.computeIfAbsent(serverName, ServerAudience::new);
   }
 
@@ -213,7 +214,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
 
   @Override
   public void close() {
-    if (!this.closed) {
+    if(!this.closed) {
       this.closed = true;
       this.all = Audience.empty();
       this.console = Audience.empty();
@@ -241,7 +242,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
    * @param <T> value type
    * @return live filtered view
    */
-  private static <T> Iterable<T> filter(final Iterable<T> input, Predicate<T> filter) {
+  private static <T> Iterable<T> filter(final Iterable<T> input, final Predicate<T> filter) {
     return new Iterable<T>() {
       // create a lazy iterator
       // pre-fetches by one output value to determine whether or not we have another value
@@ -256,7 +257,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
           private void populate() {
             this.next = null;
             while(this.parent.hasNext()) {
-              T next = this.parent.next();
+              final T next = this.parent.next();
               if(filter.test(next)) {
                 this.next = next;
                 return;
@@ -279,7 +280,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
             if(this.next == null) {
               throw new NoSuchElementException();
             }
-            T next = this.next;
+            final T next = this.next;
             this.populate();
             return next;
           }

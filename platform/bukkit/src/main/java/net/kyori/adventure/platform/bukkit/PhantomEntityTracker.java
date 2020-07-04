@@ -54,14 +54,13 @@ import static java.util.Objects.requireNonNull;
   private final AtomicBoolean isListeningToMove = new AtomicBoolean();
   private final Listener moveListener = new Listener() {};
 
-
-  public PhantomEntityTracker(final Plugin owner) {
+  /* package */ PhantomEntityTracker(final Plugin owner) {
     this.owner = requireNonNull(owner, "owner");
     this.owner.getServer().getPluginManager().registerEvents(this, owner);
   }
 
   public <T extends Entity> PhantomEntity<T> create(final @NonNull Class<T> entity) {
-    return create(new Location(this.owner.getServer().getWorlds().get(0), 0, 0, 0), entity);
+    return this.create(new Location(this.owner.getServer().getWorlds().get(0), 0, 0, 0), entity);
   }
 
   public <T extends Entity> PhantomEntity<T> create(final @NonNull Location position, final @NonNull Class<T> entity) {
@@ -78,24 +77,24 @@ import static java.util.Objects.requireNonNull;
   }
 
   /* package */ void onPlayerMove(final @NonNull PlayerMoveEvent event) {
-    for(PhantomEntity<?> entity : this.trackedEntities) {
+    for(final PhantomEntity<?> entity : this.trackedEntities) {
       entity.updateIfNecessary(event.getPlayer(), event.getTo().clone());
     }
   }
 
   @EventHandler
   public void onPlayerChangeWorld(final @NonNull PlayerChangedWorldEvent event) {
-    respawnEntities(event.getPlayer());
+    this.respawnEntities(event.getPlayer());
   }
 
   @EventHandler
   public void onPlayerRespawn(final @NonNull PlayerRespawnEvent event) {
     // This event is called just before the player has respawned, let's add our entities on the next tick
-    this.owner.getServer().getScheduler().scheduleSyncDelayedTask(this.owner, () -> respawnEntities(event.getPlayer()), 1);
+    this.owner.getServer().getScheduler().scheduleSyncDelayedTask(this.owner, () -> this.respawnEntities(event.getPlayer()), 1);
   }
 
   private void respawnEntities(final @NonNull Player target) {
-    for(PhantomEntity<?> entity : this.trackedEntities) {
+    for(final PhantomEntity<?> entity : this.trackedEntities) {
       if(entity instanceof PhantomEntity.Impl<?> && entity.watching(target)) {
         ((PhantomEntity.Impl<?>) entity).sendSpawnPacket(target);
       }
@@ -105,7 +104,7 @@ import static java.util.Objects.requireNonNull;
 
   public void close() {
     this.open = false;
-    for(PhantomEntity<?> entity : this.trackedEntities) {
+    for(final PhantomEntity<?> entity : this.trackedEntities) {
       entity.removeAll();
     }
     this.trackedEntities.clear();
@@ -117,12 +116,12 @@ import static java.util.Objects.requireNonNull;
     }
 
     if(this.trackedEntities.add(entity)) {
-      if(entity.relative()) modifyRelative(true);
+      if(entity.relative()) this.modifyRelative(true);
     } else {
       if(entity.relative() && !wasRelative) {
-        modifyRelative(true);
+        this.modifyRelative(true);
       } else if(!entity.relative() && wasRelative) {
-        modifyRelative(false);
+        this.modifyRelative(false);
       }
     }
   }
@@ -136,7 +135,7 @@ import static java.util.Objects.requireNonNull;
    * @param add whether to add or remove a relative entity
    */
   private void modifyRelative(final boolean add) {
-    int tracked;
+    final int tracked;
     if(add) {
       tracked = this.relativeEntities.incrementAndGet();
     } else {

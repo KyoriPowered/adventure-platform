@@ -58,7 +58,8 @@ import us.myles.ViaVersion.protocols.protocol1_9to1_8.Protocol1_9To1_8;
 public final class ViaVersionHandlers {
   private static final String ID = "viaversion";
 
-  private ViaVersionHandlers() {}
+  private ViaVersionHandlers() {
+  }
 
   /**
    * base class for handlers that send ViaVersion packet wrappers
@@ -87,11 +88,11 @@ public final class ViaVersionHandlers {
     @Override
     public boolean isAvailable() {
       if(!Knobs.enabled(ID)) return false;
-      if(!via.isAvailable()) return false;
+      if(!this.via.isAvailable()) return false;
       try {
         Class.forName("us.myles.ViaVersion.protocols.protocol1_16to1_15_2.Protocol1_16To1_15_2"); // make sure we're on a new version
         return true;
-      } catch(ClassNotFoundException e) {
+      } catch(final ClassNotFoundException e) {
         Knobs.logError("finding 1.16 ViaVersion protocol", e);
         return false;
       }
@@ -106,9 +107,9 @@ public final class ViaVersionHandlers {
         return false;
       }
 
-      if(ProtocolRegistry.SERVER_PROTOCOL >= version().getId()) return false;
+      if(ProtocolRegistry.SERVER_PROTOCOL >= this.version().getId()) return false;
 
-      return platform.getApi().getPlayerVersion(viewerId) >= version().getId();
+      return platform.getApi().getPlayerVersion(viewerId) >= this.version().getId();
     }
 
     protected UserConnection connection(final V viewer) {
@@ -118,7 +119,7 @@ public final class ViaVersionHandlers {
     protected void send(final @NonNull PacketWrapper wrapper) {
       try {
         wrapper.send(Protocol1_16To1_15_2.class);
-      } catch(Exception ex) {
+      } catch(final Exception ex) {
         Knobs.logError("sending ViaVersion packet", ex);
       }
     }
@@ -131,7 +132,7 @@ public final class ViaVersionHandlers {
       this(provider, TYPE_SYSTEM);
     }
 
-    /* package */ Chat(final ViaAPIProvider<? super V> provider, byte chatType) {
+    /* package */ Chat(final ViaAPIProvider<? super V> provider, final byte chatType) {
       super(provider);
       this.chatType = chatType;
     }
@@ -143,11 +144,11 @@ public final class ViaVersionHandlers {
 
     @Override
     public void send(@NonNull final V target, @NonNull final String message) {
-      final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.CHAT_MESSAGE.ordinal(), null, connection(target));
+      final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.CHAT_MESSAGE.ordinal(), null, this.connection(target));
       wrapper.write(Type.STRING, message);
       wrapper.write(Type.BYTE, this.chatType);
       wrapper.write(Type.UUID, NIL_UUID);
-      send(wrapper);
+      this.send(wrapper);
     }
   }
 
@@ -170,7 +171,7 @@ public final class ViaVersionHandlers {
     }
 
     private PacketWrapper make(final @NonNull V viewer, final int action) {
-      final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.TITLE.ordinal(), null, connection(viewer));
+      final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.TITLE.ordinal(), null, this.connection(viewer));
       wrapper.write(Type.VAR_INT, action);
       return wrapper;
     }
@@ -181,37 +182,37 @@ public final class ViaVersionHandlers {
       final int stay = Titles.ticks(title.stayTime());
       final int fadeOut = Titles.ticks(title.fadeOutTime());
       if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
-        final PacketWrapper wrapper = make(viewer, ACTION_TIMES);
+        final PacketWrapper wrapper = this.make(viewer, ACTION_TIMES);
         wrapper.write(Type.INT, fadeIn);
         wrapper.write(Type.INT, stay);
         wrapper.write(Type.INT, fadeOut);
-        send(wrapper);
+        this.send(wrapper);
       }
 
       if(title.subtitle() != TextComponent.empty()) {
         final String subtitleJson = GsonComponentSerializer.gson().serialize(title.subtitle());
-        final PacketWrapper wrapper = make(viewer, ACTION_SUBTITLE);
+        final PacketWrapper wrapper = this.make(viewer, ACTION_SUBTITLE);
         wrapper.write(Type.STRING, subtitleJson);
-        send(wrapper);
+        this.send(wrapper);
       }
 
       if(title.title() != TextComponent.empty()) {
         final String titleJson = GsonComponentSerializer.gson().serialize(title.title());
-        final PacketWrapper wrapper = make(viewer, ACTION_TITLE);
+        final PacketWrapper wrapper = this.make(viewer, ACTION_TITLE);
         wrapper.write(Type.STRING, titleJson);
-        send(wrapper);
+        this.send(wrapper);
       }
 
     }
 
     @Override
     public void clear(final @NonNull V viewer) {
-      send(make(viewer, ACTION_CLEAR)); // no extra data
+      this.send(this.make(viewer, ACTION_CLEAR)); // no extra data
     }
 
     @Override
     public void reset(final @NonNull V viewer) {
-      send(make(viewer, ACTION_RESET)); // no extra data
+      this.send(this.make(viewer, ACTION_RESET)); // no extra data
     }
   }
 
@@ -235,7 +236,7 @@ public final class ViaVersionHandlers {
     protected void send(final @NonNull PacketWrapper wrapper) {
       try {
         wrapper.send(Protocol1_9To1_8.class);
-      } catch(Exception e) {
+      } catch(final Exception e) {
         Knobs.logError("sending ViaVersion packet", e);
       }
     }
@@ -268,13 +269,13 @@ public final class ViaVersionHandlers {
         return new Instance();
       });
       if(barInstance.subscribedPlayers.add(this.via.id(viewer))) {
-        final PacketWrapper addPkt = barInstance.make(connection(viewer), ACTION_ADD);
-        addPkt.write(Type.STRING, serializer().serialize(bar.name()));
+        final PacketWrapper addPkt = barInstance.make(this.connection(viewer), ACTION_ADD);
+        addPkt.write(Type.STRING, this.serializer().serialize(bar.name()));
         addPkt.write(Type.FLOAT, bar.percent());
         addPkt.write(Type.VAR_INT, BossBars.color(bar.color()));
         addPkt.write(Type.VAR_INT, BossBars.overlay(bar.overlay()));
         addPkt.write(Type.BYTE, BossBars.bitmaskFlags(bar.flags()));
-        send(addPkt);
+        this.send(addPkt);
       }
     }
 
@@ -282,7 +283,7 @@ public final class ViaVersionHandlers {
     public void hide(final @NonNull V viewer, final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       this.bars.computeIfPresent(bar, (adventure, instance) -> {
         if(instance.subscribedPlayers.remove(this.via.id(viewer))) {
-          send(instance.make(connection(viewer), ACTION_REMOVE));
+          this.send(instance.make(this.connection(viewer), ACTION_REMOVE));
         }
         if(instance.subscribedPlayers.isEmpty()) {
           adventure.removeListener(this);
@@ -296,7 +297,7 @@ public final class ViaVersionHandlers {
     @Override
     public void hideAll(@NonNull final V viewer) {
       final UUID id = this.via.id(viewer);
-      for(Iterator<Map.Entry<BossBar, Instance>> it = this.bars.entrySet().iterator(); it.hasNext();) {
+      for(final Iterator<Map.Entry<BossBar, Instance>> it = this.bars.entrySet().iterator(); it.hasNext();) {
         final Map.Entry<BossBar, Instance> entry = it.next();
         if(entry.getValue().subscribedPlayers.remove(id)) {
           this.send(entry.getValue().make(this.via.connection(viewer), ACTION_REMOVE));
@@ -312,7 +313,7 @@ public final class ViaVersionHandlers {
 
     @Override
     public void hideAll() {
-      for(Map.Entry<BossBar, Instance> entry : this.bars.entrySet()) {
+      for(final Map.Entry<BossBar, Instance> entry : this.bars.entrySet()) {
         entry.getValue().sendToSubscribers(entry.getKey(), ACTION_REMOVE, (pkt, bar) -> {});
         entry.getKey().removeListener(this);
       }
@@ -324,7 +325,7 @@ public final class ViaVersionHandlers {
       final Instance instance = this.bars.get(bar);
       if(instance != null) {
         instance.sendToSubscribers(bar, ACTION_NAME, (pkt, adv) -> {
-          pkt.write(Type.STRING, serializer().serialize(adv.name()));
+          pkt.write(Type.STRING, this.serializer().serialize(adv.name()));
         });
       }
     }
@@ -341,12 +342,12 @@ public final class ViaVersionHandlers {
 
     @Override
     public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NonNull Color newColor) {
-      styleChanged(bar);
+      this.styleChanged(bar);
     }
 
     @Override
     public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay newOverlay) {
-      styleChanged(bar);
+      this.styleChanged(bar);
     }
 
     private void styleChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
@@ -378,24 +379,23 @@ public final class ViaVersionHandlers {
 
       /* package */ PacketWrapper make(final UserConnection user, final int action) {
         final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.BOSSBAR.ordinal(), null, user);
-        wrapper.write(Type.UUID, barId);
+        wrapper.write(Type.UUID, this.barId);
         wrapper.write(Type.VAR_INT, action);
         return wrapper;
       }
 
       /* package */ void sendToSubscribers(final net.kyori.adventure.bossbar.BossBar adventure, final int action, final BiConsumer<PacketWrapper, net.kyori.adventure.bossbar.BossBar> populator) {
-        for(UUID id : this.subscribedPlayers) {
+        for(final UUID id : this.subscribedPlayers) {
           final UserConnection conn = ViaVersionHandlers.BossBars.this.via.platform().getConnectionManager().getConnectedClient(id);
           if(conn != null) {
-            final PacketWrapper wrapper = make(conn, action);
+            final PacketWrapper wrapper = this.make(conn, action);
             populator.accept(wrapper, adventure);
-            send(wrapper);
+            ViaVersionHandlers.BossBars.this.send(wrapper);
           }
         }
       }
     }
   }
-
 
   /**
    * Not super vital, but does allow a 1.8 server to issue sound stops, and for categories to be respected on older servers.
@@ -414,13 +414,13 @@ public final class ViaVersionHandlers {
     public void play(@NonNull final V viewer, @NonNull final Sound sound) {
       final Pos position = this.positionGetter.apply(viewer);
       if(position != null) {
-        play(viewer, sound, position.x, position.y, position.z);
+        this.play(viewer, sound, position.x, position.y, position.z);
       }
     }
 
     @Override
     public void play(@NonNull final V viewer, @NonNull final Sound sound, final double x, final double y, final double z) {
-      final PacketWrapper playSound = new PacketWrapper(ClientboundPackets1_9_3.NAMED_SOUND.ordinal(), null, connection(viewer));
+      final PacketWrapper playSound = new PacketWrapper(ClientboundPackets1_9_3.NAMED_SOUND.ordinal(), null, this.connection(viewer));
 
       playSound.write(Type.STRING, sound.name().asString());
       playSound.write(Type.VAR_INT, sound.source().ordinal()); // TODO: proper ids
@@ -430,7 +430,7 @@ public final class ViaVersionHandlers {
       playSound.write(Type.FLOAT, sound.volume());
       playSound.write(Type.FLOAT, sound.pitch());
 
-      send(playSound);
+      this.send(playSound);
     }
 
     private static int fixed(final double value) {
@@ -439,12 +439,12 @@ public final class ViaVersionHandlers {
 
     @Override
     public void stop(@NonNull final V viewer, @NonNull final SoundStop sound) {
-      final PacketWrapper pkt = new PacketWrapper(ClientboundPackets1_9_3.PLUGIN_MESSAGE.ordinal(), null, connection(viewer));
+      final PacketWrapper pkt = new PacketWrapper(ClientboundPackets1_9_3.PLUGIN_MESSAGE.ordinal(), null, this.connection(viewer));
       pkt.write(Type.STRING, "MC|StopSound");
-      pkt.write(Type.STRING, name(sound.sound()));
-      pkt.write(Type.STRING, source(sound.source()));
+      pkt.write(Type.STRING, this.name(sound.sound()));
+      pkt.write(Type.STRING, this.source(sound.source()));
 
-      send(pkt);
+      this.send(pkt);
     }
 
     protected @NonNull String name(final @Nullable Key name) {
@@ -479,7 +479,7 @@ public final class ViaVersionHandlers {
       final double y;
       final double z;
 
-      public Pos(final double x, final double y, final  double z) {
+      public Pos(final double x, final double y, final double z) {
         this.x = x;
         this.y = y;
         this.z = z;

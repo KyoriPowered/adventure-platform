@@ -87,10 +87,7 @@ public final class Knobs {
    */
   private static final boolean PRINT_CHOSEN_HANDLER = bool("printChosenHandler", false);
 
-
   /**
-   *
-   *
    * @param handlerId the id of the handler to check
    * @return if the handler has been explicitly blocked
    */
@@ -148,7 +145,7 @@ public final class Knobs {
     void error(final @Nullable Throwable exc, final @NonNull String message, final Object@NonNull... params);
   }
 
-  static class DefaultLogHandler implements LogHandler {
+  /* package */ static class DefaultLogHandler implements LogHandler {
     @Override
     public void info(final @NonNull String message, final Object@NonNull... params) {
       System.out.println(MessageFormat.format(message, params));
