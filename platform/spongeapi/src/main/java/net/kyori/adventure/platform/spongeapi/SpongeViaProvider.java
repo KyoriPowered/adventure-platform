@@ -32,6 +32,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
+import us.myles.ViaVersion.api.protocol.ProtocolVersion;
 
 /**
  * Sponge provider for ViaVersion API
@@ -73,7 +74,20 @@ import us.myles.ViaVersion.api.platform.ViaPlatform;
 
   @Override
   public @NonNull GsonComponentSerializer serializer(final @NonNull Object viewer) {
-    if(!this.isAvailable()) return GsonComponentSerializer.colorDownsamplingGson();
-    return ViaAPIProvider.super.serializer(viewer);
+    if(this.isAvailable()) {
+      final UUID id = this.id(viewer);
+      if(id != null) {
+        return this.gsonSerializer(id);
+      }
+    }
+    return SpongePlatform.LEGACY_GSON_SERIALIZER;
+  }
+  
+  private @NonNull GsonComponentSerializer gsonSerializer(final UUID id) {
+    if(this.platform().getApi().getPlayerVersion(id) >= ProtocolVersion.v1_16.getId()) {
+      return SpongePlatform.MODERN_GSON_SERIALIZER;
+    } else {
+      return SpongePlatform.LEGACY_GSON_SERIALIZER;
+    }
   }
 }

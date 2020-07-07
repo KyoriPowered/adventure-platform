@@ -30,6 +30,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -124,6 +125,11 @@ import static java.util.Objects.requireNonNull;
     } else {
       return new BungeeSenderAudience(sender);
     }
+  }
+
+  @Override
+  public @NonNull GsonComponentSerializer gsonSerializer() {
+    return GsonComponentSerializer.gson(); // TODO: maybe per-player support?
   }
 
   @Override

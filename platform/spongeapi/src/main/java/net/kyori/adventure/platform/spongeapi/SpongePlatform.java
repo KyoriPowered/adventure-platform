@@ -31,6 +31,8 @@ import net.kyori.adventure.platform.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.util.Index;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -86,6 +88,15 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
 
+  /* package */ static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
+    .downsampleColors()
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .emitLegacyHoverEvent().build();
+
+  /* package */ static final GsonComponentSerializer MODERN_GSON_SERIALIZER = GsonComponentSerializer.builder()
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .build();
+
   private final EventManager eventManager;
   private final Events events;
   private final PluginManager plugins;
@@ -136,7 +147,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     this.sound = HandlerCollection.of(new SpongeHandlers.PlaySound()); // don't include via since we don't target versions below 1.9
     this.books = HandlerCollection.of(new SpongeHandlers.Books());
   }
-  
+
   private void addPlayer(final @NonNull Player target) {
     this.add(new SpongePlayerAudience(target, this.chat, this.actionBar, this.title, this.bossBar, this.sound, this.books));
   }
@@ -199,6 +210,11 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     } else {
       return new SpongeSenderAudience<>(source, this.chat, this.actionBar, null, null, null, null);
     }
+  }
+
+  @Override
+  public @NonNull GsonComponentSerializer gsonSerializer() {
+    return LEGACY_GSON_SERIALIZER;
   }
 
   @Override

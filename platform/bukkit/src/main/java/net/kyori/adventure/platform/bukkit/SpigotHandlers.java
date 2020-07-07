@@ -42,7 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
-  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BukkitPlatform.IS_1_16 ? BungeeCordComponentSerializer.get() : BungeeCordComponentSerializer.legacy();
+  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitPlatform.GSON_SERIALIZER, BukkitPlatform.LEGACY_SERIALIZER);
   
   private SpigotHandlers() {
   }

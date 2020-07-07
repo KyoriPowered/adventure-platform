@@ -38,9 +38,11 @@ import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.platform.viaversion.ViaAccess;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
@@ -62,6 +64,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import us.myles.ViaVersion.api.platform.ViaPlatform;
+import us.myles.ViaVersion.api.protocol.ProtocolVersion;
 
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
@@ -87,15 +90,23 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
   /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
   /* package */ static final GsonComponentSerializer GSON_SERIALIZER;
+  private static final GsonComponentSerializer MODERN_GSON_SERIALIZER = GsonComponentSerializer.builder()
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .build();
+  private static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
+    .downsampleColors()
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .emitLegacyHoverEvent()
+    .build();
   /* package */ static final LegacyComponentSerializer LEGACY_SERIALIZER;
 
   static {
     Knobs.logger(new JDKLogHandler());
     if(IS_1_16) { // we are 1.16
-      GSON_SERIALIZER = GsonComponentSerializer.gson();
+      GSON_SERIALIZER = MODERN_GSON_SERIALIZER;
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().build();
     } else {
-      GSON_SERIALIZER = GsonComponentSerializer.colorDownsamplingGson();
+      GSON_SERIALIZER = LEGACY_GSON_SERIALIZER;
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
     }
   }
@@ -167,7 +178,6 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       new CraftBukkitHandlers.ActionBarModern(),
       new CraftBukkitHandlers.ActionBar1_8thru1_11());
     this.title = HandlerCollection.of(
-      // TODO: ViaVersion titles for 1.8-1.5
       via("Titles", this.viaProvider, Handler.Titles.class),
       new PaperHandlers.Titles(),
       new CraftBukkitHandlers.Titles());
@@ -259,6 +269,16 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   }
 
   @Override
+  public @NonNull BungeeCordComponentSerializer bungeeCordSerializer() {
+    return SpigotHandlers.SERIALIZER;
+  }
+
+  @Override
+  public @NonNull GsonComponentSerializer gsonSerializer() {
+    return GSON_SERIALIZER;
+  }
+
+  @Override
   public void close() {
     HandlerList.unregisterAll(this);
     for(final Handler.BossBars<Player> handler : this.bossBar) {
@@ -315,10 +335,22 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Override
     public @NonNull GsonComponentSerializer serializer(final @NonNull CommandSender viewer) {
+      requireNonNull(viewer, "viewer");
       if(this.isAvailable()) {
-        return ViaAPIProvider.super.serializer(viewer);
+        final UUID id = this.id(viewer);
+        if(id != null) {
+          return this.serializer(id);
+        }
       }
       return BukkitPlatform.GSON_SERIALIZER;
+    }
+
+    private GsonComponentSerializer serializer(final @NonNull UUID id) {
+      if(this.platform().getApi().getPlayerVersion(id) >= ProtocolVersion.v1_16.getId()) {
+        return MODERN_GSON_SERIALIZER;
+      } else {
+        return LEGACY_GSON_SERIALIZER;
+      }
     }
 
     /* package */ void dirtyVia() {
