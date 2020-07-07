@@ -42,6 +42,7 @@ import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.platform.viaversion.ViaAPIProvider;
 import net.kyori.adventure.platform.viaversion.ViaAccess;
 import net.kyori.adventure.platform.viaversion.ViaVersionHandlers;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
@@ -265,6 +266,16 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     } else {
       return new BukkitSenderAudience<>(sender, this.chat, null, null, null, null, null);
     }
+  }
+
+  @Override
+  public @NonNull BungeeCordComponentSerializer bungeeCordSerializer() {
+    return SpigotHandlers.SERIALIZER;
+  }
+
+  @Override
+  public @NonNull GsonComponentSerializer gsonSerializer() {
+    return GSON_SERIALIZER;
   }
 
   @Override

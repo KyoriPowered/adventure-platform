@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.text.serializer.spongeapi;
 
+import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -41,6 +42,10 @@ import static java.util.Objects.requireNonNull;
 public final class SpongeApiComponentSerializer implements ComponentSerializer<Component, Component, Text> {
   private static final SpongeApiComponentSerializer INSTANCE = new SpongeApiComponentSerializer();
   private static final MinecraftVersion VERSION = Sponge.getPlatform().getMinecraftVersion();
+  private static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
+    .downsampleColors()
+    .emitLegacyHoverEvent()
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE).build();
 
   /**
    * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.
@@ -66,11 +71,11 @@ public final class SpongeApiComponentSerializer implements ComponentSerializer<C
 
   @Override
   public @NonNull Component deserialize(final @NonNull Text input) {
-    return GsonComponentSerializer.gson().deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
+    return LEGACY_GSON_SERIALIZER.deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
   }
 
   @Override
   public @NonNull Text serialize(final @NonNull Component component) {
-    return TextSerializers.JSON.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
+    return TextSerializers.JSON.deserialize(LEGACY_GSON_SERIALIZER.serialize(requireNonNull(component, "component")));
   }
 }

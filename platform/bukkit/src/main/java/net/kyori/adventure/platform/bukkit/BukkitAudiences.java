@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -61,4 +62,14 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return an audience
    */
   @NonNull Audience audience(final @NonNull CommandSender sender);
+
+  /**
+   * Get a variant of the BungeeCord {@link net.md_5.bungee.api.chat.BaseComponent} serializer 
+   * emitting the format most appropriate for the running server.
+   * 
+   * <p>This method's behaviour is undefined when running in a non Spigot-based environment</p>
+   * 
+   * @return serializer instance
+   */
+  @NonNull BungeeCordComponentSerializer bungeeCordSerializer();
 }
