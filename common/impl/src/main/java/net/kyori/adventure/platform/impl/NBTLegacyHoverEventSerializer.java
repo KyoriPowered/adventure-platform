@@ -93,10 +93,10 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
   @Override
   public @NonNull Component serializeShowEntity(final HoverEvent.@NonNull ShowEntity input, final Codec.Encoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
     final CompoundBinaryTag.Builder builder = CompoundBinaryTag.builder()
-      .putString(ENTITY_NAME, componentCodec.encode(input.name()))
-      .putString(ENTITY_ID, input.id().toString());
-    if(input.type() != null) {
-      builder.putString(ENTITY_TYPE, input.type().asString());
+      .putString(ENTITY_ID, input.id().toString())
+      .putString(ENTITY_TYPE, input.type().asString());
+    if(input.name() != null) {
+      builder.putString(ENTITY_NAME, componentCodec.encode(input.name()));
     }
     return TextComponent.of(SNBT_CODEC.encode(builder.build()));
   }
