@@ -123,6 +123,6 @@ import static java.util.Objects.requireNonNull;
    * @return component serializer instance
    */
   protected BungeeCordComponentSerializer serializer() {
-    return BungeeCordComponentSerializer.get();
+    return BungeeCordComponentSerializer.legacy(); // Console only supports legacy :(
   }
 }
