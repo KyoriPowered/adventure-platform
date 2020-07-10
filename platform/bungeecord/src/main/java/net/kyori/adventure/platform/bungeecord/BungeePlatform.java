@@ -23,6 +23,8 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import com.google.gson.Gson;
+import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +32,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -67,6 +70,18 @@ import static java.util.Objects.requireNonNull;
   private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
 
   static {
+    // Inject our adapter component into Bungee's Gson instance
+    // (this is separate from the ComponentSerializer gson instance~)
+    // please just use Velocity
+    try {
+      final Field gsonField = ProxyServer.getInstance().getClass().getDeclaredField("gson");
+      gsonField.setAccessible(true);
+      final Gson gson = (Gson) gsonField.get(ProxyServer.getInstance());
+      BungeeCordComponentSerializer.inject(gson);
+    } catch(final NoSuchFieldException | IllegalAccessException | ClassCastException e) {
+      Knobs.logError("Injecting into BungeeCord (ProxyServer) gson instance", e);
+    }
+
     Knobs.logger(new JDKLogHandler());
   }
 

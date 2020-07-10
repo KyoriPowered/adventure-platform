@@ -40,7 +40,12 @@ import static java.util.Objects.requireNonNull;
  * A component serializer for BungeeCord's {@link BaseComponent}.
  */
 public final class BungeeCordComponentSerializer implements ComponentSerializer<Component, Component, BaseComponent[]> {
-  private static final boolean SUPPORTED = bind();
+  private static boolean SUPPORTED = true;
+
+  static {
+    bind();
+  }
+
   private static final BungeeCordComponentSerializer MODERN = new BungeeCordComponentSerializer(GsonComponentSerializer.gson(), LegacyComponentSerializer.builder().hexColors().build());
   private static final BungeeCordComponentSerializer PRE_1_16 = new BungeeCordComponentSerializer(GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(), LegacyComponentSerializer.legacy());
 
@@ -75,13 +80,31 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
 
   /**
    * Create a component serializer with custom serialization properties.
-   * 
+   *
    * @param serializer The serializer creating a JSON representation of the component
    * @param legacySerializer The serializer creating a representation of the component with legacy formatting codes
    * @return a new serializer
    */
   public static BungeeCordComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
     return new BungeeCordComponentSerializer(requireNonNull(serializer, "serializer"), requireNonNull(legacySerializer, "legacySerializer"));
+  }
+
+  /**
+   * Inject Adventure's adapter serializer into an existing Gson instance
+   *
+   * <p>This is primarily for internal use, but may be useful if interfacing
+   * with existing libraries that maintain their own Gson instances.</p>
+   *
+   * @param existing gson instance
+   * @return true if injection was successful
+   */
+  public static boolean inject(final Gson existing) {
+    final boolean result = GsonInjections.injectGson(requireNonNull(existing, "existing"), builder -> {
+      GsonComponentSerializer.gson().populator().apply(builder); // TODO: this might be unused?
+      builder.registerTypeAdapterFactory(new SelfSerializable.AdapterFactory());
+    });
+    SUPPORTED &= result;
+    return result;
   }
 
   private final GsonComponentSerializer serializer;
@@ -92,15 +115,11 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
     this.legacySerializer = legacySerializer;
   }
 
-  private static boolean bind() {
+  private static void bind() {
     try {
       final Field gsonField = GsonInjections.field(net.md_5.bungee.chat.ComponentSerializer.class, "gson");
-      return GsonInjections.injectGson((Gson) gsonField.get(null), builder -> {
-        GsonComponentSerializer.gson().populator().apply(builder); // TODO: this might be unused?
-        builder.registerTypeAdapterFactory(new SelfSerializable.AdapterFactory());
-      });
-    } catch(final Exception ex) {
-      return false;
+      inject((Gson) gsonField.get(null));
+    } catch(final Exception ignore) {
     }
   }
 
