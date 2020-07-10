@@ -21,26 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.platform.common.audience;
 
-import java.text.MessageFormat;
-import net.kyori.adventure.platform.common.Knobs;
+import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
-  
-  @Override
-  public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {
-    this.logger.info(MessageFormat.format(message, params));
-  }
+import java.util.UUID;
 
-  @Override
-  public void error(final @NonNull Throwable exc, final @NonNull String message, final @NonNull Object@NonNull... params) {
-    if(this.logger.isErrorEnabled()) {
-      this.logger.error(MessageFormat.format(message, params), exc);
-    }
-  }
+/**
+ * An audience that represents a connected player.
+ */
+public interface AdventurePlayerAudience extends AdventureAudience {
+  /**
+   * Gets the player's uuid.
+   *
+   * @return a player uuid
+   */
+  @NonNull UUID id();
+
+  /**
+   * Gets the uuid of the player's world.
+   *
+   * @return a world uuid, or null if unknown
+   */
+  @Nullable Key world();
+
+  /**
+   * Gets the name of the player's server.
+   *
+   * @return a server name, or null if unknown or not on a proxy
+   */
+  @Nullable String serverName();
 }

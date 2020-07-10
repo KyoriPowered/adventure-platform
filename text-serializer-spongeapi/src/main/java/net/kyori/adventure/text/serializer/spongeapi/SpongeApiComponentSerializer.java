@@ -23,7 +23,7 @@
  */
 package net.kyori.adventure.text.serializer.spongeapi;
 
-import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
+import net.kyori.adventure.platform.common.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;

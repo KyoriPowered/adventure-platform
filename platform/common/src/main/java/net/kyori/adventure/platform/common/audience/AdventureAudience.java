@@ -21,26 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.platform.common.audience;
 
-import java.text.MessageFormat;
-import net.kyori.adventure.platform.common.Knobs;
+import net.kyori.adventure.audience.Audience;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
-  
-  @Override
-  public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {
-    this.logger.info(MessageFormat.format(message, params));
-  }
+import java.util.Locale;
 
-  @Override
-  public void error(final @NonNull Throwable exc, final @NonNull String message, final @NonNull Object@NonNull... params) {
-    if(this.logger.isErrorEnabled()) {
-      this.logger.error(MessageFormat.format(message, params), exc);
-    }
-  }
+/**
+ * An audience that represents some entity, usually a "command sender."
+ */
+public interface AdventureAudience extends Audience {
+  /**
+   * Gets the locale of the audience.
+   *
+   * @return a locale, or null if unknown
+   */
+  @Nullable Locale locale();
+
+  /**
+   * Gets if the audience has permission for a permission node.
+   *
+   * @param permission a permission node
+   * @return if the audience has permission
+   */
+  boolean hasPermission(final @NonNull String permission);
+
+  /**
+   * Gets if the audience is a "console."
+   *
+   * @return if the audience is console.
+   */
+  boolean console();
 }

@@ -5,10 +5,9 @@ repositories {
 }
 
 dependencies {
-  api project(":common:adventure-platform-common-api")
-  api "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
+  api project(":adventure-platform-api")
   api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
-  implementation project(":common:adventure-platform-common-impl")
+  implementation project(":platform:adventure-platform-common")
   api project(":adventure-text-serializer-bungeecord")
   compileOnly 'net.md-5:bungeecord-api:1.14-SNAPSHOT'
 }

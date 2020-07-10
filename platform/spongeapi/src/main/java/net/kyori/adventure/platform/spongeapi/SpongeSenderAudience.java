@@ -24,10 +24,10 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.Locale;
-import net.kyori.adventure.platform.impl.audience.AdventureAudience;
-import net.kyori.adventure.platform.impl.HandledAudience;
-import net.kyori.adventure.platform.impl.Handler;
-import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.platform.common.audience.AdventureAudience;
+import net.kyori.adventure.platform.common.HandledAudience;
+import net.kyori.adventure.platform.common.Handler;
+import net.kyori.adventure.platform.common.HandlerCollection;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.command.CommandSource;

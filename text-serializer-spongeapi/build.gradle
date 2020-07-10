@@ -7,7 +7,7 @@ repositories {
 dependencies {
   api "net.kyori:adventure-api:${rootProject.adventure}"
   implementation "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
-  implementation project(":common:adventure-platform-common-impl")
+  implementation project(":platform:adventure-platform-common")
   compileOnly "org.spongepowered:spongeapi:7.1.0"
 }
 

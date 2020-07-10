@@ -25,9 +25,9 @@ package net.kyori.adventure.platform.bukkit;
 
 import java.util.Set;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.impl.AbstractBossBarListener;
-import net.kyori.adventure.platform.impl.Handler;
-import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.platform.common.AbstractBossBarListener;
+import net.kyori.adventure.platform.common.Handler;
+import net.kyori.adventure.platform.common.HandlerCollection;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;

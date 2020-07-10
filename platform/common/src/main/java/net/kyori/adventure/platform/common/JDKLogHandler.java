@@ -21,26 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.platform.common;
 
 import java.text.MessageFormat;
-import net.kyori.adventure.platform.common.Knobs;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
+public final class JDKLogHandler implements Knobs.LogHandler {
+  private final Logger logger = Logger.getLogger("net.kyori.adventure");
   
   @Override
-  public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {
-    this.logger.info(MessageFormat.format(message, params));
+  public void info(final @NonNull String message, final Object@NonNull... params) {
+    if(this.logger.isLoggable(Level.INFO)) {
+      this.logger.log(Level.INFO, MessageFormat.format(message, params));
+    }
   }
 
   @Override
-  public void error(final @NonNull Throwable exc, final @NonNull String message, final @NonNull Object@NonNull... params) {
-    if(this.logger.isErrorEnabled()) {
-      this.logger.error(MessageFormat.format(message, params), exc);
+  public void error(final @Nullable Throwable exc, final @NonNull String message, final Object@NonNull... params) {
+    if(this.logger.isLoggable(Level.SEVERE)) {
+      this.logger.log(Level.SEVERE, MessageFormat.format(message, params), exc);
     }
   }
 }

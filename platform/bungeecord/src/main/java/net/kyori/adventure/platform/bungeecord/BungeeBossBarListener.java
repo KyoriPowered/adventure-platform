@@ -28,15 +28,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.impl.AbstractBossBarListener;
-import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.common.AbstractBossBarListener;
+import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import static net.kyori.adventure.platform.impl.Handler.BossBars.color;
-import static net.kyori.adventure.platform.impl.Handler.BossBars.overlay;
+import static net.kyori.adventure.platform.common.Handler.BossBars.color;
+import static net.kyori.adventure.platform.common.Handler.BossBars.overlay;
 
 /* package */ final class BungeeBossBarListener extends AbstractBossBarListener<ProxiedPlayer, BungeeBossBarListener.Instance> {
 

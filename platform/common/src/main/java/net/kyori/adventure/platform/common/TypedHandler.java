@@ -21,26 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.platform.common;
 
-import java.text.MessageFormat;
-import net.kyori.adventure.platform.common.Knobs;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
-  
-  @Override
-  public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {
-    this.logger.info(MessageFormat.format(message, params));
+/**
+ * A handler subtype that determines availability for a viewer by its type.
+ *
+ * @param <V> viewer type
+ */
+public abstract class TypedHandler<V> implements Handler<V> {
+  private final Class<? extends V> enforcedType;
+
+  protected TypedHandler(final @Nullable Class<? extends V> enforcedType) {
+    this.enforcedType = enforcedType;
   }
 
   @Override
-  public void error(final @NonNull Throwable exc, final @NonNull String message, final @NonNull Object@NonNull... params) {
-    if(this.logger.isErrorEnabled()) {
-      this.logger.error(MessageFormat.format(message, params), exc);
-    }
+  public boolean isAvailable() {
+    return this.enforcedType != null;
+  }
+
+  @Override
+  public boolean isAvailable(final @NonNull V viewer) {
+    return this.enforcedType != null && this.enforcedType.isInstance(viewer);
   }
 }

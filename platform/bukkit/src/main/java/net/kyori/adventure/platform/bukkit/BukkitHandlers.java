@@ -24,7 +24,7 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.impl.Handler;
+import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;

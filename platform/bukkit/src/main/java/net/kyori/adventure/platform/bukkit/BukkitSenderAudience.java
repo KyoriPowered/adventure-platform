@@ -23,10 +23,10 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.platform.impl.audience.AdventureAudience;
-import net.kyori.adventure.platform.impl.HandledAudience;
-import net.kyori.adventure.platform.impl.Handler;
-import net.kyori.adventure.platform.impl.HandlerCollection;
+import net.kyori.adventure.platform.common.audience.AdventureAudience;
+import net.kyori.adventure.platform.common.HandledAudience;
+import net.kyori.adventure.platform.common.Handler;
+import net.kyori.adventure.platform.common.HandlerCollection;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;

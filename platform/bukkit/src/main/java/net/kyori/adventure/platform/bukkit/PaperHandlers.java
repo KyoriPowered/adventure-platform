@@ -26,8 +26,8 @@ package net.kyori.adventure.platform.bukkit;
 import com.destroystokyo.paper.Title;
 import java.time.Duration;
 import java.util.function.IntConsumer;
-import net.kyori.adventure.platform.impl.Handler;
-import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.common.Handler;
+import net.kyori.adventure.platform.common.Knobs;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

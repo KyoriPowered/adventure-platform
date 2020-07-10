@@ -24,8 +24,8 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.impl.Handler;
-import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.common.Handler;
+import net.kyori.adventure.platform.common.Knobs;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;

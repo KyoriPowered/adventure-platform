@@ -8,13 +8,13 @@ repositories {
 }
 
 dependencies {
-  api project(":common:adventure-platform-common-api")
+  api project(":adventure-platform-api")
   api "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
   api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
   implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
   api project(":adventure-text-serializer-bungeecord")
-  implementation project(":common:adventure-platform-common-impl")
-  implementation project(":common:adventure-platform-common-viaversion")
+  implementation project(":platform:adventure-platform-common")
+  implementation project(":platform:adventure-platform-viaversion")
   compileOnly 'io.netty:netty-all:4.0.23.Final' // for pre-1.13 book sending
   testImplementation compileOnly('com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT')
 }

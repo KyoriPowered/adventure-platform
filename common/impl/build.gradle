@@ -1,4 +1,0 @@
-dependencies {
-  api project(':common:adventure-platform-common-api')
-  api "net.kyori:adventure-nbt:${rootProject.adventure}"
-}

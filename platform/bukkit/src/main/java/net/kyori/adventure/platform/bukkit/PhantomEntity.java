@@ -26,7 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import java.lang.invoke.MethodHandle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.common.Knobs;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;

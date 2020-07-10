@@ -1,16 +1,14 @@
 rootProject.name = 'adventure-platform-parent'
 
-['api', 'impl', 'viaversion'].each {
-  include ":common:$it"
-  findProject(":common:$it")?.name = "adventure-platform-common-$it"
-}
-
-['bukkit', 'bungeecord', 'spongeapi'].each {
-  include ":platform:$it"
-  findProject(":platform:$it")?.name = "adventure-platform-$it"
-}
-
 ['bungeecord', 'spongeapi', 'legacy-text3'].each {
   include "text-serializer-$it"
   findProject(":text-serializer-$it")?.name = "adventure-text-serializer-$it"
+}
+
+include 'api'
+findProject(':api')?.name = 'adventure-platform-api'
+
+['common', 'viaversion', 'bukkit', 'bungeecord', 'spongeapi'].each {
+  include ":platform:$it"
+  findProject(":platform:$it")?.name = "adventure-platform-$it"
 }

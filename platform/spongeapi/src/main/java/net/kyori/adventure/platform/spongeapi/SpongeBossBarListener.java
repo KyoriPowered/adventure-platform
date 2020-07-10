@@ -25,7 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import java.util.Set;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.platform.impl.AbstractBossBarListener;
+import net.kyori.adventure.platform.common.AbstractBossBarListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;

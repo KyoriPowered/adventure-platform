@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.impl.audience.AdventurePlayerAudience;
+import net.kyori.adventure.platform.common.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -38,7 +38,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static net.kyori.adventure.platform.impl.Handler.Titles.ticks;
+import static net.kyori.adventure.platform.common.Handler.Titles.ticks;
 
 /* package */ class BungeePlayerAudience extends BungeeSenderAudience implements AdventurePlayerAudience {
 

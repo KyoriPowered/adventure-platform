@@ -27,11 +27,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.impl.AbstractAdventurePlatform;
-import net.kyori.adventure.platform.impl.Handler;
-import net.kyori.adventure.platform.impl.HandlerCollection;
-import net.kyori.adventure.platform.impl.Knobs;
-import net.kyori.adventure.platform.impl.NBTLegacyHoverEventSerializer;
+import net.kyori.adventure.platform.common.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.common.Handler;
+import net.kyori.adventure.platform.common.HandlerCollection;
+import net.kyori.adventure.platform.common.Knobs;
+import net.kyori.adventure.platform.common.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.util.Index;
 

@@ -29,7 +29,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import javax.annotation.Nonnegative;
-import net.kyori.adventure.platform.impl.Knobs;
+import net.kyori.adventure.platform.common.Knobs;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
