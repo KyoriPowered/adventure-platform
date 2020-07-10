@@ -42,7 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
-  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitPlatform.GSON_SERIALIZER, BukkitPlatform.LEGACY_SERIALIZER);
+  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitAudienceProvider.GSON_SERIALIZER, BukkitAudienceProvider.LEGACY_SERIALIZER);
   
   private SpigotHandlers() {
   }
@@ -129,8 +129,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
         for(final Component page : book.pages()) {
           spigot.spigot().addPage(SERIALIZER.serialize(page));
         }
-        spigot.setAuthor(BukkitPlatform.LEGACY_SERIALIZER.serialize(book.author()));
-        spigot.setTitle(BukkitPlatform.LEGACY_SERIALIZER.serialize(book.title())); // todo: don't use legacy
+        spigot.setAuthor(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(book.author()));
+        spigot.setTitle(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(book.title())); // todo: don't use legacy
         stack.setItemMeta(spigot);
       }
       return stack;

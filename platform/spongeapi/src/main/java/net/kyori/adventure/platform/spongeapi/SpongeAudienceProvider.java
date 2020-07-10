@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.common.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.common.AbstractAudienceProvider;
 import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.platform.common.HandlerCollection;
 import net.kyori.adventure.platform.common.Knobs;
@@ -58,10 +58,10 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongePlatform extends AbstractAdventurePlatform implements SpongeAudiences {
+/* package */ final class SpongeAudienceProvider extends AbstractAudienceProvider implements SpongeAudiences {
 
-  /* package */ static SpongePlatform of(final @NonNull PluginContainer container, final Game game) {
-    final SpongePlatform platform = new SpongePlatform(game.getEventManager(), game.getPluginManager(), game);
+  /* package */ static SpongeAudienceProvider of(final @NonNull PluginContainer container, final Game game) {
+    final SpongeAudienceProvider platform = new SpongeAudienceProvider(game.getEventManager(), game.getPluginManager(), game);
     platform.init(container);
     return platform;
   }
@@ -109,7 +109,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private HandlerCollection<Viewer, Handler.Books<Viewer>> books;
 
   @Inject
-  /* package */ SpongePlatform(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
+  /* package */ SpongeAudienceProvider(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
     this.eventManager = eventManager;
     this.plugins = plugins;
     this.events = new Events(game);
@@ -165,19 +165,19 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener
     public void setupHandlers(final @NonNull GamePostInitializationEvent event) { // set up handlers so that we don't start too early for ViaVersion
-      SpongePlatform.this.setupHandlers();
+      SpongeAudienceProvider.this.setupHandlers();
     }
 
     @Listener(order = Order.FIRST)
     public void join(final ClientConnectionEvent.@NonNull Join event) {
-      SpongePlatform.this.addPlayer(event.getTargetEntity());
+      SpongeAudienceProvider.this.addPlayer(event.getTargetEntity());
     }
 
     @Listener(order = Order.LAST)
     public void quit(final ClientConnectionEvent.@NonNull Disconnect event) {
-      SpongePlatform.this.remove(event.getTargetEntity().getUniqueId());
-      if(SpongePlatform.this.bossBar != null) {
-        for(final Handler.BossBars<Player> handler : SpongePlatform.this.bossBar) {
+      SpongeAudienceProvider.this.remove(event.getTargetEntity().getUniqueId());
+      if(SpongeAudienceProvider.this.bossBar != null) {
+        for(final Handler.BossBars<Player> handler : SpongeAudienceProvider.this.bossBar) {
           handler.hideAll(event.getTargetEntity());
         }
       }
@@ -185,7 +185,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     @Listener
     public void serverStart(final @NonNull GameStartingServerEvent event) {
-      SpongePlatform.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), SpongePlatform.this.chat, SpongePlatform.this.actionBar, null, null, null, null));
+      SpongeAudienceProvider.this.add(new SpongeSenderAudience<>(this.game.getServer().getConsole(), SpongeAudienceProvider.this.chat, SpongeAudienceProvider.this.actionBar, null, null, null, null));
     }
 
     @Listener

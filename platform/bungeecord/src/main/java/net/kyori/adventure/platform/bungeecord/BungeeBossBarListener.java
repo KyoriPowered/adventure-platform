@@ -161,6 +161,6 @@ import static net.kyori.adventure.platform.common.Handler.BossBars.overlay;
    * @return if the player has a client with boss bar support
    */
   private static boolean canSeeBossBars(final @NonNull ProxiedPlayer player) {
-    return player.getPendingConnection().getVersion() >= BungeePlatform.PROTCOOL_1_9;
+    return player.getPendingConnection().getVersion() >= BungeeAudienceProvider.PROTCOOL_1_9;
   }
 }

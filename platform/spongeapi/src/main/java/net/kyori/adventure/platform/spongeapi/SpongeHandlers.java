@@ -161,11 +161,11 @@ import org.spongepowered.api.world.Locatable;
     }
 
     private static SoundType sponge(final @Nullable Key sound) {
-      return sound == null ? null : SpongePlatform.sponge(SoundType.class, sound);
+      return sound == null ? null : SpongeAudienceProvider.sponge(SoundType.class, sound);
     }
 
     private static SoundCategory sponge(final Sound.@Nullable Source source) {
-      return source == null ? null : SpongePlatform.sponge(SoundCategory.class, source, Sound.Source.NAMES);
+      return source == null ? null : SpongeAudienceProvider.sponge(SoundCategory.class, source, Sound.Source.NAMES);
     }
   }
 

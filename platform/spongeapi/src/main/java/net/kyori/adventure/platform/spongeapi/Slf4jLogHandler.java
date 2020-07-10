@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /* package */ class Slf4jLogHandler implements Knobs.LogHandler {
-  private final Logger logger = LoggerFactory.getLogger(SpongePlatform.class);
+  private final Logger logger = LoggerFactory.getLogger(SpongeAudienceProvider.class);
   
   @Override
   public void info(final @NonNull String message, final @NonNull Object@NonNull... params) {

@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.common.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.common.AbstractAudienceProvider;
 import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.platform.common.HandlerCollection;
 import net.kyori.adventure.platform.common.JDKLogHandler;
@@ -69,14 +69,14 @@ import us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
-/* package */ final class BukkitPlatform extends AbstractAdventurePlatform implements BukkitAudiences, Listener {
+/* package */ final class BukkitAudienceProvider extends AbstractAudienceProvider implements BukkitAudiences, Listener {
 
-  /* package */ static BukkitPlatform of(final @NonNull Plugin plugin) {
+  /* package */ static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
-    BukkitPlatform platform = INSTANCES.get(key);
+    BukkitAudienceProvider platform = INSTANCES.get(key);
     if(platform == null) {
-      platform = new BukkitPlatform(plugin);
-      final BukkitPlatform existing = INSTANCES.putIfAbsent(key, platform);
+      platform = new BukkitAudienceProvider(plugin);
+      final BukkitAudienceProvider existing = INSTANCES.putIfAbsent(key, platform);
       if(existing != null) {
         return existing;
       }
@@ -85,7 +85,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     return platform;
   }
 
-  private static final Map<String, BukkitPlatform> INSTANCES = new ConcurrentHashMap<>();
+  private static final Map<String, BukkitAudienceProvider> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
 
   /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
@@ -160,7 +160,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
   private final HandlerCollection<Player, Handler.Books<Player>> books;
 
-  /* package */ BukkitPlatform(final @NonNull Plugin plugin) {
+  /* package */ BukkitAudienceProvider(final @NonNull Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
     this.entityTracker = new PhantomEntityTracker(plugin);
     injectSoftdepend(this.plugin, "ViaVersion");
@@ -342,7 +342,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
           return this.serializer(id);
         }
       }
-      return BukkitPlatform.GSON_SERIALIZER;
+      return BukkitAudienceProvider.GSON_SERIALIZER;
     }
 
     private GsonComponentSerializer serializer(final @NonNull UUID id) {

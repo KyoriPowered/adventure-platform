@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.common.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.common.AbstractAudienceProvider;
 import net.kyori.adventure.platform.common.JDKLogHandler;
 import net.kyori.adventure.platform.common.Knobs;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
@@ -46,16 +46,16 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ final class BungeePlatform extends AbstractAdventurePlatform implements BungeeAudiences, Listener {
+/* package */ final class BungeeAudienceProvider extends AbstractAudienceProvider implements BungeeAudiences, Listener {
 
-  /* package */ static BungeePlatform of(final @NonNull Plugin plugin) {
+  /* package */ static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "A plugin instance is required");
 
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
-    BungeePlatform platform = INSTANCES.get(key);
+    BungeeAudienceProvider platform = INSTANCES.get(key);
     if(platform == null) {
-      platform = new BungeePlatform(key, plugin);
-      final BungeePlatform existing = INSTANCES.putIfAbsent(key, platform);
+      platform = new BungeeAudienceProvider(key, plugin);
+      final BungeeAudienceProvider existing = INSTANCES.putIfAbsent(key, platform);
       if(existing != null) {
         return existing;
       }
@@ -67,7 +67,7 @@ import static java.util.Objects.requireNonNull;
   static final int PROTCOOL_1_9 = 107;
   static final int PROTOCOL_1_16 = 735;
 
-  private static final Map<String, BungeePlatform> INSTANCES = new ConcurrentHashMap<>();
+  private static final Map<String, BungeeAudienceProvider> INSTANCES = new ConcurrentHashMap<>();
 
   static {
     // Inject our adapter component into Bungee's Gson instance
@@ -90,7 +90,7 @@ import static java.util.Objects.requireNonNull;
   private final BungeeBossBarListener bossBars = new BungeeBossBarListener();
   private final Listener listener;
 
-  BungeePlatform(final String key, final Plugin plugin) {
+  BungeeAudienceProvider(final String key, final Plugin plugin) {
     this.key = requireNonNull(key, "key");
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
@@ -122,13 +122,13 @@ import static java.util.Objects.requireNonNull;
 
     @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
     public void onLogin(final PostLoginEvent event) {
-      BungeePlatform.this.add(new BungeePlayerAudience(BungeePlatform.this, event.getPlayer()));
+      BungeeAudienceProvider.this.add(new BungeePlayerAudience(BungeeAudienceProvider.this, event.getPlayer()));
     }
 
     @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
     public void onQuit(final PlayerDisconnectEvent event) {
-      BungeePlatform.this.remove(event.getPlayer().getUniqueId());
-      BungeePlatform.this.bossBars.hideAll(event.getPlayer());
+      BungeeAudienceProvider.this.remove(event.getPlayer().getUniqueId());
+      BungeeAudienceProvider.this.bossBars.hideAll(event.getPlayer());
     }
 
   }

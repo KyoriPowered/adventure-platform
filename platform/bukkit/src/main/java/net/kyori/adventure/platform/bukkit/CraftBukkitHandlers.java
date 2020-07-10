@@ -238,7 +238,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     @Override
     public Object initState(final @NonNull Component message) {
       // Action bar through the chat packet doesn't properly support formatting
-      final TextComponent legacyMessage = TextComponent.of(BukkitPlatform.LEGACY_SERIALIZER.serialize(message));
+      final TextComponent legacyMessage = TextComponent.of(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(message));
       try {
         return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), Chat.TYPE_ACTIONBAR);
       } catch(final Throwable throwable) {
@@ -439,7 +439,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     @SuppressWarnings("deprecation")
     @Override
     public void openBook(final @NonNull Player viewer, final @NonNull Book book) {
-      final CompoundBinaryTag bookTag = tagFor(book, BukkitPlatform.GSON_SERIALIZER);
+      final CompoundBinaryTag bookTag = tagFor(book, BukkitAudienceProvider.GSON_SERIALIZER);
       final ItemStack current = viewer.getInventory().getItemInHand(); // TODO: Do this with packets instead -- sync ids have changed between versions
       try {
         // apply item to inventory

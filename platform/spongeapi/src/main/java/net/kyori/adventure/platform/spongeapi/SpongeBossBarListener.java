@@ -51,12 +51,12 @@ import org.spongepowered.api.entity.living.player.Player;
 
   @Override
   public void bossBarColorChanged(final @NonNull BossBar bar, final BossBar.@NonNull Color oldColor, final BossBar.@NonNull Color newColor) {
-    handle(bar, newColor, (val, sponge) -> sponge.setColor(SpongePlatform.sponge(BossBarColor.class, val, BossBar.Color.NAMES)));
+    handle(bar, newColor, (val, sponge) -> sponge.setColor(SpongeAudienceProvider.sponge(BossBarColor.class, val, BossBar.Color.NAMES)));
   }
 
   @Override
   public void bossBarOverlayChanged(final @NonNull BossBar bar, final BossBar.@NonNull Overlay oldOverlay, final BossBar.@NonNull Overlay newOverlay) {
-    handle(bar, newOverlay, (val, sponge) -> sponge.setOverlay(SpongePlatform.sponge(BossBarOverlay.class, val, BossBar.Overlay.NAMES)));
+    handle(bar, newOverlay, (val, sponge) -> sponge.setOverlay(SpongeAudienceProvider.sponge(BossBarOverlay.class, val, BossBar.Overlay.NAMES)));
   }
 
   @Override
@@ -74,8 +74,8 @@ import org.spongepowered.api.entity.living.player.Player;
     return ServerBossBar.builder()
       .name(SpongeApiComponentSerializer.get().serialize(adventure.name()))
       .percent(adventure.percent())
-      .color(SpongePlatform.sponge(BossBarColor.class, adventure.color(), BossBar.Color.NAMES))
-      .overlay(SpongePlatform.sponge(BossBarOverlay.class, adventure.overlay(), BossBar.Overlay.NAMES))
+      .color(SpongeAudienceProvider.sponge(BossBarColor.class, adventure.color(), BossBar.Color.NAMES))
+      .overlay(SpongeAudienceProvider.sponge(BossBarOverlay.class, adventure.overlay(), BossBar.Overlay.NAMES))
       .createFog(adventure.flags().contains(BossBar.Flag.CREATE_WORLD_FOG))
       .darkenSky(adventure.flags().contains(BossBar.Flag.DARKEN_SCREEN))
       .playEndBossMusic(adventure.flags().contains(BossBar.Flag.PLAY_BOSS_MUSIC))

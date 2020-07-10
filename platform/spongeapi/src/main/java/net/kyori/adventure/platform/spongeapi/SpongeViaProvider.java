@@ -80,14 +80,14 @@ import us.myles.ViaVersion.api.protocol.ProtocolVersion;
         return this.gsonSerializer(id);
       }
     }
-    return SpongePlatform.LEGACY_GSON_SERIALIZER;
+    return SpongeAudienceProvider.LEGACY_GSON_SERIALIZER;
   }
   
   private @NonNull GsonComponentSerializer gsonSerializer(final UUID id) {
     if(this.platform().getApi().getPlayerVersion(id) >= ProtocolVersion.v1_16.getId()) {
-      return SpongePlatform.MODERN_GSON_SERIALIZER;
+      return SpongeAudienceProvider.MODERN_GSON_SERIALIZER;
     } else {
-      return SpongePlatform.LEGACY_GSON_SERIALIZER;
+      return SpongeAudienceProvider.LEGACY_GSON_SERIALIZER;
     }
   }
 }

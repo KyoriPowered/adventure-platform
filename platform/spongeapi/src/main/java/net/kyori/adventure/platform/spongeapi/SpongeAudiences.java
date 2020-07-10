@@ -36,7 +36,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 /**
  * A provider of {@link Audience}s for the Sponge API.
  */
-@ImplementedBy(SpongePlatform.class)
+@ImplementedBy(SpongeAudienceProvider.class)
 public interface SpongeAudiences extends AudienceProvider {
   /**
    * Creates a {@link SpongeAudiences} provider for the given plugin.
@@ -48,7 +48,7 @@ public interface SpongeAudiences extends AudienceProvider {
    * @return the audience factory
    */
   static @NonNull SpongeAudiences create(final @NonNull PluginContainer container, final @NonNull Game game) {
-    return SpongePlatform.of(container, game);
+    return SpongeAudienceProvider.of(container, game);
   }
 
   /**

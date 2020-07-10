@@ -49,7 +49,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * A base implementation of {@link AudienceProvider} on a given platform.
  */
-public abstract class AbstractAdventurePlatform implements AudienceProvider {
+public abstract class AbstractAudienceProvider implements AudienceProvider {
 
   private Audience all;
   private Audience console;
@@ -62,7 +62,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   private ComponentRenderer<Locale> localeRenderer;
   private volatile boolean closed;
 
-  protected AbstractAdventurePlatform() {
+  protected AbstractAudienceProvider() {
     this.senderSet = ConcurrentHashMap.newKeySet();
     this.all = (ForwardingAudience) () -> this.senderSet;
     this.playerMap = new ConcurrentHashMap<>();
@@ -112,7 +112,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   private class ConsoleAudience implements ForwardingAudience {
-    private final Iterable<AdventureAudience> console = filter(AbstractAdventurePlatform.this.senderSet, AdventureAudience::console);
+    private final Iterable<AdventureAudience> console = filter(AbstractAudienceProvider.this.senderSet, AdventureAudience::console);
 
     @Override
     public @NonNull Iterable<? extends Audience> audiences() {
@@ -137,7 +137,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   private final class PermissionAudience implements ForwardingAudience {
-    private final Iterable<AdventureAudience> filtered = filter(AbstractAdventurePlatform.this.senderSet, this::hasPermission);
+    private final Iterable<AdventureAudience> filtered = filter(AbstractAudienceProvider.this.senderSet, this::hasPermission);
     private final String permission;
 
     private PermissionAudience(final @NonNull String permission) {
@@ -163,7 +163,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   private final class WorldAudience implements ForwardingAudience {
-    private final Iterable<AdventurePlayerAudience> filtered = filter(AbstractAdventurePlatform.this.playerMap.values(), this::inWorld);
+    private final Iterable<AdventurePlayerAudience> filtered = filter(AbstractAudienceProvider.this.playerMap.values(), this::inWorld);
     private final Key world;
 
     private WorldAudience(final @NonNull Key world) {
@@ -186,7 +186,7 @@ public abstract class AbstractAdventurePlatform implements AudienceProvider {
   }
 
   private final class ServerAudience implements ForwardingAudience {
-    private final Iterable<AdventurePlayerAudience> filtered = filter(AbstractAdventurePlatform.this.playerMap.values(), this::isOnServer);
+    private final Iterable<AdventurePlayerAudience> filtered = filter(AbstractAudienceProvider.this.playerMap.values(), this::isOnServer);
     private final String serverName;
 
     private ServerAudience(final @NonNull String serverName) {
