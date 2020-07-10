@@ -88,15 +88,17 @@ import static java.util.Objects.requireNonNull;
   private final String key;
   private final Plugin plugin;
   private final BungeeBossBarListener bossBars = new BungeeBossBarListener();
+  private final Listener listener;
 
   BungeePlatform(final String key, final Plugin plugin) {
     this.key = requireNonNull(key, "key");
     this.plugin = requireNonNull(plugin, "plugin");
+    this.listener = new Listener();
   }
 
   private void init() {
     try {
-      this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this);
+      this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);
     } catch(final Exception ex) {
       Knobs.logError("registering events with plugin", ex);
     }
@@ -114,15 +116,21 @@ import static java.util.Objects.requireNonNull;
     return this.bossBars;
   }
 
-  @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
-  public void onLogin(final PostLoginEvent event) {
-    this.add(new BungeePlayerAudience(this, event.getPlayer()));
-  }
+  public final class Listener implements net.md_5.bungee.api.plugin.Listener {
+    /* package */ Listener() {
+    }
 
-  @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
-  public void onQuit(final PlayerDisconnectEvent event) {
-    this.remove(event.getPlayer().getUniqueId());
-    this.bossBars.hideAll(event.getPlayer());
+    @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
+    public void onLogin(final PostLoginEvent event) {
+      BungeePlatform.this.add(new BungeePlayerAudience(BungeePlatform.this, event.getPlayer()));
+    }
+
+    @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
+    public void onQuit(final PlayerDisconnectEvent event) {
+      BungeePlatform.this.remove(event.getPlayer().getUniqueId());
+      BungeePlatform.this.bossBars.hideAll(event.getPlayer());
+    }
+
   }
 
   @Override
@@ -150,7 +158,7 @@ import static java.util.Objects.requireNonNull;
   @Override
   public void close() {
     INSTANCES.remove(this.key);
-    this.plugin.getProxy().getPluginManager().unregisterListener(this);
+    this.plugin.getProxy().getPluginManager().unregisterListener(this.listener);
     this.bossBars.hideAll();
     super.close();
   }
