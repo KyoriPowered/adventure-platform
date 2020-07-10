@@ -25,7 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import java.util.UUID;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
+import net.kyori.adventure.platform.impl.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -33,11 +33,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.Player;
 
 /* package */ final class SpongePlayerAudience extends SpongeSenderAudience<Player> implements AdventurePlayerAudience {
-  /* package */ SpongePlayerAudience(final @NonNull Player viewer, 
-                              final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat, 
-                              final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar, 
-                              final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title, 
-                              final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar, 
+  /* package */ SpongePlayerAudience(final @NonNull Player viewer,
+                              final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat,
+                              final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar,
+                              final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title,
+                              final @Nullable HandlerCollection<? super Player, ? extends Handler.BossBars<? super Player>> bossBar,
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.PlaySound<? super Player>> sound,
                               final @Nullable HandlerCollection<? super Player, ? extends Handler.Books<? super Player>> books) {
     super(viewer, chat, actionBar, title, bossBar, sound, books);

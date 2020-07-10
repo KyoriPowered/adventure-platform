@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.impl.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
 import net.kyori.adventure.platform.impl.Knobs;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;

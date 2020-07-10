@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.audience.AdventurePlayerAudience;
+import net.kyori.adventure.platform.impl.audience.AdventurePlayerAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import org.bukkit.entity.Player;

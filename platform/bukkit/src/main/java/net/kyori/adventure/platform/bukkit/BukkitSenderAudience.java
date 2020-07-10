@@ -23,7 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import net.kyori.adventure.platform.audience.AdventureAudience;
+import net.kyori.adventure.platform.impl.audience.AdventureAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;

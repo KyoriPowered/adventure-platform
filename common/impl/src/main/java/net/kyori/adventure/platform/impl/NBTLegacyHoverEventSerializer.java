@@ -26,8 +26,8 @@ package net.kyori.adventure.platform.impl;
 import java.io.IOException;
 import java.util.UUID;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.nbt.BinaryTagIO;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.nbt.TagStringIO;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -38,7 +38,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
   public static final NBTLegacyHoverEventSerializer INSTANCE = new NBTLegacyHoverEventSerializer();
-  private static final Codec<CompoundBinaryTag, String, IOException, IOException> SNBT_CODEC = Codec.of(BinaryTagIO::readString, BinaryTagIO::writeString);
+  private static final TagStringIO SNBT_IO = TagStringIO.def();
+  private static final Codec<CompoundBinaryTag, String, IOException, IOException> SNBT_CODEC = Codec.of(SNBT_IO::asCompound, SNBT_IO::asString);
 
   static final String ITEM_TYPE = "id";
   static final String ITEM_COUNT = "Count";
@@ -47,7 +48,7 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
   static final String ENTITY_NAME = "name";
   static final String ENTITY_TYPE = "type";
   static final String ENTITY_ID = "id";
-  
+
   private NBTLegacyHoverEventSerializer() {
   }
 

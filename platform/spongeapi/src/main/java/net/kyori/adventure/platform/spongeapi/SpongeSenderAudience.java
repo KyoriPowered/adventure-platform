@@ -24,7 +24,7 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import java.util.Locale;
-import net.kyori.adventure.platform.audience.AdventureAudience;
+import net.kyori.adventure.platform.impl.audience.AdventureAudience;
 import net.kyori.adventure.platform.impl.HandledAudience;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
@@ -36,11 +36,11 @@ import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
 /* package */ class SpongeSenderAudience<V extends MessageReceiver> extends HandledAudience<V> implements AdventureAudience {
-  
-  /* package */ SpongeSenderAudience(@NonNull final V viewer, 
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat, 
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar, 
-                              final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title, 
+
+  /* package */ SpongeSenderAudience(@NonNull final V viewer,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
+                              final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.BossBars<? super V>> bossBar,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.PlaySound<? super V>> sound,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.Books<? super V>> books) {

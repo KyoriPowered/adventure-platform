@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AbstractAdventurePlatform;
+import net.kyori.adventure.platform.impl.AbstractAdventurePlatform;
 import net.kyori.adventure.platform.impl.Handler;
 import net.kyori.adventure.platform.impl.HandlerCollection;
 import net.kyori.adventure.platform.impl.JDKLogHandler;
