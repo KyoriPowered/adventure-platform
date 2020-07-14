@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.common.audience.AdventureAudience;
 import net.kyori.adventure.bossbar.BossBar;
@@ -64,7 +65,7 @@ import static java.util.Objects.requireNonNull;
   }
 
   @Override
-  public void sendMessage(final @NonNull Component message) {
+  public void sendMessage(final @NonNull Component message, final @NonNull MessageType type) {
     this.sender.sendMessage(this.serializer().serialize(requireNonNull(message, "message")));
   }
 

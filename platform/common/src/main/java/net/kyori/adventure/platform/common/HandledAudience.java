@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.common;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.sound.Sound;
@@ -67,13 +68,13 @@ public class HandledAudience<V> implements Audience {
   }
 
   @Override
-  public void sendMessage(final @NonNull Component message) {
-    this.sendMessage0(this.chatHandler, requireNonNull(message, "message"));
+  public void sendMessage(final @NonNull Component message, final @NonNull MessageType type) {
+    this.sendMessage0(this.chatHandler, requireNonNull(message, "message"), type);
   }
 
-  private <S> void sendMessage0(final Handler.@Nullable Chat<? super V, S> handler, final @NonNull Component message) {
+  private <S> void sendMessage0(final Handler.@Nullable Chat<? super V, S> handler, final @NonNull Component message, final @NonNull MessageType type) {
     if(handler != null) {
-      handler.send(this.viewer, handler.initState(message));
+      handler.send(this.viewer, handler.initState(message, type), type);
     }
   }
 

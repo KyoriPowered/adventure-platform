@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.common;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.sound.Sound;
@@ -67,9 +68,17 @@ public interface Handler<V> {
     byte TYPE_SYSTEM = 1;
     byte TYPE_ACTIONBAR = 2;
 
-    S initState(final @NonNull Component component);
+    S initState(final @NonNull Component component, final MessageType type);
     
-    void send(final @NonNull V target, final @NonNull S message);
+    void send(final @NonNull V target, final @NonNull S message, final MessageType type);
+    
+    static byte messageType(final @NonNull MessageType type) {
+      if(type == MessageType.CHAT) {
+        return TYPE_CHAT;
+      } else {
+        return TYPE_SYSTEM;
+      }
+    }
   }
 
   interface ActionBar<V, S> extends Handler<V> {

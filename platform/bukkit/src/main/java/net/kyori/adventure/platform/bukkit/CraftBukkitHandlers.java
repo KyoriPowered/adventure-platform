@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.UUID;
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.nbt.BinaryTagIO;
@@ -185,18 +186,30 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
 
     @Override
-    public Object initState(final @NonNull Component message) {
+    public Object initState(final @NonNull Component message, final @NonNull MessageType type) {
       final Object nmsMessage = mcTextFromComponent(message);
       if(nmsMessage == null) {
         return null;
       }
-
+      
       try {
-        return CHAT_PACKET_CONSTRUCTOR.invoke(nmsMessage, MESSAGE_TYPE_SYSTEM, NIL_UUID);
+        return CHAT_PACKET_CONSTRUCTOR.invoke(nmsMessage, this.messageType(type), NIL_UUID);
       } catch(final Throwable throwable) {
         Knobs.logError("constructing MC chat packet", throwable);
         return null;
       }
+    }
+
+    @Override
+    public void send(final @NonNull CommandSender target, final @NonNull Object message, final MessageType type) {
+      this.send(target, message);
+    }
+
+    private Object messageType(final @NonNull MessageType type) {
+      if(type == MessageType.CHAT) {
+        return MESSAGE_TYPE_CHAT;
+      }
+      return MESSAGE_TYPE_SYSTEM;
     }
   }
 

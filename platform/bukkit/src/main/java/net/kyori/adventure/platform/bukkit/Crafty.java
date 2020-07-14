@@ -90,7 +90,11 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
-  /* package */ static boolean hasMethod(final @NonNull Class<?> klass, final @NonNull String methodName, final @Nullable Class<?> @NonNull ... parameters) {
+  /* package */ static boolean hasMethod(final @Nullable Class<?> klass, final @NonNull String methodName, final @Nullable Class<?> @NonNull ... parameters) {
+    if(klass == null) {
+      return false;
+    }
+    
     for(final Class<?> param : parameters) {
       if(param == null) {
         return false;

@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bungeecord;
 import java.util.Locale;
 import java.util.UUID;
 
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.common.audience.AdventurePlayerAudience;
 import net.kyori.adventure.bossbar.BossBar;
@@ -38,6 +39,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.common.Handler.Titles.ticks;
 
 /* package */ class BungeePlayerAudience extends BungeeSenderAudience implements AdventurePlayerAudience {
@@ -71,6 +73,19 @@ import static net.kyori.adventure.platform.common.Handler.Titles.ticks;
     return this.player.getLocale();
   }
 
+  @Override
+  public void sendMessage(final @NonNull Component message, final @NonNull MessageType type) {
+    this.player.sendMessage(this.messageType(type), this.serializer().serialize(requireNonNull(message, "message")));
+  }
+  
+  private ChatMessageType messageType(final @NonNull MessageType type) {
+    if(type == MessageType.CHAT) {
+      return ChatMessageType.CHAT;
+    } else {
+      return ChatMessageType.SYSTEM;
+    }
+  }
+  
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
     this.platform.bossBars().show(this.player, bar);

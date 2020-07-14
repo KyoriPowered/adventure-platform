@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.sound.Sound;
@@ -50,12 +51,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @Override
-    public String initState(final @NonNull Component component) {
+    public String initState(final @NonNull Component component, final @NonNull MessageType type) {
       return legacy(component);
     }
 
     @Override
-    public void send(final @NonNull CommandSender target, final @NonNull String message) {
+    public void send(final @NonNull CommandSender target, final @NonNull String message, final MessageType type) {
       target.sendMessage(message);
     }
   }
@@ -85,7 +86,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     public void play(final @NonNull Player viewer, final @NonNull Sound sound, final double x, final double y, final double z) {
       this.play(viewer, sound, new Location(viewer.getWorld(), x, y, z));
     }
-    
+
     protected abstract void play(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position);
 
     /* package */ static @NonNull String name(final @Nullable Key name) {
@@ -100,7 +101,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       }
     }
   }
-  
+
   /* package */ static class PlaySound_WithCategory extends PlaySound {
     private static final boolean SOUND_CATEGORY_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class, Crafty.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
 
@@ -140,7 +141,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       }
     }
   }
-  
+
   /* package */ static class PlaySound_NoCategory extends PlaySound {
     private static final boolean SOUND_STOP_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
 

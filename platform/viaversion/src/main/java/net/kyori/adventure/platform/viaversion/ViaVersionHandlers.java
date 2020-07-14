@@ -32,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.common.Handler;
@@ -126,35 +127,42 @@ public final class ViaVersionHandlers {
   }
 
   public static class Chat<V> extends ConnectionBased<V> implements Handler.Chat<V, String> {
-    private final byte chatType;
-
     public Chat(final ViaAPIProvider<? super V> provider) {
-      this(provider, TYPE_SYSTEM);
-    }
-
-    /* package */ Chat(final ViaAPIProvider<? super V> provider, final byte chatType) {
       super(provider);
-      this.chatType = chatType;
     }
 
     @Override
-    public String initState(@NonNull final Component component) {
+    public String initState(@NonNull final Component component, final @NonNull MessageType type) {
       return GsonComponentSerializer.gson().serialize(component);
     }
 
     @Override
-    public void send(@NonNull final V target, @NonNull final String message) {
+    public void send(@NonNull final V target, @NonNull final String message, final @NonNull MessageType type) {
       final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.CHAT_MESSAGE.ordinal(), null, this.connection(target));
       wrapper.write(Type.STRING, message);
-      wrapper.write(Type.BYTE, this.chatType);
+      wrapper.write(Type.BYTE, Chat.messageType(type));
       wrapper.write(Type.UUID, NIL_UUID);
       this.send(wrapper);
     }
   }
 
-  public static final class ActionBar<V> extends Chat<V> implements Handler.ActionBar<V, String> {
+  public static final class ActionBar<V> extends ConnectionBased<V> implements Handler.ActionBar<V, String> {
     public ActionBar(final ViaAPIProvider<? super V> provider) {
-      super(provider, TYPE_ACTIONBAR);
+      super(provider);
+    }
+
+    @Override
+    public String initState(final @NonNull Component message) {
+      return GsonComponentSerializer.gson().serialize(message);
+    }
+
+    @Override
+    public void send(@NonNull final V viewer, final @NonNull String message) {
+      final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.CHAT_MESSAGE.ordinal(), null, this.connection(viewer));
+      wrapper.write(Type.STRING, message);
+      wrapper.write(Type.BYTE, Chat.TYPE_ACTIONBAR);
+      wrapper.write(Type.UUID, Chat.NIL_UUID);
+      this.send(wrapper);
     }
   }
 

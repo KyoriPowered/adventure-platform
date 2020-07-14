@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.platform.common.Knobs;
@@ -43,7 +44,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
   /* package */ static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitAudienceProvider.GSON_SERIALIZER, BukkitAudienceProvider.LEGACY_SERIALIZER);
-  
+
+  private static final Class<?> BUNGEE_CHAT_MESSAGE_TYPE = Crafty.findClass("net.md_5.bungee.api.ChatMessageType");
+  private static final Class<?> BUNGEE_COMPONENT_TYPE = Crafty.findClass("net.md_5.bungee.api.chat.BaseComponent");
+
   private SpigotHandlers() {
   }
 
@@ -57,6 +61,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     public BaseComponent[] initState(final @NonNull Component message) {
       return SERIALIZER.serialize(message);
     }
+
+    public BaseComponent[] initState(final @NonNull Component message, final MessageType type) {
+      return this.initState(message);
+    }
   }
 
   /* package */ static final class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
@@ -68,8 +76,32 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
 
     @Override
-    public void send(@NonNull final CommandSender target, final BaseComponent @NonNull [] message) {
+    public void send(@NonNull final CommandSender target, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
       target.spigot().sendMessage(message);
+    }
+  }
+
+  /* package */ static final class Chat_PlayerWithType extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+    private static final Class<?> PLAYER_SPIGOT = Crafty.findClass("org.bukkit.entity.Player$Spigot");
+    private static final boolean HAS_TYPE = Crafty.hasMethod(PLAYER_SPIGOT, "sendMessage", BUNGEE_CHAT_MESSAGE_TYPE, BUNGEE_COMPONENT_TYPE);
+
+    @Override
+    public boolean isAvailable(final @NonNull CommandSender viewer) {
+      return super.isAvailable() && viewer instanceof Player && HAS_TYPE;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation") // this is stupid.
+    public void send(final @NonNull CommandSender target, final BaseComponent @NonNull [] message, final MessageType type) {
+      ((Player) target).spigot().sendMessage(this.messageType(type), message);
+    }
+
+    private ChatMessageType messageType(final MessageType type) {
+      if(type == MessageType.CHAT) {
+        return ChatMessageType.CHAT;
+      } else {
+        return ChatMessageType.SYSTEM;
+      }
     }
   }
 
@@ -81,7 +113,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
 
     @Override
-    public void send(final @NonNull CommandSender target, final BaseComponent @NonNull [] message) {
+    public void send(final @NonNull CommandSender target, final BaseComponent @NonNull [] message, final MessageType type) {
       ((Player) target).spigot().sendMessage(message);
     }
   }
@@ -95,12 +127,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       }
       try {
         final Class<?> spigotClass = Player.class.getMethod("spigot").getReturnType();
-        final Class<?> chatMessageType = Crafty.findClass("net.md_5.bungee.api.ChatMessageType");
-        final Class<?> baseComponent = Crafty.findClass("net.md_5.bungee.api.chat.BaseComponent");
-        if(chatMessageType == null || baseComponent == null) {
+        if(BUNGEE_CHAT_MESSAGE_TYPE == null || BUNGEE_COMPONENT_TYPE == null) {
           return false;
         }
-        return Crafty.hasMethod(spigotClass, "sendMessage", chatMessageType, baseComponent);
+        return Crafty.hasMethod(spigotClass, "sendMessage", BUNGEE_CHAT_MESSAGE_TYPE, BUNGEE_COMPONENT_TYPE);
       } catch(final NoSuchMethodException e) {
         return false;
       }

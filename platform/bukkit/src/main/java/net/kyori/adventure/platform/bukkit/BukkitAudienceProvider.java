@@ -168,6 +168,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
     this.chat = HandlerCollection.of(
       via("Chat", this.viaProvider, Handler.Chat.class),
+      new SpigotHandlers.Chat_PlayerWithType(),
       new SpigotHandlers.Chat(),
       new SpigotHandlers.Chat_PlayerOnly(),
       new CraftBukkitHandlers.Chat(),

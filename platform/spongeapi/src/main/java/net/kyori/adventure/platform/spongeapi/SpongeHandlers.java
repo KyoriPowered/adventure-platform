@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.common.Handler;
@@ -40,6 +41,7 @@ import org.spongepowered.api.text.BookView;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
+import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.Locatable;
 
@@ -56,14 +58,27 @@ import org.spongepowered.api.world.Locatable;
     }
 
     @Override
-    public Text initState(final @NonNull Component component) {
+    public Text initState(final @NonNull Component component, final @NonNull MessageType type) {
       return SpongeApiComponentSerializer.get().serialize(component);
     }
 
     @Override
-    public void send(final @NonNull MessageReceiver target, final @NonNull Text message) {
-      target.sendMessage(message);
+    public void send(final @NonNull MessageReceiver target, final @NonNull Text message, final @NonNull MessageType type) {
+      if(target instanceof ChatTypeMessageReceiver) {
+        ((ChatTypeMessageReceiver) target).sendMessage(this.sponge(type), message);
+      } else {
+        target.sendMessage(message);
+      }
     }
+    
+    private ChatType sponge(final @NonNull MessageType type) {
+      if(type == MessageType.CHAT) {
+        return ChatTypes.CHAT;
+      } else {
+        return ChatTypes.SYSTEM;
+      }
+    }
+    
   }
   
   /* package */ static class ActionBar implements Handler.ActionBar<MessageReceiver, Text> {
