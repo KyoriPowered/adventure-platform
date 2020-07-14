@@ -24,7 +24,6 @@
 package net.kyori.adventure.platform.bukkit;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
@@ -40,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.bukkit.Crafty.LOOKUP;
-import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
+import static net.kyori.adventure.platform.bukkit.Crafty.findNmsClass;
 
 /**
  * An implementation that converts between Adventure
@@ -57,6 +56,8 @@ import static net.kyori.adventure.platform.bukkit.Crafty.nmsClass;
 public class MinecraftComponentSerializer implements ComponentSerializer<Component, Component, Object> {
   public static final MinecraftComponentSerializer INSTANCE = new MinecraftComponentSerializer();
 
+  // we use concat here to hide from class relocators
+  private static final @Nullable Class<?> CLASS_JSON_DESERIALIZER = Crafty.findClass("com.goo".concat("gle.gson.JsonDeserializer"));
   /* package */ static final @Nullable Class<?> CLASS_CHAT_COMPONENT = Crafty.findNmsClass("IChatBaseComponent");
   private static final Gson MC_TEXT_GSON;
   private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE;
@@ -71,43 +72,46 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
       if(CLASS_CHAT_COMPONENT != null) {
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
-          .filter(JsonDeserializer.class::isAssignableFrom)
+          .filter(c -> CLASS_JSON_DESERIALIZER != null && CLASS_JSON_DESERIALIZER.isAssignableFrom(c))
           .findAny()
           // fallback to the 1.7 class?
           .orElseGet(() -> {
-            return nmsClass("ChatSerializer");
+            return findNmsClass("ChatSerializer");
           });
-        final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
-          .filter(m -> Modifier.isStatic(m.getModifiers()))
-          .filter(m -> m.getType().equals(Gson.class))
-          .findFirst()
-          .orElse(null);
-        if(gsonField != null) {
-          gsonField.setAccessible(true);
-          gson = (Gson) gsonField.get(null);
-        } else {
-          final Method[] declaredMethods = chatSerializerClass.getDeclaredMethods();
-          final Method deserialize = Arrays.stream(declaredMethods)
+        if(chatSerializerClass != null) {
+          final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
             .filter(m -> Modifier.isStatic(m.getModifiers()))
-            .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
-            .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
-            .min(Comparator.comparing(Method::getName)) // prefer the #a method
-            .orElse(null);
-          final Method serialize = Arrays.stream(declaredMethods)
-            .filter(m -> Modifier.isStatic(m.getModifiers()))
-            .filter(m -> m.getReturnType().equals(String.class))
-            .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(CLASS_CHAT_COMPONENT))
+            .filter(m -> m.getType().equals(Gson.class))
             .findFirst()
             .orElse(null);
-          if(deserialize != null) {
-            textSerializerDeserialize = LOOKUP.unreflect(deserialize);
-          }
-          if(serialize != null) {
-            textSerializerSerialize = LOOKUP.unreflect(serialize);
+          if(gsonField != null) {
+            gsonField.setAccessible(true);
+            gson = (Gson) gsonField.get(null);
+          } else {
+            final Method[] declaredMethods = chatSerializerClass.getDeclaredMethods();
+            final Method deserialize = Arrays.stream(declaredMethods)
+              .filter(m -> Modifier.isStatic(m.getModifiers()))
+              .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
+              .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
+              .min(Comparator.comparing(Method::getName)) // prefer the #a method
+              .orElse(null);
+            final Method serialize = Arrays.stream(declaredMethods)
+              .filter(m -> Modifier.isStatic(m.getModifiers()))
+              .filter(m -> m.getReturnType().equals(String.class))
+              .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(CLASS_CHAT_COMPONENT))
+              .findFirst()
+              .orElse(null);
+
+            if(deserialize != null) {
+              textSerializerDeserialize = LOOKUP.unreflect(deserialize);
+            }
+            if(serialize != null) {
+              textSerializerSerialize = LOOKUP.unreflect(serialize);
+            }
           }
         }
       }
-    } catch(IllegalAccessException | IllegalArgumentException ex) {
+    } catch(final IllegalAccessException | IllegalArgumentException ex) {
       Knobs.logError("finding chat serializer", ex);
     }
     MC_TEXT_GSON = gson;
