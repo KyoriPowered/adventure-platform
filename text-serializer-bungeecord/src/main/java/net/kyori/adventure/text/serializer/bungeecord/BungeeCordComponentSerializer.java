@@ -120,6 +120,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
       final Field gsonField = GsonInjections.field(net.md_5.bungee.chat.ComponentSerializer.class, "gson");
       inject((Gson) gsonField.get(null));
     } catch(final Exception ignore) {
+      SUPPORTED = false;
     }
   }
 
