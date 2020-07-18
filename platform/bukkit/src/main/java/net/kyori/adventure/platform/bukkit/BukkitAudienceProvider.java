@@ -88,7 +88,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private static final Map<String, BukkitAudienceProvider> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
 
-  /* package */ static final boolean IS_1_16 = Crafty.enumValue(Material.class, "NETHERITE_PICKAXE") != null;
+  /* package */ static final boolean IS_1_16 = Crafty.findEnum(Material.class, "NETHERITE_PICKAXE") != null;
   /* package */ static final GsonComponentSerializer GSON_SERIALIZER;
   private static final GsonComponentSerializer MODERN_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
@@ -131,7 +131,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       final PluginDescriptionFile pdf = plugin.getDescription();
       if(pdf.getName().equals(pluginName)) return; // don't depend on ourselves?
 
-      final Field softdepend = Crafty.field(pdf.getClass(), "softDepend");
+      final Field softdepend = Crafty.needField(pdf.getClass(), "softDepend");
 
       final List<String> dependencies = (List<String>) softdepend.get(pdf);
       if(!dependencies.contains(pluginName)) { // add to plugin.yml
@@ -142,7 +142,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       // add to dependency graph (added 14c9d275141 during MC 1.15).
       // even if this fails (on older versions), we'll still have added ourselves to the PluginDescriptionFile
       final PluginManager manager = plugin.getServer().getPluginManager();
-      final Field dependencyGraphField = Crafty.field(manager.getClass(), "dependencyGraph");
+      final Field dependencyGraphField = Crafty.needField(manager.getClass(), "dependencyGraph");
       final MutableGraph<String> graph = (MutableGraph<String>) dependencyGraphField.get(manager);
       graph.putEdge(pdf.getName(), pluginName);
     } catch(final Throwable error) { // fail silently

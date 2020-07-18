@@ -86,11 +86,11 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
       try {
         final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
         final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
-        craftPlayerGetHandle = Crafty.LOOKUP.unreflect(getHandleMethod);
+        craftPlayerGetHandle = Crafty.lookup().unreflect(getHandleMethod);
         final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
-        entityPlayerGetConnection = Crafty.LOOKUP.unreflectGetter(playerConnectionField);
+        entityPlayerGetConnection = Crafty.lookup().unreflectGetter(playerConnectionField);
         final Class<?> playerConnectionClass = playerConnectionField.getType();
-        playerConnectionSendPacket = Crafty.LOOKUP.findVirtual(playerConnectionClass, "sendPacket", methodType(void.class, packetClass));
+        playerConnectionSendPacket = Crafty.lookup().findVirtual(playerConnectionClass, "sendPacket", methodType(void.class, packetClass));
       } catch(final NoSuchMethodException | IllegalAccessException | NoSuchFieldException ex) {
         Knobs.logError("finding packet send methods", ex);
       }
@@ -132,9 +132,9 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
 
   // Components //
   private static final @Nullable Class<?> CLASS_MESSAGE_TYPE = Crafty.findNmsClass("ChatMessageType");
-  private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.enumValue(CLASS_MESSAGE_TYPE, "CHAT", 0);
-  private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.enumValue(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
-  private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.enumValue(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
+  private static final @Nullable Object MESSAGE_TYPE_CHAT = Crafty.findEnum(CLASS_MESSAGE_TYPE, "CHAT", 0);
+  private static final @Nullable Object MESSAGE_TYPE_SYSTEM = Crafty.findEnum(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
+  private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = Crafty.findEnum(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
   private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
@@ -146,7 +146,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     try {
       if(CLASS_CHAT_COMPONENT != null) {
         // Chat packet //
-        final Class<?> chatPacketClass = Crafty.nmsClass("PacketPlayOutChat");
+        final Class<?> chatPacketClass = Crafty.needNmsClass("PacketPlayOutChat");
         // PacketPlayOutChat constructor changed for 1.16
         chatPacketConstructor = Crafty.findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
         if(chatPacketConstructor == null) {
@@ -219,9 +219,9 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
   private static final @Nullable Class<?> CLASS_TITLE_ACTION = Crafty.findNmsClass("PacketPlayOutTitle$EnumTitleAction"); // welcome to spigot, where we can't name classes? i guess?
   private static final MethodHandle CONSTRUCTOR_TITLE_MESSAGE = Crafty.findConstructor(CLASS_TITLE_PACKET, CLASS_TITLE_ACTION, CLASS_CHAT_COMPONENT); // (EnumTitleAction, IChatBaseComponent)
   private static final @Nullable MethodHandle CONSTRUCTOR_TITLE_TIMES = Crafty.findConstructor(CLASS_TITLE_PACKET, int.class, int.class, int.class);
-  private static final @Nullable Object TITLE_ACTION_TITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "TITLE", 0);
-  private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.enumValue(CLASS_TITLE_ACTION, "SUBTITLE", 1);
-  private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.enumValue(CLASS_TITLE_ACTION, "ACTIONBAR");
+  private static final @Nullable Object TITLE_ACTION_TITLE = Crafty.findEnum(CLASS_TITLE_ACTION, "TITLE", 0);
+  private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.findEnum(CLASS_TITLE_ACTION, "SUBTITLE", 1);
+  private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.findEnum(CLASS_TITLE_ACTION, "ACTIONBAR");
 
   /* package */ static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
 
@@ -309,7 +309,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
   /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
     private static final Class<?> CLASS_CRAFT_BOSS_BAR = Crafty.findCraftClass("boss.CraftBossBar");
     private static final Class<?> CLASS_BOSS_BAR_ACTION = Crafty.findNmsClass("PacketPlayOutBoss$Action");
-    private static final Object BOSS_BAR_ACTION_TITLE = Crafty.enumValue(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
+    private static final Object BOSS_BAR_ACTION_TITLE = Crafty.findEnum(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
     private static final MethodHandle CRAFT_BOSS_BAR_HANDLE;
     private static final MethodHandle NMS_BOSS_BATTLE_SET_NAME;
     private static final MethodHandle NMS_BOSS_BATTLE_SEND_UPDATE;
@@ -320,11 +320,11 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
       MethodHandle nmsBossBattleSendUpdate = null;
       if(CLASS_CRAFT_BOSS_BAR != null && CLASS_CHAT_COMPONENT != null && BOSS_BAR_ACTION_TITLE != null) {
         try {
-          final Field craftBossBarHandleField = Crafty.field(CLASS_CRAFT_BOSS_BAR, "handle");
-          craftBossBarHandle = Crafty.LOOKUP.unreflectGetter(craftBossBarHandleField);
+          final Field craftBossBarHandleField = Crafty.needField(CLASS_CRAFT_BOSS_BAR, "handle");
+          craftBossBarHandle = Crafty.lookup().unreflectGetter(craftBossBarHandleField);
           final Class<?> nmsBossBattleType = craftBossBarHandleField.getType();
-          nmsBossBattleSetName = Crafty.LOOKUP.findSetter(nmsBossBattleType, "title", CLASS_CHAT_COMPONENT);
-          nmsBossBattleSendUpdate = Crafty.LOOKUP.findVirtual(nmsBossBattleType, "sendUpdate", methodType(void.class, CLASS_BOSS_BAR_ACTION));
+          nmsBossBattleSetName = Crafty.lookup().findSetter(nmsBossBattleType, "title", CLASS_CHAT_COMPONENT);
+          nmsBossBattleSendUpdate = Crafty.lookup().findVirtual(nmsBossBattleType, "sendUpdate", methodType(void.class, CLASS_BOSS_BAR_ACTION));
         } catch(final NoSuchFieldException | IllegalAccessException | NoSuchMethodException ex) {
           Knobs.logError("finding boss bar name operations", ex);
         }
@@ -434,7 +434,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
   }
 
   protected static abstract class AbstractBooks extends PacketSendingHandler<Player> implements Handler.Books<Player> {
-    private static final Material BOOK_TYPE = (Material) Crafty.enumValue(Material.class, "WRITTEN_BOOK");
+    private static final Material BOOK_TYPE = (Material) Crafty.findEnum(Material.class, "WRITTEN_BOOK");
     private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(Material.WRITTEN_BOOK); // will always be copied
 
     /* package */ AbstractBooks() {
@@ -509,7 +509,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
             && method.getParameterCount() == 1
             && method.getParameterTypes()[0].equals(DataInputStream.class)) {
             try {
-              nbtIoDeserialize = Crafty.LOOKUP.unreflect(method);
+              nbtIoDeserialize = Crafty.lookup().unreflect(method);
             } catch(final IllegalAccessException ignore) {
             }
             break;
@@ -540,8 +540,8 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     private static final MethodHandle MC_ITEMSTACK_SET_TAG = Crafty.findMethod(CLASS_MC_ITEMSTACK, "setTag", void.class, CLASS_NBT_TAG_COMPOUND);
     private static final MethodHandle MC_ITEMSTACK_GET_TAG = Crafty.findMethod(CLASS_MC_ITEMSTACK, "getTag", CLASS_NBT_TAG_COMPOUND);
 
-    private static final MethodHandle CRAFT_ITEMSTACK_NMS_COPY = Crafty.findStatic(CLASS_CRAFT_ITEMSTACK, "asNMSCopy", CLASS_MC_ITEMSTACK, ItemStack.class);
-    private static final MethodHandle CRAFT_ITEMSTACK_CRAFT_MIRROR = Crafty.findStatic(CLASS_CRAFT_ITEMSTACK, "asCraftMirror", CLASS_CRAFT_ITEMSTACK, CLASS_MC_ITEMSTACK);
+    private static final MethodHandle CRAFT_ITEMSTACK_NMS_COPY = Crafty.findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asNMSCopy", CLASS_MC_ITEMSTACK, ItemStack.class);
+    private static final MethodHandle CRAFT_ITEMSTACK_CRAFT_MIRROR = Crafty.findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asCraftMirror", CLASS_CRAFT_ITEMSTACK, CLASS_MC_ITEMSTACK);
 
     /**
      * Return a native stack with the tag set on it
@@ -569,7 +569,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
 
   /* package */ static final class Books extends AbstractBooks implements Handler.Books<Player> {
     private static final Class<?> CLASS_ENUM_HAND = Crafty.findNmsClass("EnumHand");
-    private static final Object HAND_MAIN = Crafty.enumValue(CLASS_ENUM_HAND, "MAIN_HAND", 0);
+    private static final Object HAND_MAIN = Crafty.findEnum(CLASS_ENUM_HAND, "MAIN_HAND", 0);
     private static final Class<?> PACKET_OPEN_BOOK = Crafty.findNmsClass("PacketPlayOutOpenBook");
     private static final MethodHandle NEW_PACKET_OPEN_BOOK = Crafty.findConstructor(PACKET_OPEN_BOOK, CLASS_ENUM_HAND);
 

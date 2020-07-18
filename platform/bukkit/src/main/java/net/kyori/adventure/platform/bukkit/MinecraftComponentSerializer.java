@@ -38,8 +38,8 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static net.kyori.adventure.platform.bukkit.Crafty.LOOKUP;
 import static net.kyori.adventure.platform.bukkit.Crafty.findNmsClass;
+import static net.kyori.adventure.platform.bukkit.Crafty.lookup;
 
 /**
  * An implementation that converts between Adventure
@@ -103,10 +103,10 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
               .orElse(null);
 
             if(deserialize != null) {
-              textSerializerDeserialize = LOOKUP.unreflect(deserialize);
+              textSerializerDeserialize = lookup().unreflect(deserialize);
             }
             if(serialize != null) {
-              textSerializerSerialize = LOOKUP.unreflect(serialize);
+              textSerializerSerialize = lookup().unreflect(serialize);
             }
           }
         }

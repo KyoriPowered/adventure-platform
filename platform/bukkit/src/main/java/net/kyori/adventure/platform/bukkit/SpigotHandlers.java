@@ -122,7 +122,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
     @Override
     public boolean isAvailable() {
-      if(!super.isAvailable() || Crafty.hasCraftBukkit()) {
+      if(!super.isAvailable() || Crafty.isCraftBukkit()) {
         return false;
       }
       try {
