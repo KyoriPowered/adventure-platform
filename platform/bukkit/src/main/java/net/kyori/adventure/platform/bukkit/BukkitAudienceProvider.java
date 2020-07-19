@@ -104,7 +104,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     Knobs.logger(new JDKLogHandler());
     if(IS_1_16) { // we are 1.16
       GSON_SERIALIZER = MODERN_GSON_SERIALIZER;
-      LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().build();
+      LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().useUnusualXRepeatedCharacterHexFormat().build();
     } else {
       GSON_SERIALIZER = LEGACY_GSON_SERIALIZER;
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();

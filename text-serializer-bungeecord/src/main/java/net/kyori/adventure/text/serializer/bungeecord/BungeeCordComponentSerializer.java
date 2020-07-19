@@ -46,7 +46,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
     bind();
   }
 
-  private static final BungeeCordComponentSerializer MODERN = new BungeeCordComponentSerializer(GsonComponentSerializer.gson(), LegacyComponentSerializer.builder().hexColors().build());
+  private static final BungeeCordComponentSerializer MODERN = new BungeeCordComponentSerializer(GsonComponentSerializer.gson(), LegacyComponentSerializer.builder().hexColors().useUnusualXRepeatedCharacterHexFormat().build());
   private static final BungeeCordComponentSerializer PRE_1_16 = new BungeeCordComponentSerializer(GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(), LegacyComponentSerializer.legacy());
 
   /**
