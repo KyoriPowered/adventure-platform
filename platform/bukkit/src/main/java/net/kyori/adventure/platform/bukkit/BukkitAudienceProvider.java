@@ -107,7 +107,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder().hexColors().useUnusualXRepeatedCharacterHexFormat().build();
     } else {
       GSON_SERIALIZER = LEGACY_GSON_SERIALIZER;
-      LEGACY_SERIALIZER = LegacyComponentSerializer.legacy();
+      LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
     }
   }
 
