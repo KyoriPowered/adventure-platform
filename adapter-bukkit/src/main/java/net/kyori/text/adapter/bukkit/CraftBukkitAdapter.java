@@ -103,7 +103,7 @@ final class CraftBukkitAdapter implements Adapter {
         });
       final Method serializeMethod = Arrays.stream(chatSerializerClass.getMethods())
         .filter(m -> Modifier.isStatic(m.getModifiers()))
-        .filter(m -> m.getReturnType().equals(baseComponentClass))
+        .filter(m -> baseComponentClass.isAssignableFrom(m.getReturnType()))
         .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
         .min(Comparator.comparing(Method::getName)) // prefer the #a method
         .orElseThrow(() -> new RuntimeException("Unable to find serialize method"));
