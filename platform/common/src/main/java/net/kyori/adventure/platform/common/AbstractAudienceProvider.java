@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.common;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,8 +36,6 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.platform.common.audience.AdventureAudience;
 import net.kyori.adventure.platform.common.audience.AdventurePlayerAudience;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Map;
@@ -59,7 +56,6 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
   private Map<String, Audience> permissionMap;
   private Map<Key, Audience> worldMap;
   private Map<String, Audience> serverMap;
-  private ComponentRenderer<Locale> localeRenderer;
   private volatile boolean closed;
 
   protected AbstractAudienceProvider() {
@@ -71,12 +67,6 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
     this.permissionMap = new ConcurrentHashMap<>();
     this.worldMap = new ConcurrentHashMap<>();
     this.serverMap = new ConcurrentHashMap<>();
-    this.localeRenderer = new ComponentRenderer<Locale>() {
-      @Override
-      public @NonNull Component render(final @NonNull Component component, final @NonNull Locale context) {
-        return component; // TODO: allow this to be customized
-      }
-    };
     this.closed = false;
   }
 
@@ -206,11 +196,6 @@ public abstract class AbstractAudienceProvider implements AudienceProvider {
   @Override
   public @NonNull Audience server(final @NonNull String serverName) {
     return this.serverMap.computeIfAbsent(serverName, ServerAudience::new);
-  }
-
-  @Override
-  public @NonNull ComponentRenderer<Locale> localeRenderer() {
-    return this.localeRenderer;
   }
 
   @Override

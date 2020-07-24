@@ -25,11 +25,9 @@ package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -115,13 +113,6 @@ public interface AudienceProvider {
    * @return a server's audience
    */
   @NonNull Audience server(final @NonNull String serverName);
-
-  /**
-   * Gets an component renderer that customizes text for each audience.
-   *
-   * @return a component renderer
-   */
-  @NonNull ComponentRenderer<Locale> localeRenderer();
 
   /**
    * Gets a json component serializer using the format most appropriate for the running game instance.
