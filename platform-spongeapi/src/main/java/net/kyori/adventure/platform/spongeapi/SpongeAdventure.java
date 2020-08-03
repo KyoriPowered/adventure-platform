@@ -24,18 +24,21 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import net.kyori.adventure.platform.facet.Knob;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
- * Adventure for SpongeAPI.
+ * The entrypoint for Adventure in SpongeAPI.
  *
- * @see #of(Game)
+ * @see #of(PluginContainer, Game)
+ * @see SpongeAudienceProvider
  */
 public final class SpongeAdventure {
   private SpongeAdventure() {
@@ -47,15 +50,22 @@ public final class SpongeAdventure {
     Knob.ERR = logger::warn;
   }
 
-  private static final Map<Game, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  /* package */ static final Map<PluginContainer, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
-   * Gets the audience provider.
+   * Creates an audience provider for a plugin.
    *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin container
    * @param game a game
-   * @return the audience provider
+   * @return an audience provider
    */
-  public static SpongeAudienceProvider of(final Game game) {
-    return INSTANCES.computeIfAbsent(game, SpongeAudienceProviderImpl::new);
+  public static SpongeAudienceProvider of(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+    return INSTANCES.computeIfAbsent(plugin, container -> {
+      final SpongeAudienceProviderImpl provider = new SpongeAudienceProviderImpl(game);
+      provider.init(container);
+      return provider;
+    });
   }
 }

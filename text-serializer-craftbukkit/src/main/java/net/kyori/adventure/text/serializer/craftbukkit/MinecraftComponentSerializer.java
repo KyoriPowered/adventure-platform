@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.text.serializer.craftbukkit;
 
+import com.google.common.annotations.Beta;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.lang.invoke.MethodHandle;
@@ -45,7 +46,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
 
 /**
- * A {@code net.minecraft.server.<version>.IChatBaseComponent} serializer.
+ * A component serializer for {@code net.minecraft.server.<version>.IChatBaseComponent}.
  *
  * <p>Due to Bukkit version namespaces, the return type does not reflect the actual type.</p>
  *
@@ -55,6 +56,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
  *
  * @see #get()
  */
+@Beta // Causes users to see "UnstableApiUsage"
 public final class MinecraftComponentSerializer implements ComponentSerializer<Component, Component, Object> {
   private static final MinecraftComponentSerializer INSTANCE = new MinecraftComponentSerializer();
 
@@ -72,7 +74,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
    *
    * @return a component serializer
    */
-  public static MinecraftComponentSerializer get() {
+  public static @NonNull MinecraftComponentSerializer get() {
     return INSTANCE;
   }
 

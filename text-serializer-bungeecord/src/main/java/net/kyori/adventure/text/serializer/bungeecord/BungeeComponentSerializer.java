@@ -39,15 +39,15 @@ import static java.util.Objects.requireNonNull;
 /**
  * A component serializer for BungeeCord's {@link BaseComponent}.
  */
-public final class BungeeCordComponentSerializer implements ComponentSerializer<Component, Component, BaseComponent[]> {
+public final class BungeeComponentSerializer implements ComponentSerializer<Component, Component, BaseComponent[]> {
   private static boolean SUPPORTED = true;
 
   static {
     bind();
   }
 
-  private static final BungeeCordComponentSerializer MODERN = new BungeeCordComponentSerializer(GsonComponentSerializer.gson(), LegacyComponentSerializer.builder().hexColors().useUnusualXRepeatedCharacterHexFormat().build());
-  private static final BungeeCordComponentSerializer PRE_1_16 = new BungeeCordComponentSerializer(GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(), LegacyComponentSerializer.legacySection());
+  private static final BungeeComponentSerializer MODERN = new BungeeComponentSerializer(GsonComponentSerializer.gson(), LegacyComponentSerializer.builder().hexColors().useUnusualXRepeatedCharacterHexFormat().build());
+  private static final BungeeComponentSerializer PRE_1_16 = new BungeeComponentSerializer(GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(), LegacyComponentSerializer.legacySection());
 
   /**
    * Gets whether the component serializer has native support.
@@ -56,7 +56,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
    *
    * @return if there is native support
    */
-  public static boolean nativeSupport() {
+  public static boolean hasNativeSupport() {
     return SUPPORTED;
   }
 
@@ -65,7 +65,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
    *
    * @return a component serializer
    */
-  public static BungeeCordComponentSerializer get() {
+  public static BungeeComponentSerializer get() {
     return MODERN;
   }
 
@@ -74,7 +74,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
    *
    * @return a component serializer
    */
-  public static BungeeCordComponentSerializer legacy() {
+  public static BungeeComponentSerializer legacy() {
     return PRE_1_16;
   }
 
@@ -85,9 +85,9 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
    * @param legacySerializer The serializer creating a representation of the component with legacy formatting codes
    * @return a new serializer
    */
-  public static BungeeCordComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
+  public static BungeeComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
     if(serializer == null || legacySerializer == null) return null;
-    return new BungeeCordComponentSerializer(serializer, legacySerializer);
+    return new BungeeComponentSerializer(serializer, legacySerializer);
   }
 
   /**
@@ -111,7 +111,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
   private final GsonComponentSerializer serializer;
   private final LegacyComponentSerializer legacySerializer;
 
-  private BungeeCordComponentSerializer(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
+  private BungeeComponentSerializer(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
     this.serializer = serializer;
     this.legacySerializer = legacySerializer;
   }
@@ -159,7 +159,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
     @Override
     public String toLegacyText() {
       if(this.legacy == null) {
-        this.legacy = BungeeCordComponentSerializer.this.legacySerializer.serialize(this.component);
+        this.legacy = BungeeComponentSerializer.this.legacySerializer.serialize(this.component);
       }
       return this.legacy;
     }
@@ -171,7 +171,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
 
     @Override
     public void write(final JsonWriter out) throws IOException {
-      BungeeCordComponentSerializer.this.serializer.serializer().getAdapter(Component.class).write(out, this.component);
+      BungeeComponentSerializer.this.serializer.serializer().getAdapter(Component.class).write(out, this.component);
     }
   }
 }

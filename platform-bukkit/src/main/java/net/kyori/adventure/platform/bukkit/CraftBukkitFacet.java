@@ -100,7 +100,6 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
   }
 
   private static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
-
   private static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
   private static final @Nullable MethodHandle ENTITY_PLAYER_GET_CONNECTION;
   private static final @Nullable MethodHandle PLAYER_CONNECTION_SEND_PACKET;
@@ -131,8 +130,9 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     PLAYER_CONNECTION_SEND_PACKET = playerConnectionSendPacket;
   }
 
-  private static final boolean SUPPORTED = isEnabled("craftbukkit") && MinecraftComponentSerializer.isSupported() &&
-    CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
+  private static final boolean SUPPORTED = isEnabled("craftbukkit")
+    && MinecraftComponentSerializer.isSupported()
+    && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
 
   /* package */ static class PacketFacet<V extends CommandSender> extends CraftBukkitFacet<V> implements Facet.Message<V, Object> {
     @SuppressWarnings("unchecked")
@@ -142,6 +142,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
     public void sendPacket(final @NonNull Player player, final @Nullable Object packet) {
       if(packet == null) return;
+
       try {
         PLAYER_CONNECTION_SEND_PACKET.invoke(ENTITY_PLAYER_GET_CONNECTION.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(player)), packet);
       } catch(final Throwable error) {
@@ -180,7 +181,6 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
     try {
       if(CLASS_CHAT_COMPONENT != null) {
-        // Chat packet //
         final Class<?> chatPacketClass = needNmsClass("PacketPlayOutChat");
         // PacketPlayOutChat constructor changed for 1.16
         chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
@@ -219,7 +219,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
       try {
         this.sendMessage(viewer, CHAT_PACKET_CONSTRUCTOR.invoke(message, messageType, NULL_UUID));
       } catch(final Throwable error) {
-        logError(error, "Failed to invoke PacketPlayOutChat constructor: %s", message);
+        logError(error, "Failed to invoke PacketPlayOutChat constructor: %s %s", message, messageType);
       }
     }
   }
@@ -316,7 +316,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
   protected static abstract class AbstractBook extends PacketFacet<Player> implements Facet.Book<Player, Object, ItemStack> {
     private static final Material BOOK_TYPE = (Material) findEnum(Material.class, "WRITTEN_BOOK");
-    private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(BOOK_TYPE); // will always be copied
+    private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(BOOK_TYPE);
 
     protected abstract void sendOpenPacket(final @NonNull Player viewer) throws Throwable;
 

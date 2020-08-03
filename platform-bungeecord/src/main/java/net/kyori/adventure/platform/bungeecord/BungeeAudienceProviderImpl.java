@@ -39,6 +39,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -52,7 +53,10 @@ import static java.util.Objects.requireNonNull;
     this.listener = new Listener();
     this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);
 
-    this.addViewer(this.plugin.getProxy().getConsole());
+    final CommandSender console = this.plugin.getProxy().getConsole();
+    this.addViewer(console);
+    this.changeViewer(console, Locale.getDefault());
+
     for(final ProxiedPlayer player : this.plugin.getProxy().getPlayers()) {
       this.addViewer(player);
     }
@@ -65,7 +69,7 @@ import static java.util.Objects.requireNonNull;
     } else if(this.isConsole(sender)) {
       return this.console();
     }
-    return new BungeeAudience(Collections.singletonList(sender));
+    return this.createAudience(Collections.singletonList(sender));
   }
 
   @Override

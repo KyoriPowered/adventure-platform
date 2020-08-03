@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.bukkit;
 import net.kyori.adventure.platform.facet.Knob;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -33,9 +34,10 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Adventure for {@link org.bukkit.Bukkit}.
+ * The entrypoint for Adventure in {@link org.bukkit.Bukkit}.
  *
  * @see #of(Plugin)
+ * @see BukkitAudienceProvider
  */
 public final class BukkitAdventure {
   private BukkitAdventure() {
@@ -49,12 +51,14 @@ public final class BukkitAdventure {
   private static final Map<Plugin, BukkitAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
-   * Gets an audience provider.
+   * Creates an audience provider for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
    *
    * @param plugin a plugin
    * @return an audience provider
    */
-  public static BukkitAudienceProvider of(final Plugin plugin) {
+  public static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
     return INSTANCES.computeIfAbsent(plugin, BukkitAudienceProviderImpl::new);
   }
 }

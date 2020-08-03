@@ -81,8 +81,10 @@ import java.util.function.Function;
 
   @Override
   public void showBossBar(final @NonNull BossBar bar) {
-    // Keep track of the plugin, this is needed for wither boss bars that need to listen to events
+    // Some boss bar listeners need access to a Plugin to register events.
+    // So keep track of the last plugin before each boss bar invocation.
     PLUGIN.set(this.plugin);
+
     super.showBossBar(bar);
   }
 }

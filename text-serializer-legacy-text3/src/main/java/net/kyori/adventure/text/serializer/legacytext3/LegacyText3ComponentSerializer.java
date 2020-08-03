@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Adapts between text 3.x's {@link net.kyori.text.Component} type and adventure's {@link Component} type.
+ * A component serializer betweeen text 3.x's {@link net.kyori.text.Component} and adventure's {@link Component}.
  */
 public final class LegacyText3ComponentSerializer implements ComponentSerializer<Component, Component, net.kyori.text.Component> {
   private static final LegacyText3ComponentSerializer INSTANCE = new LegacyText3ComponentSerializer();
@@ -41,7 +41,7 @@ public final class LegacyText3ComponentSerializer implements ComponentSerializer
    *
    * @return a component serializer
    */
-  public static LegacyText3ComponentSerializer get() {
+  public static @NonNull LegacyText3ComponentSerializer get() {
     return INSTANCE;
   }
 

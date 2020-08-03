@@ -59,7 +59,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
       Class.forName(PACKAGE + ".api.protocol.ProtocolRegistry");
       supported = true;
     } catch(final Throwable error) {
-      // No-op
+      // Silently fail, ViaVersion is not loaded
     }
     SUPPORTED = supported;
   }

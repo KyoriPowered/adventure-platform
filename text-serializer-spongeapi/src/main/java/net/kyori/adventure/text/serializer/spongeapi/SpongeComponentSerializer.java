@@ -27,20 +27,17 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.MinecraftVersion;
 import org.spongepowered.api.Platform;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * A component serializer for Sponge API's {@link Text}.
+ * A component serializer for SpongeAPI's {@link Text}.
  */
-public final class SpongeApiComponentSerializer implements ComponentSerializer<Component, Component, Text> {
-  private static final SpongeApiComponentSerializer INSTANCE = new SpongeApiComponentSerializer();
-  private static final MinecraftVersion VERSION = Sponge.getPlatform().getMinecraftVersion();
+public final class SpongeComponentSerializer implements ComponentSerializer<Component, Component, Text> {
+  private static final SpongeComponentSerializer INSTANCE = new SpongeComponentSerializer();
   private static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .downsampleColors()
     .emitLegacyHoverEvent()
@@ -52,21 +49,11 @@ public final class SpongeApiComponentSerializer implements ComponentSerializer<C
    *
    * @return a component serializer
    */
-  public static SpongeApiComponentSerializer get() {
-    return of(VERSION);
-  }
-
-  /**
-   * Gets a component serializer for a specific {@link MinecraftVersion}.
-   *
-   * @param version a minecraft version
-   * @return a component serializer
-   */
-  public static SpongeApiComponentSerializer of(final @NonNull MinecraftVersion version) {
+  public static @NonNull SpongeComponentSerializer get() {
     return INSTANCE;
   }
 
-  private SpongeApiComponentSerializer() {
+  private SpongeComponentSerializer() {
   }
 
   @Override

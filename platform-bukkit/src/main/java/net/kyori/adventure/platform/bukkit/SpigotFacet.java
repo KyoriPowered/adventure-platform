@@ -27,7 +27,7 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Material;
@@ -41,7 +41,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer.nativeSupport;
+import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.hasNativeSupport;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
@@ -50,7 +50,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
 
 /* package */ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
-  private static final boolean SUPPORTED = isEnabled("spigot") && nativeSupport();
+  private static final boolean SUPPORTED = isEnabled("spigot") && hasNativeSupport();
 
   protected SpigotFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
@@ -65,12 +65,13 @@ import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
   private static final Class<?> BUNGEE_COMPONENT_TYPE = findClass("net.md_5.bungee.api.chat.BaseComponent");
 
   /* package */ static class Message<V extends CommandSender> extends SpigotFacet<V> implements Facet.Message<V, BaseComponent[]> {
-    private static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(gson(), legacy());
+    private static final BungeeComponentSerializer SERIALIZER = BungeeComponentSerializer.of(gson(), legacy());
 
     protected Message(final @Nullable Class<? extends V> viewerClass) {
       super(viewerClass);
     }
 
+    @NonNull
     @Override
     public BaseComponent @NonNull[] createMessage(final @NonNull V viewer, final @NonNull Component message) {
       return SERIALIZER.serialize(message);

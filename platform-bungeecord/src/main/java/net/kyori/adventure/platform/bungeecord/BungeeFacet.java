@@ -33,6 +33,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -42,8 +43,8 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer.legacy;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer.get;
+import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
+import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.get;
 
 /* package */ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   protected BungeeFacet(final @Nullable Class<? extends V> viewerClass) {
@@ -57,7 +58,7 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponent
 
     @Override
     public boolean isApplicable(final @NonNull CommandSender viewer) {
-      return super.isApplicable(viewer) && !(viewer instanceof Connection);
+      return super.isApplicable(viewer) && !(viewer instanceof Connection); // Console only accepts legacy formatting
     }
 
     @Override
@@ -183,7 +184,7 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponent
     @Override
     public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
       if(!this.viewers.isEmpty()) {
-        this.bar.setTitle(BaseComponent.toLegacyText(this.createMessage(this.viewers.iterator().next(), newName)));
+        this.bar.setTitle(ComponentSerializer.toString(this.createMessage(this.viewers.iterator().next(), newName)));
         this.broadcastPacket(ACTION_TITLE);
       }
     }

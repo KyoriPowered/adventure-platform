@@ -29,7 +29,6 @@ import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
@@ -50,10 +49,11 @@ import java.util.function.Function;
 
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
 
 /* package */ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
-
   protected BukkitFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
   }
@@ -101,12 +101,13 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
   /* package */ static class Sound extends Position implements Facet.Sound<Player, Vector> {
     private static final boolean KEY_SUPPORTED = hasClass("org.bukkit.NamespacedKey"); // Added MC 1.13
-    private static final boolean STOP_SUPPORTED = MinecraftReflection.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
+    private static final boolean STOP_SUPPORTED = hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
 
     @Override
     public void playSound(final @NonNull Player viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull Vector vector) {
       final String name = name(sound.name());
       final Location location = vector.toLocation(viewer.getWorld());
+
       viewer.playSound(location, name, sound.volume(), sound.pitch());
     }
 
@@ -131,7 +132,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
   }
 
   /* package */ static class SoundWithCategory extends Sound {
-    private static final boolean SUPPORTED = MinecraftReflection.hasMethod(Player.class, "stopSound", String.class, MinecraftReflection.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
+    private static final boolean SUPPORTED = hasMethod(Player.class, "stopSound", String.class, findClass("org.bukkit.SoundCategory")); // Added MC 1.11
 
     @Override
     public boolean isSupported() {
@@ -291,17 +292,15 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> oldFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> newFlags) {
-      for(final net.kyori.adventure.bossbar.BossBar.Flag oldFlag : oldFlags) {
-        if(!newFlags.contains(oldFlag)) {
-          final BarFlag flag = this.flag(oldFlag);
-          if(flag != null) {
-            this.bar.removeFlag(flag);
-          }
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
+      for(final net.kyori.adventure.bossbar.BossBar.Flag removeFlag : removedFlags) {
+        final BarFlag flag = this.flag(removeFlag);
+        if(flag != null) {
+          this.bar.removeFlag(flag);
         }
       }
-      for(final net.kyori.adventure.bossbar.BossBar.Flag newFlag : newFlags) {
-        final BarFlag flag = this.flag(newFlag);
+      for(final net.kyori.adventure.bossbar.BossBar.Flag addFlag : addedFlags) {
+        final BarFlag flag = this.flag(addFlag);
         if(flag != null) {
           this.bar.addFlag(flag);
         }

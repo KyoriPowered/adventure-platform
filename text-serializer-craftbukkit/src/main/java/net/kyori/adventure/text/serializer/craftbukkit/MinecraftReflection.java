@@ -28,6 +28,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
+import com.google.common.annotations.Beta;
 import org.bukkit.Bukkit;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -38,8 +39,9 @@ import static java.util.Objects.requireNonNull;
 /**
  * Reflection utilities for accessing {@code net.minecraft.server}.
  *
- * <p>Use at your own risk!</p>
+ * <p>This is not an official API and can break at any time. You've been warned.</p>
  */
+@Beta // Causes users to see "UnstableApiUsage"
 public final class MinecraftReflection {
   private MinecraftReflection() {
   }

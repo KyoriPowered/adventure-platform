@@ -26,11 +26,12 @@ package net.kyori.adventure.text.serializer.craftbukkit;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findEnum;
 
 /**
- * Component serializers for {@link org.bukkit.Bukkit}.
+ * A pair of component serializers for {@link org.bukkit.Bukkit}.
  */
 public final class BukkitComponentSerializer {
   private BukkitComponentSerializer() {
@@ -69,16 +70,18 @@ public final class BukkitComponentSerializer {
    *
    * @return a legacy component serializer
    */
-  public static LegacyComponentSerializer legacy() {
+  public static @NonNull LegacyComponentSerializer legacy() {
     return LEGACY_SERIALIZER;
   }
 
   /**
    * Gets the gson component serializer.
    *
+   * <p>Not available on servers before 1.8, will be {@code null}.</p>
+   *
    * @return a gson component serializer
    */
-  public static GsonComponentSerializer gson() {
+  public static @NonNull GsonComponentSerializer gson() {
     return GSON_SERIALIZER;
   }
 }

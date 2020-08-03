@@ -25,9 +25,10 @@ package net.kyori.adventure.platform.bungeecord;
 
 import com.google.gson.Gson;
 import net.kyori.adventure.platform.facet.Knob;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -38,9 +39,10 @@ import java.util.logging.Level;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
 /**
- * Adventure for BungeeCord.
+ * The entrypoint for Adventure in BungeeCord.
  *
  * @see #of(Plugin)
+ * @see BungeeAudienceProvider
  */
 public final class BungeeAdventure {
   private BungeeAdventure() {
@@ -57,7 +59,7 @@ public final class BungeeAdventure {
       final Field gsonField = ProxyServer.getInstance().getClass().getDeclaredField("gson");
       gsonField.setAccessible(true);
       final Gson gson = (Gson) gsonField.get(ProxyServer.getInstance());
-      BungeeCordComponentSerializer.inject(gson);
+      BungeeComponentSerializer.inject(gson);
     } catch(final Throwable error) {
       logError(error, "Failed to inject ProxyServer gson");
     }
@@ -66,12 +68,14 @@ public final class BungeeAdventure {
   private static final Map<Plugin, BungeeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
-   * Gets the audience provider.
+   * Creates an audience provider for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
    *
    * @param plugin a plugin
-   * @return the audience provider
+   * @return an audience provider
    */
-  public static BungeeAudienceProvider of(final Plugin plugin) {
+  public static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
     return INSTANCES.computeIfAbsent(plugin, BungeeAudienceProviderImpl::new);
   }
 }

@@ -96,9 +96,13 @@ public interface Facet<V> {
   static <V, F extends Facet<V>> @Nullable F of(final @Nullable Collection<F> facets, final @Nullable V viewer) {
     if(facets == null || viewer == null) return null;
     for(final F facet : facets) {
-      if(facet.isApplicable(viewer)) {
-        logMessage("Selected facet: %s for %s", facet, viewer);
-        return facet;
+      try {
+        if(facet.isApplicable(viewer)) {
+          logMessage("Selected facet: %s for %s", facet, viewer);
+          return facet;
+        }
+      } catch(final ClassCastException error) {
+        // Continue along
       }
     }
     return null;

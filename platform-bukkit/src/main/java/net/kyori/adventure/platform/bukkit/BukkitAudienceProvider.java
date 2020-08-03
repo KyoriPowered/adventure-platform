@@ -32,7 +32,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.function.Predicate;
 
 /**
- * A provider for creating {@link Audience}s for {@link org.bukkit.Bukkit}.
+ * An audience provider for {@link org.bukkit.Bukkit}.
+ *
+ * @see AudienceProvider
  */
 public interface BukkitAudienceProvider extends AudienceProvider {
   /**

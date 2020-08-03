@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
+import com.google.inject.ImplementedBy;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -31,6 +32,7 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 
 import java.util.function.Predicate;
 
+@ImplementedBy(SpongeAudienceProviderImpl.class)
 public interface SpongeAudienceProvider extends AudienceProvider {
   /**
    * Gets an audience for a message receiver.

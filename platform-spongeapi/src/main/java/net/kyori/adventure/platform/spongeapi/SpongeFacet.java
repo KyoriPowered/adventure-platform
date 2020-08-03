@@ -37,7 +37,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.boss.BossBarColor;
+import org.spongepowered.api.boss.BossBarColors;
 import org.spongepowered.api.boss.BossBarOverlay;
+import org.spongepowered.api.boss.BossBarOverlays;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.effect.sound.SoundCategory;
@@ -59,22 +61,29 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSerializer.get;
+import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSerializer.get;
 
 /* package */ class SpongeFacet<V> extends FacetBase<V> {
-
-  private static <K, S extends CatalogType> @Nullable S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements) {
-    return Sponge.getRegistry().getType(spongeType, elements.key(requireNonNull(value, "value")))
-      .orElseThrow(() -> new UnsupportedOperationException("Value " + value + " could not be found in Sponge type " + spongeType));
-  }
-
-  private static <S extends CatalogType> @Nullable S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
-    return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
-      .orElseThrow(() -> new UnsupportedOperationException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
-  }
-
   protected SpongeFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
+  }
+
+  public <K, S extends CatalogType> @Nullable S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements) {
+    return Sponge.getRegistry()
+            .getType(spongeType, elements.key(requireNonNull(value, "value")))
+            .orElseGet(() -> {
+              logUnsupported(this, value);
+              return null;
+            });
+  }
+
+  public <S extends CatalogType> @Nullable S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
+    return Sponge.getRegistry()
+            .getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
+            .orElseGet(() -> {
+              logUnsupported(this, identifier);
+              return null;
+            });
   }
 
   /* package */ static class Message<V> extends SpongeFacet<V> implements Facet.Message<V, Text> {
@@ -198,8 +207,8 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSe
   /* package */ static class Sound extends Position implements Facet.Sound<Viewer, Vector3d> {
     @Override
     public void playSound(final @NonNull Viewer viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull Vector3d vector) {
-      final SoundType type = type(sound.name());
-      final SoundCategory category = category(sound.source());
+      final SoundType type = this.type(sound.name());
+      final SoundCategory category = this.category(sound.source());
 
       if(type != null && category != null) {
         viewer.playSound(type, category, vector, sound.volume(), sound.pitch());
@@ -210,8 +219,8 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSe
 
     @Override
     public void stopSound(final @NonNull Viewer viewer, final @NonNull SoundStop stop) {
-      final SoundType type = type(stop.sound());
-      final SoundCategory category = category(stop.source());
+      final SoundType type = this.type(stop.sound());
+      final SoundCategory category = this.category(stop.source());
 
       if(type != null && category != null) {
         viewer.stopSounds(type, category);
@@ -224,12 +233,12 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSe
       }
     }
 
-    private static @Nullable SoundType type(final @Nullable Key sound) {
-      return sound == null ? null : sponge(SoundType.class, sound);
+    public @Nullable SoundType type(final @Nullable Key sound) {
+      return sound == null ? null : this.sponge(SoundType.class, sound);
     }
 
-    private static @Nullable SoundCategory category(final net.kyori.adventure.sound.Sound.@Nullable Source source) {
-      return source == null ? null : sponge(SoundCategory.class, source, net.kyori.adventure.sound.Sound.Source.NAMES);
+    public @Nullable SoundCategory category(final net.kyori.adventure.sound.Sound.@Nullable Source source) {
+      return source == null ? null : this.sponge(SoundCategory.class, source, net.kyori.adventure.sound.Sound.Source.NAMES);
     }
   }
 
@@ -266,7 +275,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSe
 
     protected BossBar(final @NonNull Collection<Player> viewers) {
       super(Player.class);
-      this.bar = ServerBossBar.builder().visible(false).build();
+      this.bar = ServerBossBar.builder().name(Text.of()).color(BossBarColors.PINK).overlay(BossBarOverlays.PROGRESS).visible(false).build();
       this.bar.addPlayers(viewers);
     }
 
@@ -290,12 +299,18 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeApiComponentSe
 
     @Override
     public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NonNull Color newColor) {
-      this.bar.setColor(sponge(BossBarColor.class, newColor, net.kyori.adventure.bossbar.BossBar.Color.NAMES));
+      final BossBarColor color = this.sponge(BossBarColor.class, newColor, net.kyori.adventure.bossbar.BossBar.Color.NAMES);
+      if(color != null) {
+        this.bar.setColor(color);
+      }
     }
 
     @Override
     public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay newOverlay) {
-      this.bar.setOverlay(sponge(BossBarOverlay.class, newOverlay, net.kyori.adventure.bossbar.BossBar.Overlay.NAMES));
+      final BossBarOverlay overlay = this.sponge(BossBarOverlay.class, newOverlay, net.kyori.adventure.bossbar.BossBar.Overlay.NAMES);
+      if(overlay != null) {
+        this.bar.setOverlay(overlay);
+      }
     }
 
     @Override
