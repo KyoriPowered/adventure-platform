@@ -1,0 +1,15 @@
+repositories {
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
+
+dependencies {
+  api(project(":adventure-platform-api")) {
+    exclude group: "com.google.code.gson"
+  }
+  api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+  implementation project(":adventure-platform-facet")
+  api project(":adventure-text-serializer-bungeecord")
+  compileOnly 'net.md-5:bungeecord-api:1.14-SNAPSHOT'
+}

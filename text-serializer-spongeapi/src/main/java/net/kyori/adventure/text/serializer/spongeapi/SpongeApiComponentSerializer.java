@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.text.serializer.spongeapi;
 
-import net.kyori.adventure.platform.common.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -45,7 +44,8 @@ public final class SpongeApiComponentSerializer implements ComponentSerializer<C
   private static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .downsampleColors()
     .emitLegacyHoverEvent()
-    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE).build();
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .build();
 
   /**
    * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.

@@ -25,13 +25,12 @@ package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.UUID;
 
 /**
- * A provider of {@link Audience}s.
+ * A provider for creating {@link Audience}s.
  */
 public interface AudienceProvider {
   /**
@@ -113,18 +112,4 @@ public interface AudienceProvider {
    * @return a server's audience
    */
   @NonNull Audience server(final @NonNull String serverName);
-
-  /**
-   * Gets a json component serializer using the format most appropriate for the running game instance.
-   * 
-   * @return the serializer
-   */
-  @NonNull GsonComponentSerializer gsonSerializer();
-  
-  /**
-   * Closes the factory and releases any resources.
-   *
-   * <p>Any previous and future audiences will silently drop messages.</p>
-   */
-  void close();
 }

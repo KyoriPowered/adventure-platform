@@ -1,0 +1,28 @@
+repositories {
+  maven {
+    url 'https://papermc.io/repo/repository/maven-public/'
+  }
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
+
+/* configurations.runtimeClasspath {
+  exclude group: "com.google.code.gson"
+}*/
+
+dependencies {
+  api(project(":adventure-platform-api")) {
+    exclude group: "com.google.code.gson"
+  }
+  api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+  implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
+  api project(":adventure-text-serializer-bungeecord")
+  api project(":adventure-text-serializer-craftbukkit")
+  implementation project(":adventure-platform-facet")
+  implementation project(":adventure-platform-viaversion") {
+    exclude group: "com.google.code.gson"
+  }
+  compileOnly 'io.netty:netty-all:4.0.23.Final' // for pre-1.13 book sending
+  testImplementation compileOnly('com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT')
+}
