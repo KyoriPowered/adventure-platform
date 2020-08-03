@@ -23,11 +23,13 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
 import net.kyori.adventure.platform.viaversion.ViaFacet;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -38,6 +40,7 @@ import java.util.Locale;
 import java.util.function.Function;
 
 /* package */ final class BukkitAudience extends FacetAudience<CommandSender> {
+  /* package */ static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
   private static final Function<Player, UserConnection> VIA = new BukkitFacet.ViaHook();
   private static final Collection<Facet.Chat<? extends CommandSender, ?>> CHAT = Facet.of(
     () -> new ViaFacet.Chat<>(Player.class, VIA),
@@ -46,6 +49,7 @@ import java.util.function.Function;
     () -> new CraftBukkitFacet.Chat(),
     () -> new BukkitFacet.Chat());
   private static final Collection<Facet.ActionBar<Player, ?>> ACTION_BAR = Facet.of(
+    () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
     () -> new ViaFacet.ActionBar<>(Player.class, VIA),
     () -> new SpigotFacet.ActionBar(),
     () -> new CraftBukkitFacet.ActionBar(),
@@ -66,9 +70,19 @@ import java.util.function.Function;
     () -> new ViaFacet.BossBar.Builder1_9_To_1_15<>(Player.class, VIA),
     () -> new CraftBukkitFacet.BossBar.Builder(),
     () -> new BukkitFacet.BossBarBuilder(),
-    () -> new CraftBukkitFacet.BossBarEntity.Builder());
+    () -> new CraftBukkitFacet.BossBarWither.Builder());
 
-  /* package */ BukkitAudience(final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
+  private final @NonNull Plugin plugin;
+
+  /* package */ BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
     super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR);
+    this.plugin = plugin;
+  }
+
+  @Override
+  public void showBossBar(final @NonNull BossBar bar) {
+    // Keep track of the plugin, this is needed for wither boss bars that need to listen to events
+    PLUGIN.set(this.plugin);
+    super.showBossBar(bar);
   }
 }

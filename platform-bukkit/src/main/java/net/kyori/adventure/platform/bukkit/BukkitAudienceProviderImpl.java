@@ -124,7 +124,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     if(sender instanceof Entity || sender instanceof Block) {
       return Audience.empty();
     }
-    return new BukkitAudience(Collections.singletonList(sender), null);
+    return this.createAudience(Collections.singletonList(sender));
   }
 
   @Override
@@ -165,7 +165,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
   @Override
   protected BukkitAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
-    return new BukkitAudience(viewers, null);
+    return new BukkitAudience(this.plugin, viewers, null);
   }
 
   /**

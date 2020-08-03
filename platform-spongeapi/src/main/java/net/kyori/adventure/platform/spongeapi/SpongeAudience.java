@@ -43,6 +43,7 @@ import java.util.function.Function;
     SpongeFacet.ChatWithType::new,
     SpongeFacet.Chat::new);
   private static final Collection<Facet.ActionBar<? extends ChatTypeMessageReceiver, ?>> ACTION_BAR = Facet.of(
+    () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
     () -> new ViaFacet.ActionBar<>(Player.class, VIA),
     SpongeFacet.ActionBar::new);
   private static final Collection<Facet.Title<Viewer, ?, ?>> TITLE = Facet.of(

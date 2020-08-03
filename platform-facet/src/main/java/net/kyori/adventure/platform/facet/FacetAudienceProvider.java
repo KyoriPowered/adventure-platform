@@ -30,7 +30,6 @@ import net.kyori.adventure.platform.AudienceProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.Closeable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -47,7 +46,7 @@ import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> implements AudienceProvider, ForwardingAudience, Closeable {
+public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> implements AudienceProvider, ForwardingAudience {
   private final Audience console;
   private final Audience player;
   private final Map<V, A> viewers;

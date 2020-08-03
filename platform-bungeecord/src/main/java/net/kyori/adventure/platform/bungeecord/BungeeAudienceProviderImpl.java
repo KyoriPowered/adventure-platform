@@ -44,7 +44,6 @@ import java.util.UUID;
 import static java.util.Objects.requireNonNull;
 
 /* package */ final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudienceProvider {
-
   private final Plugin plugin;
   private final Listener listener;
 
@@ -63,7 +62,7 @@ import static java.util.Objects.requireNonNull;
   public Audience sender(final @NonNull CommandSender sender) {
     if(sender instanceof ProxiedPlayer) {
       return this.player((ProxiedPlayer) sender);
-    } else if(ProxyServer.getInstance().getConsole().equals(sender)) {
+    } else if(this.isConsole(sender)) {
       return this.console();
     }
     return new BungeeAudience(Collections.singletonList(sender));
@@ -116,7 +115,7 @@ import static java.util.Objects.requireNonNull;
     super.close();
   }
 
-  private class Listener implements net.md_5.bungee.api.plugin.Listener {
+  public class Listener implements net.md_5.bungee.api.plugin.Listener {
     @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
     public void onLogin(final PostLoginEvent event) {
       BungeeAudienceProviderImpl.this.addViewer(event.getPlayer());

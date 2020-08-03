@@ -28,6 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 /**
  * Adventure for SpongeAPI.
  *
@@ -43,7 +47,7 @@ public final class SpongeAdventure {
     Knob.ERR = logger::warn;
   }
 
-  private static volatile SpongeAudienceProvider INSTANCE;
+  private static final Map<Game, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
    * Gets the audience provider.
@@ -52,9 +56,6 @@ public final class SpongeAdventure {
    * @return the audience provider
    */
   public static SpongeAudienceProvider of(final Game game) {
-    if(INSTANCE == null) {
-      INSTANCE = new SpongeAudienceProviderImpl(game);
-    }
-    return INSTANCE;
+    return INSTANCES.computeIfAbsent(game, SpongeAudienceProviderImpl::new);
   }
 }

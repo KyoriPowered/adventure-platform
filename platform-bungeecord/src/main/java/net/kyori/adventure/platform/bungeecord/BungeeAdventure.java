@@ -30,6 +30,9 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import static net.kyori.adventure.platform.facet.Knob.logError;
@@ -60,7 +63,7 @@ public final class BungeeAdventure {
     }
   }
 
-  private static volatile BungeeAudienceProvider INSTANCE;
+  private static final Map<Plugin, BungeeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
    * Gets the audience provider.
@@ -69,9 +72,6 @@ public final class BungeeAdventure {
    * @return the audience provider
    */
   public static BungeeAudienceProvider of(final Plugin plugin) {
-    if(INSTANCE == null) {
-      INSTANCE = new BungeeAudienceProviderImpl(plugin);
-    }
-    return INSTANCE;
+    return INSTANCES.computeIfAbsent(plugin, BungeeAudienceProviderImpl::new);
   }
 }

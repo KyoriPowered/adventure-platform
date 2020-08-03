@@ -37,7 +37,7 @@ public final class BukkitComponentSerializer {
   }
 
   private static final boolean IS_1_16 = findEnum(Material.class, "NETHERITE_PICKAXE") != null;
-  private static final boolean IS_1_8 = findEnum(Material.class, "ELYTRA") != null;
+  private static final boolean IS_1_8 = findEnum(Material.class, "PRISMARINE") != null;
 
   private static final LegacyComponentSerializer LEGACY_SERIALIZER;
   private static final GsonComponentSerializer GSON_SERIALIZER;

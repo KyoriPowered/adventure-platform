@@ -200,6 +200,20 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
   }
 
+  public static class ActionBarTitle<V> extends ProtocolBased<V> implements Facet.ActionBar<V, String> {
+    public ActionBarTitle(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+      super("1_11", "1_10", TitlePacket.PROTOCOL_ACTION_BAR, "TITLE", viewerClass, connectionFunction);
+    }
+
+    @Override
+    public void sendMessage(final @NonNull V viewer, final @NonNull String message) {
+      final PacketWrapper packet = this.createPacket(viewer);
+      packet.write(Type.VAR_INT, TitlePacket.ACTION_ACTIONBAR);
+      packet.write(Type.STRING, message);
+      this.sendPacket(packet);
+    }
+  }
+
   public static class Title<V> extends ProtocolBased<V> implements Facet.TitlePacket<V, String, Consumer<V>> {
     protected Title(final @NonNull String fromProtocol, final @NonNull String toProtocol, final int minProtocol, final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
       super(fromProtocol, toProtocol, minProtocol, "TITLE", viewerClass, connectionFunction);

@@ -86,7 +86,8 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
    * @return a new serializer
    */
   public static BungeeCordComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
-    return new BungeeCordComponentSerializer(requireNonNull(serializer, "serializer"), requireNonNull(legacySerializer, "legacySerializer"));
+    if(serializer == null || legacySerializer == null) return null;
+    return new BungeeCordComponentSerializer(serializer, legacySerializer);
   }
 
   /**
@@ -119,7 +120,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
     try {
       final Field gsonField = GsonInjections.field(net.md_5.bungee.chat.ComponentSerializer.class, "gson");
       inject((Gson) gsonField.get(null));
-    } catch(final Exception ignore) {
+    } catch(final Throwable error) {
       SUPPORTED = false;
     }
   }

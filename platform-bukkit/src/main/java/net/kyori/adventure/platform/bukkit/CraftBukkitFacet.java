@@ -68,6 +68,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -584,8 +585,12 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     private final Object entityHandle;
     protected final Set<Player> viewers;
 
-    @SuppressWarnings("unchecked")
     protected FakeEntity(final @NonNull Class<E> entityClass, final @NonNull Location location) {
+      this(BukkitAudience.PLUGIN.get(), entityClass, location);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected FakeEntity(final @NonNull Plugin plugin, final @NonNull Class<E> entityClass, final @NonNull Location location) {
       E entity = null;
       Object handle = null;
 
@@ -611,7 +616,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
       this.viewers = new HashSet<>();
 
       if(this.isSupported()) {
-        BukkitAdventure.register(this);
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
       }
     }
 
@@ -758,21 +763,22 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static final class BossBarEntity extends FakeEntity<Wither> implements Facet.BossBarEntity<Player, Location> {
-    public static class Builder extends CraftBukkitFacet<Player> implements Facet.BossBar.Builder<Player, CraftBukkitFacet.BossBarEntity> {
+  /* package */ static final class BossBarWither extends FakeEntity<Wither> implements Facet.BossBarEntity<Player, Location> {
+    public static class Builder extends CraftBukkitFacet<Player> implements Facet.BossBar.Builder<Player, BossBarWither> {
       protected Builder() {
         super(Player.class);
       }
 
+      @NonNull
       @Override
-      public CraftBukkitFacet.@NonNull BossBarEntity createBossBar(final @NonNull Collection<Player> viewers) {
-        return new CraftBukkitFacet.BossBarEntity(viewers);
+      public BossBarWither createBossBar(final @NonNull Collection<Player> viewers) {
+        return new BossBarWither(viewers);
       }
     }
 
     private volatile boolean initialized = false;
 
-    private BossBarEntity(final @NonNull Collection<Player> viewers) {
+    private BossBarWither(final @NonNull Collection<Player> viewers) {
       super(Wither.class, viewers.iterator().next().getWorld().getSpawnLocation());
       this.invisible(true);
       this.metadata(INVULNERABLE_KEY, INVULNERABLE_TICKS);

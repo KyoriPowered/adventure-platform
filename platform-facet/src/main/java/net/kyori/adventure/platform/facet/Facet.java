@@ -219,6 +219,8 @@ public interface Facet<V> {
    * @param <T> a title type
    */
   interface Title<V, M, T> extends Message<V, M> {
+    int PROTOCOL_ACTION_BAR = 310; // Added 16w40a
+
     /**
      * Creates a title.
      *

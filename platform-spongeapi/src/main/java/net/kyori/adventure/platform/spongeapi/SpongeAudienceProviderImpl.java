@@ -59,12 +59,15 @@ import java.util.UUID;
 
   private final Game game;
   private final EventManager eventManager;
+  private final EventListener eventListener;
 
   @Inject
   /* package */ SpongeAudienceProviderImpl(final @NonNull Game game) {
     this.game = game;
     this.eventManager = game.getEventManager();
+    this.eventListener = new EventListener();
     if(game.isServerAvailable() && game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
+      this.addViewer(game.getServer().getConsole());
       for(final Player player : game.getServer().getOnlinePlayers()) {
         this.addViewer(player);
       }
@@ -95,7 +98,7 @@ import java.util.UUID;
 
   @Inject
   /* package */ void init(final PluginContainer container) {
-    this.eventManager.registerListeners(container, this);
+    this.eventManager.registerListeners(container, this.eventListener);
   }
 
   @Override
@@ -139,32 +142,34 @@ import java.util.UUID;
 
   @Override
   public void close() {
-    this.eventManager.unregisterListeners(this);
+    this.eventManager.unregisterListeners(this.eventListener);
     super.close();
   }
 
-  @Listener(order = Order.FIRST)
-  public void onLogin(final ClientConnectionEvent.@NonNull Join event) {
-    this.addViewer(event.getTargetEntity());
-  }
+  public class EventListener {
+    @Listener(order = Order.FIRST)
+    public void onLogin(final ClientConnectionEvent.@NonNull Join event) {
+      SpongeAudienceProviderImpl.this.addViewer(event.getTargetEntity());
+    }
 
-  @Listener(order = Order.LAST)
-  public void onDisconnect(final ClientConnectionEvent.@NonNull Disconnect event) {
-    this.removeViewer(event.getTargetEntity());
-  }
+    @Listener(order = Order.LAST)
+    public void onDisconnect(final ClientConnectionEvent.@NonNull Disconnect event) {
+      SpongeAudienceProviderImpl.this.removeViewer(event.getTargetEntity());
+    }
 
-  @Listener(order = Order.LAST)
-  public void onChangeSettings(final @NonNull PlayerChangeClientSettingsEvent event) {
-    this.changeViewer(event.getTargetEntity(), event.getLocale());
-  }
+    @Listener(order = Order.LAST)
+    public void onChangeSettings(final @NonNull PlayerChangeClientSettingsEvent event) {
+      SpongeAudienceProviderImpl.this.changeViewer(event.getTargetEntity(), event.getLocale());
+    }
 
-  @Listener
-  public void onStart(final @NonNull GameStartingServerEvent event) {
-    this.addViewer(this.game.getServer().getConsole());
-  }
+    @Listener
+    public void onStart(final @NonNull GameStartingServerEvent event) {
+      SpongeAudienceProviderImpl.this.addViewer(SpongeAudienceProviderImpl.this.game.getServer().getConsole());
+    }
 
-  @Listener
-  public void onStop(final @NonNull GameStoppedServerEvent event) {
-    this.removeViewer(this.game.getServer().getConsole());
+    @Listener
+    public void onStop(final @NonNull GameStoppedServerEvent event) {
+      SpongeAudienceProviderImpl.this.removeViewer(SpongeAudienceProviderImpl.this.game.getServer().getConsole());
+    }
   }
 }

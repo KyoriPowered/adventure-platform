@@ -25,9 +25,11 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.platform.facet.Knob;
 import org.bukkit.Bukkit;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -44,8 +46,7 @@ public final class BukkitAdventure {
     Knob.ERR = (message, error) -> Bukkit.getLogger().log(Level.WARNING, message, error);
   }
 
-  private static volatile BukkitAudienceProvider INSTANCE;
-  private static volatile Plugin PLUGIN;
+  private static final Map<Plugin, BukkitAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
    * Gets an audience provider.
@@ -54,15 +55,6 @@ public final class BukkitAdventure {
    * @return an audience provider
    */
   public static BukkitAudienceProvider of(final Plugin plugin) {
-    if(INSTANCE == null) {
-      INSTANCE = new BukkitAudienceProviderImpl(PLUGIN = plugin);
-    }
-    return INSTANCE;
-  }
-
-  /* package */ static void register(final Listener listener) {
-    if(PLUGIN != null) {
-      PLUGIN.getServer().getPluginManager().registerEvents(listener, PLUGIN);
-    }
+    return INSTANCES.computeIfAbsent(plugin, BukkitAudienceProviderImpl::new);
   }
 }
