@@ -10,8 +10,10 @@ repositories {
 dependencies {
   api "net.kyori:adventure-api:${rootProject.adventure}"
   api "net.kyori:adventure-nbt:${rootProject.adventure}"
-  implementation "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
   implementation "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+  implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
+    exclude group: "com.google.code.gson"
+  }
   compileOnly "com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT"
 }
 

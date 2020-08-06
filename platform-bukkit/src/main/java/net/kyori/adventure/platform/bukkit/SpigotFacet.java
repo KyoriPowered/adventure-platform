@@ -41,7 +41,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.hasNativeSupport;
+import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.isNative;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
@@ -50,7 +50,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
 
 /* package */ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
-  private static final boolean SUPPORTED = isEnabled("spigot") && hasNativeSupport();
+  private static final boolean SUPPORTED = isEnabled("spigot") && isNative();
 
   protected SpigotFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);

@@ -6,12 +6,14 @@ repositories {
 
 dependencies {
     api "net.kyori:adventure-api:${rootProject.adventure}"
-    implementation "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
+    implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
+      exclude group: "com.google.code.gson"
+    }
     compileOnly "net.kyori:text-serializer-gson:3.0.4"
 }
 
 jar {
     manifest.attributes(
-            'Automatic-Module-Name': 'net.kyori.adventure.text.serializer.legacytext3'
+      'Automatic-Module-Name': 'net.kyori.adventure.text.serializer.legacytext3'
     )
 }

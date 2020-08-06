@@ -1,10 +1,9 @@
 dependencies {
     api "net.kyori:adventure-api:${rootProject.adventure}"
     compileOnly "net.md-5:bungeecord-chat:1.16-R0.1"
-    ["legacy", "gson"].each {
-      implementation("net.kyori:adventure-text-serializer-$it:${rootProject.adventure}") {
-        exclude group: "com.google.code.gson"
-      }
+    implementation "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+    implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
+      exclude group: "com.google.code.gson"
     }
 }
 

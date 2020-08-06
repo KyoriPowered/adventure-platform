@@ -12,17 +12,16 @@ repositories {
 }*/
 
 dependencies {
-  api(project(":adventure-platform-api")) {
-    exclude group: "com.google.code.gson"
-  }
   api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
-  implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
-  api project(":adventure-text-serializer-bungeecord")
+  api project(":adventure-platform-api")
   api project(":adventure-text-serializer-craftbukkit")
-  implementation project(":adventure-platform-facet")
-  implementation project(":adventure-platform-viaversion") {
+  api project(":adventure-text-serializer-bungeecord")
+  implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
+  implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
   }
+  implementation project(":adventure-platform-facet")
+  implementation project(":adventure-platform-viaversion")
   compileOnly 'io.netty:netty-all:4.0.23.Final' // for pre-1.13 book sending
   testImplementation compileOnly('com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT')
 }

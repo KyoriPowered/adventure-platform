@@ -56,7 +56,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
    *
    * @return if there is native support
    */
-  public static boolean hasNativeSupport() {
+  public static boolean isNative() {
     return SUPPORTED;
   }
 

@@ -10,8 +10,10 @@ configurations {
 
 dependencies {
   shadedApi 'us.myles:viaversion-common:3.0.0'
+  implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
+    exclude group: "com.google.code.gson"
+  }
   implementation project(':adventure-platform-facet')
-  implementation "net.kyori:adventure-text-serializer-gson:${rootProject.adventure}"
   compileOnly "io.netty:netty-all:4.0.20.Final"
 }
 
