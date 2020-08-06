@@ -43,7 +43,7 @@ public interface BukkitAudienceProvider extends AudienceProvider {
    * @param sender a command sender
    * @return an audience
    */
-  Audience sender(final @NonNull CommandSender sender);
+  @NonNull Audience sender(final @NonNull CommandSender sender);
 
   /**
    * Gets an audience for a player.
@@ -51,7 +51,7 @@ public interface BukkitAudienceProvider extends AudienceProvider {
    * @param player a player
    * @return an audience
    */
-  Audience player(final @NonNull Player player);
+  @NonNull Audience player(final @NonNull Player player);
 
   /**
    * Creates an audience based on a filter.
@@ -59,6 +59,6 @@ public interface BukkitAudienceProvider extends AudienceProvider {
    * @param filter a filter
    * @return an audience
    */
-  Audience filter(final @NonNull Predicate<CommandSender> filter);
+  @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
 }
 

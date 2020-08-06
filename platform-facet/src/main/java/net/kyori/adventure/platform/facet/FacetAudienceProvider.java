@@ -161,7 +161,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    * @param viewers a collection viewers
    * @return an audience
    */
-  protected abstract A createAudience(final @NonNull Collection<V> viewers);
+  protected abstract @NonNull A createAudience(final @NonNull Collection<V> viewers);
 
   @Override
   public @NonNull Iterable<? extends Audience> audiences() {

@@ -85,6 +85,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     this.registerLocaleEvent(this::changeViewer);
   }
 
+  @NonNull
   @Override
   public Audience sender(final @NonNull CommandSender sender) {
     if(sender instanceof Player) {
@@ -99,6 +100,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     return this.createAudience(Collections.singletonList(sender));
   }
 
+  @NonNull
   @Override
   public Audience player(final @NonNull Player player) {
     return this.player(player.getUniqueId());
@@ -135,6 +137,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     return false;
   }
 
+  @NonNull
   @Override
   protected BukkitAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
     return new BukkitAudience(this.plugin, viewers, null);

@@ -62,6 +62,7 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
+  @NonNull
   @Override
   public Audience sender(final @NonNull CommandSender sender) {
     if(sender instanceof ProxiedPlayer) {
@@ -72,6 +73,7 @@ import static java.util.Objects.requireNonNull;
     return this.createAudience(Collections.singletonList(sender));
   }
 
+  @NonNull
   @Override
   public Audience player(final @NonNull ProxiedPlayer player) {
     return this.player(player.getUniqueId());
@@ -108,6 +110,7 @@ import static java.util.Objects.requireNonNull;
     return false;
   }
 
+  @NonNull
   @Override
   protected BungeeAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
     return new BungeeAudience(viewers);
@@ -119,7 +122,7 @@ import static java.util.Objects.requireNonNull;
     super.close();
   }
 
-  public class Listener implements net.md_5.bungee.api.plugin.Listener {
+  public final class Listener implements net.md_5.bungee.api.plugin.Listener {
     @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
     public void onLogin(final PostLoginEvent event) {
       BungeeAudienceProviderImpl.this.addViewer(event.getPlayer());

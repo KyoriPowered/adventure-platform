@@ -74,6 +74,7 @@ import java.util.UUID;
     }
   }
 
+  @NonNull
   @Override
   public Audience receiver(final @NonNull MessageReceiver receiver) {
     if(receiver instanceof Player) {
@@ -91,6 +92,7 @@ import java.util.UUID;
     return new SpongeAudience(Collections.singletonList(receiver));
   }
 
+  @NonNull
   @Override
   public Audience player(final @NonNull Player player) {
     return this.player(player.getUniqueId());
@@ -135,6 +137,7 @@ import java.util.UUID;
     return false;
   }
 
+  @NonNull
   @Override
   protected SpongeAudience createAudience(final @NonNull Collection<MessageReceiver> viewers) {
     return new SpongeAudience(viewers);
@@ -146,7 +149,7 @@ import java.util.UUID;
     super.close();
   }
 
-  public class EventListener {
+  public final class EventListener {
     @Listener(order = Order.FIRST)
     public void onLogin(final ClientConnectionEvent.@NonNull Join event) {
       SpongeAudienceProviderImpl.this.addViewer(event.getTargetEntity());

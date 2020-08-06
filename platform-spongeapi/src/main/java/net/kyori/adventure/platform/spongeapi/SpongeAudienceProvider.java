@@ -40,7 +40,7 @@ public interface SpongeAudienceProvider extends AudienceProvider {
    * @param receiver a message receiver
    * @return an audience
    */
-  Audience receiver(final @NonNull MessageReceiver receiver);
+  @NonNull Audience receiver(final @NonNull MessageReceiver receiver);
 
   /**
    * Gets an audience for a player.
@@ -48,7 +48,7 @@ public interface SpongeAudienceProvider extends AudienceProvider {
    * @param player a player
    * @return an audience
    */
-  Audience player(final @NonNull Player player);
+  @NonNull Audience player(final @NonNull Player player);
 
   /**
    * Creates an audience based on a filter.
@@ -56,6 +56,6 @@ public interface SpongeAudienceProvider extends AudienceProvider {
    * @param filter a filter
    * @return an audience
    */
-  Audience filter(final @NonNull Predicate<MessageReceiver> filter);
+  @NonNull Audience filter(final @NonNull Predicate<MessageReceiver> filter);
 }
 

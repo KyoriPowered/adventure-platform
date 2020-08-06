@@ -27,13 +27,12 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.io.Closeable;
 import java.util.UUID;
 
 /**
  * A provider for creating {@link Audience}s.
  */
-public interface AudienceProvider extends Closeable {
+public interface AudienceProvider extends AutoCloseable {
   /**
    * Gets an audience for all online players, including the server's console.
    *
