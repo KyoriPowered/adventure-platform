@@ -72,10 +72,16 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
       throw new IllegalArgumentException("Legacy events must be single Component instances");
     }
     final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
+    Component name;
+    try {
+      name = componentCodec.decode(contents.getString(ENTITY_NAME));
+    } catch(final Exception e) {
+      name = TextComponent.of(contents.getString(ENTITY_NAME));
+    }
     return new HoverEvent.ShowEntity(
       Key.of(contents.getString(ENTITY_TYPE)),
       UUID.fromString(contents.getString(ENTITY_ID)),
-      componentCodec.decode(contents.getString(ENTITY_NAME))
+      name
     );
   }
 
