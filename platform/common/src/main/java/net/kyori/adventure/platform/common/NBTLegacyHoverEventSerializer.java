@@ -75,7 +75,7 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
     Component name;
     try {
       name = componentCodec.decode(contents.getString(ENTITY_NAME));
-    } catch (Exception e) {
+    } catch(final Exception e) {
       name = TextComponent.of(contents.getString(ENTITY_NAME));
     }
     return new HoverEvent.ShowEntity(
