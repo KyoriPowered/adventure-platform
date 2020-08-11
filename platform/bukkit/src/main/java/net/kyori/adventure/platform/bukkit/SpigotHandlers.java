@@ -40,8 +40,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /* package */ final class SpigotHandlers {
-
-  /* package */ static final boolean BOUND = Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
+  // net.kyori.adventure.enableBungeeCordAdapters
+  private static final boolean FORCE_ENABLE = Boolean.getBoolean("net.kyo".concat("ri.adventure.enableBungeeCordAdapters"));
+  /* package */ static final boolean BOUND = FORCE_ENABLE && Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
   /* package */ static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitAudienceProvider.GSON_SERIALIZER, BukkitAudienceProvider.LEGACY_SERIALIZER);
 
