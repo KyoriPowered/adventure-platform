@@ -49,7 +49,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
 import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
 
-/* package */ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
+class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("spigot") && isNative();
 
   protected SpigotFacet(final @Nullable Class<? extends V> viewerClass) {
@@ -64,7 +64,7 @@ import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
   private static final Class<?> BUNGEE_CHAT_MESSAGE_TYPE = findClass("net.md_5.bungee.api.ChatMessageType");
   private static final Class<?> BUNGEE_COMPONENT_TYPE = findClass("net.md_5.bungee.api.chat.BaseComponent");
 
-  /* package */ static class Message<V extends CommandSender> extends SpigotFacet<V> implements Facet.Message<V, BaseComponent[]> {
+  static class Message<V extends CommandSender> extends SpigotFacet<V> implements Facet.Message<V, BaseComponent[]> {
     private static final BungeeComponentSerializer SERIALIZER = BungeeComponentSerializer.of(gson(), legacy());
 
     protected Message(final @Nullable Class<? extends V> viewerClass) {
@@ -78,7 +78,7 @@ import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
     }
   }
 
-  /* package */ static final class Chat extends Message<CommandSender> implements Facet.Chat<CommandSender, BaseComponent[]> {
+  static final class Chat extends Message<CommandSender> implements Facet.Chat<CommandSender, BaseComponent[]> {
     private static final boolean SUPPORTED = hasClass("org.bukkit.command.CommandSender$Spigot");
 
     protected Chat() {
@@ -96,7 +96,7 @@ import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
     }
   }
 
-  /* package */ static class ChatWithType extends Message<Player> implements Facet.Chat<Player, BaseComponent[]> {
+  static class ChatWithType extends Message<Player> implements Facet.Chat<Player, BaseComponent[]> {
     private static final Class<?> PLAYER_CLASS = findClass("org.bukkit.entity.Player$Spigot");
     private static final boolean SUPPORTED = hasMethod(PLAYER_CLASS, "sendMessage", BUNGEE_CHAT_MESSAGE_TYPE, BUNGEE_COMPONENT_TYPE);
 
@@ -129,7 +129,7 @@ import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
     }
   }
 
-  /* package */ static final class ActionBar extends ChatWithType implements Facet.ActionBar<Player, BaseComponent[]> {
+  static final class ActionBar extends ChatWithType implements Facet.ActionBar<Player, BaseComponent[]> {
     @Override
     @SuppressWarnings("deprecation")
     public void sendMessage(final @NonNull Player viewer, final BaseComponent @NonNull[] message) {
@@ -137,7 +137,7 @@ import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
     }
   }
 
-  /* package */ static final class Book extends Message<Player> implements Facet.Book<Player, BaseComponent[], ItemStack> {
+  static final class Book extends Message<Player> implements Facet.Book<Player, BaseComponent[], ItemStack> {
     private static final boolean SUPPORTED = hasMethod(Player.class, "openBook", ItemStack.class); // Added June 2019
 
     protected Book() {

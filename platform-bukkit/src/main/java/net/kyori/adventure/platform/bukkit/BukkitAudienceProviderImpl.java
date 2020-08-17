@@ -63,10 +63,10 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needField;
 
 @SuppressWarnings("unchecked")
-/* package */ final class BukkitAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BukkitAudience> implements BukkitAudienceProvider, Listener {
+final class BukkitAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BukkitAudience> implements BukkitAudienceProvider, Listener {
   private final Plugin plugin;
 
-  /* package */ BukkitAudienceProviderImpl(final @NonNull Plugin plugin) {
+  BukkitAudienceProviderImpl(final @NonNull Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
     this.softDepend("ViaVersion");
 

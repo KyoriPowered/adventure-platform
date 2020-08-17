@@ -36,8 +36,8 @@ import net.kyori.adventure.text.serializer.gson.LegacyHoverEventSerializer;
 import net.kyori.adventure.util.Codec;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
-  /* package */ static final NBTLegacyHoverEventSerializer INSTANCE = new NBTLegacyHoverEventSerializer();
+final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
+  static final NBTLegacyHoverEventSerializer INSTANCE = new NBTLegacyHoverEventSerializer();
 
   private static final TagStringIO SNBT_IO = TagStringIO.get();
   private static final Codec<CompoundBinaryTag, String, IOException, IOException> SNBT_CODEC = Codec.of(SNBT_IO::asCompound, SNBT_IO::asString);

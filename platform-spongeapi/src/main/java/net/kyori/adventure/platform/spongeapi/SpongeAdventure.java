@@ -50,7 +50,7 @@ public final class SpongeAdventure {
     Knob.ERR = logger::warn;
   }
 
-  /* package */ static final Map<PluginContainer, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  static final Map<PluginContainer, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
   /**
    * Creates an audience provider for a plugin.

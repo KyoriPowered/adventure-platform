@@ -36,7 +36,7 @@ import us.myles.ViaVersion.api.data.UserConnection;
 import java.util.Collection;
 import java.util.function.Function;
 
-/* package */ final class SpongeAudience extends FacetAudience<MessageReceiver> {
+final class SpongeAudience extends FacetAudience<MessageReceiver> {
   private static final Function<Player, UserConnection> VIA = new SpongeFacet.ViaHook();
   private static final Collection<Facet.Chat<?, ?>> CHAT = Facet.of(
     () -> new ViaFacet.Chat<>(Player.class, VIA),
@@ -56,7 +56,7 @@ import java.util.function.Function;
     () -> new ViaFacet.BossBar.Builder<>(Player.class, VIA),
     SpongeFacet.BossBarBuilder::new);
 
-  /* package */ SpongeAudience(final @NonNull Collection<MessageReceiver> viewers) {
+  SpongeAudience(final @NonNull Collection<MessageReceiver> viewers) {
     super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR);
   }
 }

@@ -44,11 +44,11 @@ import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudienceProvider {
+final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudienceProvider {
   private final Plugin plugin;
   private final Listener listener;
 
-  /* package */ BungeeAudienceProviderImpl(final Plugin plugin) {
+  BungeeAudienceProviderImpl(final Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
     this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);

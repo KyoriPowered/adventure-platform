@@ -55,14 +55,14 @@ import java.util.Collections;
 import java.util.UUID;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageReceiver, SpongeAudience> implements SpongeAudienceProvider {
+final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageReceiver, SpongeAudience> implements SpongeAudienceProvider {
 
   private final Game game;
   private final EventManager eventManager;
   private final EventListener eventListener;
 
   @Inject
-  /* package */ SpongeAudienceProviderImpl(final @NonNull Game game) {
+  SpongeAudienceProviderImpl(final @NonNull Game game) {
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
@@ -99,7 +99,7 @@ import java.util.UUID;
   }
 
   @Inject
-  /* package */ void init(final PluginContainer container) {
+  void init(final PluginContainer container) {
     this.eventManager.registerListeners(container, this.eventListener);
   }
 

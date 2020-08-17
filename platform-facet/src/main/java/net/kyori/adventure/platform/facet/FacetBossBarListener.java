@@ -33,11 +33,11 @@ import java.util.function.Supplier;
 
 import static net.kyori.adventure.platform.facet.Facet.TRANSLATOR;
 
-/* package */ class FacetBossBarListener<V> implements Facet.BossBar<V> {
+class FacetBossBarListener<V> implements Facet.BossBar<V> {
   private final Facet.BossBar<V> facet;
   private final Supplier<Locale> locale;
 
-  /* package */ FacetBossBarListener(final Facet.@NonNull BossBar<V> facet, final @NonNull Supplier<Locale> locale) {
+  FacetBossBarListener(final Facet.@NonNull BossBar<V> facet, final @NonNull Supplier<Locale> locale) {
     this.facet = facet;
     this.locale = locale;
   }

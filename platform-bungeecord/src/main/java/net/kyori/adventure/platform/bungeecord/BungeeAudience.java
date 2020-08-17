@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collection;
 
-/* package */ final class BungeeAudience extends FacetAudience<CommandSender> {
+final class BungeeAudience extends FacetAudience<CommandSender> {
   private static final Collection<Facet.Chat<? extends CommandSender, ?>> CHAT = Facet.of(
     BungeeFacet.ChatPlayer::new,
     BungeeFacet.ChatConsole::new);
@@ -42,7 +42,7 @@ import java.util.Collection;
   private static final Collection<Facet.BossBar.Builder<ProxiedPlayer, ? extends Facet.BossBar<ProxiedPlayer>>> BOSS_BAR = Facet.of(
     BungeeFacet.BossBar.Builder::new);
 
-  /* package */ BungeeAudience(final @NonNull Collection<? extends CommandSender> viewers) {
+  BungeeAudience(final @NonNull Collection<? extends CommandSender> viewers) {
     super(viewers, null, CHAT, ACTION_BAR, TITLE, null, null, BOSS_BAR);
   }
 }

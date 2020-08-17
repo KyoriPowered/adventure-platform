@@ -46,12 +46,12 @@ import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.get;
 
-/* package */ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
+class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   protected BungeeFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
   }
 
-  /* package */ static class ChatConsole extends BungeeFacet<CommandSender> implements Facet.Chat<CommandSender, BaseComponent[]> {
+  static class ChatConsole extends BungeeFacet<CommandSender> implements Facet.Chat<CommandSender, BaseComponent[]> {
     protected ChatConsole() {
       super(CommandSender.class);
     }
@@ -72,7 +72,7 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
     }
   }
 
-  /* package */ static class Message extends BungeeFacet<ProxiedPlayer> implements Facet.Message<ProxiedPlayer, BaseComponent[]> {
+  static class Message extends BungeeFacet<ProxiedPlayer> implements Facet.Message<ProxiedPlayer, BaseComponent[]> {
     protected Message() {
       super(ProxiedPlayer.class);
     }
@@ -87,7 +87,7 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
     }
   }
 
-  /* package */ static class ChatPlayer extends Message implements Facet.Chat<ProxiedPlayer, BaseComponent[]> {
+  static class ChatPlayer extends Message implements Facet.Chat<ProxiedPlayer, BaseComponent[]> {
     public @Nullable ChatMessageType createType(final @NonNull MessageType type) {
       if(type == MessageType.CHAT) {
         return ChatMessageType.CHAT;
@@ -107,14 +107,14 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
     }
   }
 
-  /* package */ static class ActionBar extends Message implements Facet.ActionBar<ProxiedPlayer, BaseComponent[]> {
+  static class ActionBar extends Message implements Facet.ActionBar<ProxiedPlayer, BaseComponent[]> {
     @Override
     public void sendMessage(final @NonNull ProxiedPlayer viewer, final BaseComponent @NonNull[] message) {
       viewer.sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }
 
-  /* package */ static class Title extends Message implements Facet.Title<ProxiedPlayer, BaseComponent[], net.md_5.bungee.api.Title> {
+  static class Title extends Message implements Facet.Title<ProxiedPlayer, BaseComponent[], net.md_5.bungee.api.Title> {
     private static final net.md_5.bungee.api.Title CLEAR = ProxyServer.getInstance().createTitle().clear();
     private static final net.md_5.bungee.api.Title RESET = ProxyServer.getInstance().createTitle().reset();
 
@@ -147,7 +147,7 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
     }
   }
 
-  /* package */ static class BossBar extends Message implements BossBarPacket<ProxiedPlayer> {
+  static class BossBar extends Message implements BossBarPacket<ProxiedPlayer> {
     private final Set<ProxiedPlayer> viewers;
     private final net.md_5.bungee.protocol.packet.BossBar bar;
     private volatile boolean initialized = false;
@@ -158,7 +158,7 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
       this.bar = new net.md_5.bungee.protocol.packet.BossBar(UUID.randomUUID(), ACTION_ADD);
     }
 
-    /* package */ static class Builder extends BungeeFacet<ProxiedPlayer> implements Facet.BossBar.Builder<ProxiedPlayer, net.kyori.adventure.platform.bungeecord.BungeeFacet.BossBar> {
+    static class Builder extends BungeeFacet<ProxiedPlayer> implements Facet.BossBar.Builder<ProxiedPlayer, net.kyori.adventure.platform.bungeecord.BungeeFacet.BossBar> {
       protected Builder() {
         super(ProxiedPlayer.class);
       }

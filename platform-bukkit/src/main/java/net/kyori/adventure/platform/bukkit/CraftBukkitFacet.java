@@ -89,7 +89,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needField;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needNmsClass;
 
-/* package */ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
+class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   protected CraftBukkitFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
   }
@@ -134,7 +134,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     && MinecraftComponentSerializer.isSupported()
     && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
 
-  /* package */ static class PacketFacet<V extends CommandSender> extends CraftBukkitFacet<V> implements Facet.Message<V, Object> {
+  static class PacketFacet<V extends CommandSender> extends CraftBukkitFacet<V> implements Facet.Message<V, Object> {
     @SuppressWarnings("unchecked")
     protected PacketFacet() {
       super((Class<V>) CLASS_CRAFT_PLAYER);
@@ -205,7 +205,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
 
-  /* package */ static class Chat extends PacketFacet<CommandSender> implements Facet.Chat<CommandSender, Object> {
+  static class Chat extends PacketFacet<CommandSender> implements Facet.Chat<CommandSender, Object> {
     private static final UUID NULL_UUID = new UUID(0, 0);
 
     @Override
@@ -232,7 +232,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
   private static final @Nullable Object TITLE_ACTION_SUBTITLE = findEnum(CLASS_TITLE_ACTION, "SUBTITLE", 1);
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = findEnum(CLASS_TITLE_ACTION, "ACTIONBAR");
 
-  /* package */ static class ActionBar extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
+  static class ActionBar extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
     @Override
     public boolean isSupported() {
       return super.isSupported() && TITLE_ACTION_ACTIONBAR != null;
@@ -250,7 +250,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class ActionBarLegacy extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
+  static class ActionBarLegacy extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
     @Override
     public boolean isSupported() {
       return super.isSupported() && LEGACY_CHAT_PACKET_CONSTRUCTOR != null;
@@ -270,7 +270,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class Title extends PacketFacet<Player> implements Facet.Title<Player, Object, List<?>> {
+  static class Title extends PacketFacet<Player> implements Facet.Title<Player, Object, List<?>> {
     @Override
     public boolean isSupported() {
       return super.isSupported() && CONSTRUCTOR_TITLE_MESSAGE != null && CONSTRUCTOR_TITLE_TIMES != null;
@@ -441,7 +441,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static final class Book extends AbstractBook {
+  static final class Book extends AbstractBook {
     private static final Class<?> CLASS_ENUM_HAND = findNmsClass("EnumHand");
     private static final Object HAND_MAIN = findEnum(CLASS_ENUM_HAND, "MAIN_HAND", 0);
     private static final Class<?> PACKET_OPEN_BOOK = findNmsClass("PacketPlayOutOpenBook");
@@ -458,7 +458,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static final class BookLegacy extends AbstractBook {
+  static final class BookLegacy extends AbstractBook {
     private static final int HAND_MAIN = 0;
     private static final String PACKET_TYPE_BOOK_OPEN = "MC|BOpen"; // Before 1.13 the open book packet is a packet250
     private static final Class<?> CLASS_BYTE_BUF = findClass("io.netty.buffer.ByteBuf");
@@ -482,7 +482,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static final class BossBar extends BukkitFacet.BossBar {
+  static final class BossBar extends BukkitFacet.BossBar {
     private static final Class<?> CLASS_CRAFT_BOSS_BAR = findCraftClass("boss.CraftBossBar");
     private static final Class<?> CLASS_BOSS_BAR_ACTION = findNmsClass("PacketPlayOutBoss$Action");
     private static final Object BOSS_BAR_ACTION_TITLE = findEnum(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
@@ -548,7 +548,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class FakeEntity<E extends Entity> extends PacketFacet<Player> implements Facet.FakeEntity<Player, Location>, Listener {
+  static class FakeEntity<E extends Entity> extends PacketFacet<Player> implements Facet.FakeEntity<Player, Location>, Listener {
     private static final Class<? extends World> CLASS_CRAFT_WORLD = findCraftClass("CraftWorld", World.class);
     private static final Class<?> CLASS_NMS_ENTITY = findNmsClass("Entity");
     private static final Class<?> CLASS_NMS_LIVING_ENTITY = findNmsClass("EntityLiving");
@@ -763,7 +763,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static final class BossBarWither extends FakeEntity<Wither> implements Facet.BossBarEntity<Player, Location> {
+  static final class BossBarWither extends FakeEntity<Wither> implements Facet.BossBarEntity<Player, Location> {
     public static class Builder extends CraftBukkitFacet<Player> implements Facet.BossBar.Builder<Player, BossBarWither> {
       protected Builder() {
         super(Player.class);

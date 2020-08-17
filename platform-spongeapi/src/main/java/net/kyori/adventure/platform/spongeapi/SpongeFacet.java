@@ -63,7 +63,7 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSerializer.get;
 
-/* package */ class SpongeFacet<V> extends FacetBase<V> {
+class SpongeFacet<V> extends FacetBase<V> {
   protected SpongeFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
   }
@@ -86,7 +86,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
             });
   }
 
-  /* package */ static class Message<V> extends SpongeFacet<V> implements Facet.Message<V, Text> {
+  static class Message<V> extends SpongeFacet<V> implements Facet.Message<V, Text> {
     protected Message(final @Nullable Class<? extends V> viewerClass) {
       super(viewerClass);
     }
@@ -98,7 +98,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class Chat extends Message<MessageReceiver> implements Facet.Chat<MessageReceiver, Text> {
+  static class Chat extends Message<MessageReceiver> implements Facet.Chat<MessageReceiver, Text> {
     protected Chat() {
       super(MessageReceiver.class);
     }
@@ -109,7 +109,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class ChatWithType extends Message<ChatTypeMessageReceiver> implements Facet.Chat<ChatTypeMessageReceiver, Text> {
+  static class ChatWithType extends Message<ChatTypeMessageReceiver> implements Facet.Chat<ChatTypeMessageReceiver, Text> {
     protected ChatWithType() {
       super(ChatTypeMessageReceiver.class);
     }
@@ -133,7 +133,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
   
-  /* package */ static class ActionBar extends Message<ChatTypeMessageReceiver> implements Facet.ActionBar<ChatTypeMessageReceiver, Text> {
+  static class ActionBar extends Message<ChatTypeMessageReceiver> implements Facet.ActionBar<ChatTypeMessageReceiver, Text> {
     protected ActionBar() {
       super(ChatTypeMessageReceiver.class);
     }
@@ -144,7 +144,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
   
-  /* package */ static class Title extends Message<Viewer> implements Facet.Title<Viewer, Text, org.spongepowered.api.text.title.Title> {
+  static class Title extends Message<Viewer> implements Facet.Title<Viewer, Text, org.spongepowered.api.text.title.Title> {
     protected Title() {
       super(Viewer.class);
     }
@@ -178,7 +178,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class Position extends SpongeFacet<Viewer> implements Facet.Position<Viewer, Vector3d> {
+  static class Position extends SpongeFacet<Viewer> implements Facet.Position<Viewer, Vector3d> {
     protected Position() {
       super(Viewer.class);
     }
@@ -204,7 +204,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class Sound extends Position implements Facet.Sound<Viewer, Vector3d> {
+  static class Sound extends Position implements Facet.Sound<Viewer, Vector3d> {
     @Override
     public void playSound(final @NonNull Viewer viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull Vector3d vector) {
       final SoundType type = this.type(sound.name());
@@ -242,7 +242,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class Book extends Message<Viewer> implements Facet.Book<Viewer, Text, BookView> {
+  static class Book extends Message<Viewer> implements Facet.Book<Viewer, Text, BookView> {
     protected Book() {
       super(Viewer.class);
     }
@@ -259,7 +259,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class BossBarBuilder extends SpongeFacet<Player> implements Facet.BossBar.Builder<Player, SpongeFacet.BossBar> {
+  static class BossBarBuilder extends SpongeFacet<Player> implements Facet.BossBar.Builder<Player, SpongeFacet.BossBar> {
     protected BossBarBuilder() {
       super(Player.class);
     }
@@ -270,7 +270,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class BossBar extends Message<Player> implements Facet.BossBar<Player> {
+  static class BossBar extends Message<Player> implements Facet.BossBar<Player> {
     private final ServerBossBar bar;
 
     protected BossBar(final @NonNull Collection<Player> viewers) {
@@ -350,7 +350,7 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
   }
 
-  /* package */ static class ViaHook implements Function<Player, UserConnection> {
+  static class ViaHook implements Function<Player, UserConnection> {
     @Override
     public UserConnection apply(final @NonNull Player player) {
       return Via.getManager().getConnection(player.getUniqueId());

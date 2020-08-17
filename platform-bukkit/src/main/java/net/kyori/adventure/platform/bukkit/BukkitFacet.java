@@ -53,12 +53,12 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
 
-/* package */ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
+class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
   protected BukkitFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
   }
 
-  /* package */ static class Message<V extends CommandSender> extends BukkitFacet<V> implements Facet.Message<V, String> {
+  static class Message<V extends CommandSender> extends BukkitFacet<V> implements Facet.Message<V, String> {
     protected Message(final @Nullable Class<? extends V> viewerClass) {
       super(viewerClass);
     }
@@ -70,7 +70,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class Chat extends Message<CommandSender> implements Facet.Chat<CommandSender, String> {
+  static class Chat extends Message<CommandSender> implements Facet.Chat<CommandSender, String> {
     protected Chat() {
       super(CommandSender.class);
     }
@@ -81,7 +81,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class Position extends BukkitFacet<Player> implements Facet.Position<Player, Vector> {
+  static class Position extends BukkitFacet<Player> implements Facet.Position<Player, Vector> {
     protected Position() {
       super(Player.class);
     }
@@ -99,7 +99,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class Sound extends Position implements Facet.Sound<Player, Vector> {
+  static class Sound extends Position implements Facet.Sound<Player, Vector> {
     private static final boolean KEY_SUPPORTED = hasClass("org.bukkit.NamespacedKey"); // Added MC 1.13
     private static final boolean STOP_SUPPORTED = hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
 
@@ -131,7 +131,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class SoundWithCategory extends Sound {
+  static class SoundWithCategory extends Sound {
     private static final boolean SUPPORTED = hasMethod(Player.class, "stopSound", String.class, findClass("org.bukkit.SoundCategory")); // Added MC 1.11
 
     @Override
@@ -191,7 +191,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class BossBarBuilder extends BukkitFacet<Player> implements Facet.BossBar.Builder<Player, net.kyori.adventure.platform.bukkit.BukkitFacet.BossBar> {
+  static class BossBarBuilder extends BukkitFacet<Player> implements Facet.BossBar.Builder<Player, net.kyori.adventure.platform.bukkit.BukkitFacet.BossBar> {
     private static final boolean SUPPORTED = hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
 
     protected BossBarBuilder() {
@@ -209,7 +209,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class BossBar extends Message<Player> implements Facet.BossBar<Player> {
+  static class BossBar extends Message<Player> implements Facet.BossBar<Player> {
     protected final org.bukkit.boss.BossBar bar;
 
     protected BossBar(final @NonNull Collection<Player> viewers) {
@@ -340,7 +340,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
   }
 
-  /* package */ static class ViaHook implements Function<Player, UserConnection> {
+  static class ViaHook implements Function<Player, UserConnection> {
     @Override
     public UserConnection apply(final @NonNull Player player) {
       return Via.getManager().getConnection(player.getUniqueId());

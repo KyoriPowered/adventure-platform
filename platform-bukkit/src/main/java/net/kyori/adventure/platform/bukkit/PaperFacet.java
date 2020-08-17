@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
 
-/* package */ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
+class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("paper");
 
   protected PaperFacet(final @Nullable Class<? extends V> viewerClass) {
@@ -46,7 +46,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     return super.isSupported() && SUPPORTED;
   }
 
-  /* package */ static class Title extends SpigotFacet.Message<Player> implements Facet.Title<Player, BaseComponent[], com.destroystokyo.paper.Title> {
+  static class Title extends SpigotFacet.Message<Player> implements Facet.Title<Player, BaseComponent[], com.destroystokyo.paper.Title> {
     private final static boolean SUPPORTED = hasClass("com.destroystokyo.paper.Title");
 
     protected Title() {

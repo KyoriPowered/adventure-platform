@@ -39,8 +39,8 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.function.Function;
 
-/* package */ final class BukkitAudience extends FacetAudience<CommandSender> {
-  /* package */ static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
+final class BukkitAudience extends FacetAudience<CommandSender> {
+  static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
   private static final Function<Player, UserConnection> VIA = new BukkitFacet.ViaHook();
   private static final Collection<Facet.Chat<? extends CommandSender, ?>> CHAT = Facet.of(
     () -> new ViaFacet.Chat<>(Player.class, VIA),
@@ -74,7 +74,7 @@ import java.util.function.Function;
 
   private final @NonNull Plugin plugin;
 
-  /* package */ BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
+  BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
     super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR);
     this.plugin = plugin;
   }
