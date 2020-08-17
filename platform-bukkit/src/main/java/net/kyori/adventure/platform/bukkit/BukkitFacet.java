@@ -292,14 +292,14 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
-      for(final net.kyori.adventure.bossbar.BossBar.Flag removeFlag : removedFlags) {
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+      for(final net.kyori.adventure.bossbar.BossBar.Flag removeFlag : flagsRemoved) {
         final BarFlag flag = this.flag(removeFlag);
         if(flag != null) {
           this.bar.removeFlag(flag);
         }
       }
-      for(final net.kyori.adventure.bossbar.BossBar.Flag addFlag : addedFlags) {
+      for(final net.kyori.adventure.bossbar.BossBar.Flag addFlag : flagsAdded) {
         final BarFlag flag = this.flag(addFlag);
         if(flag != null) {
           this.bar.addFlag(flag);

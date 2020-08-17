@@ -314,10 +314,19 @@ import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSeria
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> oldFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> newFlags) {
-      this.bar.setCreateFog(newFlags.contains(net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG));
-      this.bar.setDarkenSky(newFlags.contains(net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN));
-      this.bar.setPlayEndBossMusic(newFlags.contains(net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC));
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
+      final Boolean fog = this.hasFlag(net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG, removedFlags, addedFlags);
+      if(fog != null) this.bar.setCreateFog(fog);
+      final Boolean darkenScreen = this.hasFlag(net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN, removedFlags, addedFlags);
+      if(darkenScreen != null) this.bar.setDarkenSky(darkenScreen);
+      final Boolean bossMusic = this.hasFlag(net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC, removedFlags, addedFlags);
+      if(bossMusic != null) this.bar.setPlayEndBossMusic(bossMusic);
+    }
+
+    private @Nullable Boolean hasFlag(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
+      if(addedFlags.contains(flag)) return true;
+      if(removedFlags.contains(flag)) return false;
+      return null;
     }
 
     @Override

@@ -208,8 +208,8 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> oldFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> newFlags) {
-      this.bar.setFlags(this.createFlag(newFlags));
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+      this.bar.setFlags(this.createFlag(this.bar.getFlags(), flagsAdded, flagsRemoved));
       this.broadcastPacket(ACTION_FLAG);
     }
 

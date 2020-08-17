@@ -35,6 +35,7 @@ import java.io.Closeable;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -401,7 +402,7 @@ public interface Facet<V> {
       this.bossBarNameChanged(bar, bar.name(), bar.name());
       this.bossBarColorChanged(bar, bar.color(), bar.color());
       this.bossBarPercentChanged(bar, bar.percent(), bar.percent());
-      this.bossBarFlagsChanged(bar, bar.flags(), bar.flags());
+      this.bossBarFlagsChanged(bar, bar.flags(), Collections.emptySet());
       this.bossBarOverlayChanged(bar, bar.overlay(), bar.overlay());
     }
 
@@ -497,18 +498,31 @@ public interface Facet<V> {
     /**
      * Creates a bit flag.
      *
-     * @param flags a set of flags
+     * @param flagBit a flag bit
+     * @param flagsAdded a set of added flags
+     * @param flagsRemoved a set of removed flags
      * @return an ordinal
      */
-    default byte createFlag(final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flags) {
-      byte bit = 0;
-      for(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag : flags) {
+    default byte createFlag(final byte flagBit, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+      byte bit = flagBit;
+      for(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag : flagsAdded) {
         if(flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN) {
           bit |= 1;
         } else if(flag == net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC) {
           bit |= 1 << 1;
         } else if(flag == net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG) {
           bit |= 1 << 2;
+        } else {
+          logUnsupported(this, flag);
+        }
+      }
+      for(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag : flagsRemoved) {
+        if(flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN) {
+          bit &= ~1;
+        } else if(flag == net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC) {
+          bit &= ~(1 << 1);
+        } else if(flag == net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG) {
+          bit &= ~(1 << 2);
         } else {
           logUnsupported(this, flag);
         }
@@ -609,13 +623,13 @@ public interface Facet<V> {
     private static final Locale DEFAULT_LOCALE = Locale.US; // Default for vanilla clients and servers
 
     @Override
-    protected @Nullable MessageFormat translate(final @NonNull Locale locale, final @NonNull String key) {
+    protected @Nullable MessageFormat translate(final @NonNull String key, final @NonNull Locale locale) {
       final MessageFormat format = TRANSLATIONS.translate(key, locale);
       if(format != null) return format;
       if(DEFAULT_LOCALE.equals(locale)) {
         return new MessageFormat("<missing translation key ''" + key + "''>");
       }
-      return this.translate(DEFAULT_LOCALE, key);
+      return this.translate(key, DEFAULT_LOCALE);
     }
   }
 }

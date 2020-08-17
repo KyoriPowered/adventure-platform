@@ -342,8 +342,8 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> oldFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> newFlags) {
-      this.flags = this.createFlag(newFlags);
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+      this.flags = this.createFlag(this.flags, flagsAdded, flagsRemoved);
       this.broadcastPacket(ACTION_FLAG);
     }
 

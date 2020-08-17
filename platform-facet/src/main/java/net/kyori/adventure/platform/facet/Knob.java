@@ -53,7 +53,7 @@ public final class Knob {
   /**
    * Gets whether a facet should be enabled.
    *
-   * <p>Use the JVM flag, {@code -Dnet.kyori.adventure.<key>=<value>}, to enable the facet.</p>
+   * <p>Use the JVM flag, {@code -Dnet.kyori.adventure.<key>=true}, to enable the facet.</p>
    *
    * @param key a key
    * @return if the feature is enabled

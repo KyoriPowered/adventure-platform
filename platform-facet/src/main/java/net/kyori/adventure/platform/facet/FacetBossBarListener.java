@@ -69,8 +69,8 @@ import static net.kyori.adventure.platform.facet.Facet.TRANSLATOR;
   }
 
   @Override
-  public void bossBarFlagsChanged(final @NonNull BossBar bar, final @NonNull Set<BossBar.Flag> oldFlags, final @NonNull Set<BossBar.Flag> newFlags) {
-    this.facet.bossBarFlagsChanged(bar, oldFlags, newFlags);
+  public void bossBarFlagsChanged(final @NonNull BossBar bar, final @NonNull Set<BossBar.Flag> flagsAdded, final @NonNull Set<BossBar.Flag> flagsRemoved) {
+    this.facet.bossBarFlagsChanged(bar, flagsAdded, flagsRemoved);
   }
 
   @Override
