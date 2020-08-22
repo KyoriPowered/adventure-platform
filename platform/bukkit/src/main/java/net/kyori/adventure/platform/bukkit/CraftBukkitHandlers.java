@@ -277,12 +277,14 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
         final Object subtitlePacket = CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_SUBTITLE, nmsSubtitleText);
         Object timesPacket = null;
 
-        final int fadeIn = Titles.ticks(title.fadeInTime());
-        final int stay = Titles.ticks(title.stayTime());
-        final int fadeOut = Titles.ticks(title.fadeOutTime());
-
-        if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
-          timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(fadeIn, stay, fadeOut);
+        final Title.Times times = title.times();
+        if(times != null) {
+          final int fadeIn = Titles.ticks(times.fadeIn());
+          final int stay = Titles.ticks(times.stay());
+          final int fadeOut = Titles.ticks(times.fadeOut());
+          if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
+            timesPacket = CONSTRUCTOR_TITLE_TIMES.invoke(fadeIn, stay, fadeOut);
+          }
         }
 
         this.send(viewer, subtitlePacket);

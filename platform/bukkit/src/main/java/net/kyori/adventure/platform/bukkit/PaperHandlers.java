@@ -23,11 +23,11 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import com.destroystokyo.paper.Title;
 import java.time.Duration;
 import java.util.function.IntConsumer;
 import net.kyori.adventure.platform.common.Handler;
 import net.kyori.adventure.platform.common.Knobs;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -46,14 +46,17 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
 
     @Override
-    public void send(final @NonNull Player viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      final Title.Builder paperTitle = Title.builder()
+    public void send(final @NonNull Player viewer, final @NonNull Title title) {
+      final com.destroystokyo.paper.Title.Builder paperTitle = com.destroystokyo.paper.Title.builder()
         .title(SpigotHandlers.SERIALIZER.serialize(title.title()))
         .subtitle(SpigotHandlers.SERIALIZER.serialize(title.subtitle()));
 
-      applyTime(title.fadeInTime(), paperTitle::fadeIn);
-      applyTime(title.stayTime(), paperTitle::stay);
-      applyTime(title.fadeOutTime(), paperTitle::fadeOut);
+      final Title.Times times = title.times();
+      if(times != null) {
+        applyTime(times.fadeIn(), paperTitle::fadeIn);
+        applyTime(times.stay(), paperTitle::stay);
+        applyTime(times.fadeOut(), paperTitle::fadeOut);
+      }
 
       viewer.sendTitle(paperTitle.build());
     }

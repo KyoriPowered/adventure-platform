@@ -42,6 +42,7 @@ import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.PacketWrapper;
@@ -186,14 +187,12 @@ public final class ViaVersionHandlers {
 
     @Override
     public void send(final @NonNull V viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      final int fadeIn = Titles.ticks(title.fadeInTime());
-      final int stay = Titles.ticks(title.stayTime());
-      final int fadeOut = Titles.ticks(title.fadeOutTime());
-      if(fadeIn != -1 || stay != -1 || fadeOut != -1) {
+      final Title.Times times = title.times();
+      if(times != null) {
         final PacketWrapper wrapper = this.make(viewer, ACTION_TIMES);
-        wrapper.write(Type.INT, fadeIn);
-        wrapper.write(Type.INT, stay);
-        wrapper.write(Type.INT, fadeOut);
+        wrapper.write(Type.INT, Titles.ticks(times.fadeIn()));
+        wrapper.write(Type.INT, Titles.ticks(times.stay()));
+        wrapper.write(Type.INT, Titles.ticks(times.fadeOut()));
         this.send(wrapper);
       }
 

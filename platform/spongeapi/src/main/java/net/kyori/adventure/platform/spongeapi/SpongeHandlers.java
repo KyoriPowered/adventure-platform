@@ -43,6 +43,7 @@ import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
+import org.spongepowered.api.text.title.Title;
 import org.spongepowered.api.world.Locatable;
 
 /* package */ final class SpongeHandlers {
@@ -112,13 +113,18 @@ import org.spongepowered.api.world.Locatable;
 
     @Override
     public void send(final @NonNull Viewer viewer, final net.kyori.adventure.title.@NonNull Title title) {
-      viewer.sendTitle(org.spongepowered.api.text.title.Title.builder()
+      final Title.Builder builder = org.spongepowered.api.text.title.Title.builder()
         .title(SpongeApiComponentSerializer.get().serialize(title.title()))
-        .subtitle(SpongeApiComponentSerializer.get().serialize(title.subtitle()))
-        .fadeIn(Titles.ticks(title.fadeInTime()))
-        .fadeOut(Titles.ticks(title.fadeOutTime()))
-        .stay(Titles.ticks(title.stayTime()))
-        .build());
+        .subtitle(SpongeApiComponentSerializer.get().serialize(title.subtitle()));
+
+      final net.kyori.adventure.title.Title.Times times = title.times();
+      if(times != null) {
+        builder.fadeIn(Titles.ticks(times.fadeIn()))
+          .fadeOut(Titles.ticks(times.fadeOut()))
+          .stay(Titles.ticks(times.stay()));
+      }
+
+      viewer.sendTitle(builder.build());
     }
 
     @Override

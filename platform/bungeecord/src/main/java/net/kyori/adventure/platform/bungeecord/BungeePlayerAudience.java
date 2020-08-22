@@ -138,9 +138,12 @@ import static net.kyori.adventure.platform.common.Handler.Titles.ticks;
       bungee.subTitle(this.serializer().serialize(title.subtitle()));
     }
 
-    bungee.fadeIn(ticks(title.fadeInTime()))
-      .fadeOut(ticks(title.fadeOutTime()))
-      .stay(ticks(title.stayTime()));
+    final Title.Times times = title.times();
+    if(times != null) {
+      bungee.fadeIn(ticks(times.fadeIn()))
+        .stay(ticks(times.stay()))
+        .fadeOut(ticks(times.fadeOut()));
+    }
 
     this.player.sendTitle(bungee);
   }
