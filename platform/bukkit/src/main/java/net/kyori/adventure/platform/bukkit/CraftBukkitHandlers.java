@@ -62,7 +62,7 @@ import static net.kyori.adventure.platform.bukkit.BukkitHandlers.legacy;
 import static net.kyori.adventure.platform.bukkit.Crafty.findConstructor;
 import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.CLASS_CHAT_COMPONENT;
 
-/* package */ final class CraftBukkitHandlers {
+final class CraftBukkitHandlers {
 
   private static final boolean ENABLED = Knobs.enabled("craftbukkit");
 
@@ -100,7 +100,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     PLAYER_CONNECTION_SEND_PACKET = playerConnectionSendPacket;
   }
 
-  /* package */ static void sendPacket(final @NonNull Player player, final @Nullable Object packet) {
+  static void sendPacket(final @NonNull Player player, final @Nullable Object packet) {
     if(packet == null) {
       return;
     }
@@ -112,7 +112,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static class PacketSendingHandler<V extends CommandSender> extends TypedHandler<V> {
+  static class PacketSendingHandler<V extends CommandSender> extends TypedHandler<V> {
 
     @SuppressWarnings("unchecked")
     protected PacketSendingHandler() {
@@ -169,7 +169,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
 
-  /* package */ static @Nullable Object mcTextFromComponent(final @NonNull Component message) {
+  static @Nullable Object mcTextFromComponent(final @NonNull Component message) {
     try {
       return MinecraftComponentSerializer.INSTANCE.serialize(message);
     } catch(final RuntimeException ex) {
@@ -178,7 +178,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static class Chat extends PacketSendingHandler<CommandSender> implements Handler.Chat<CommandSender, Object> {
+  static class Chat extends PacketSendingHandler<CommandSender> implements Handler.Chat<CommandSender, Object> {
 
     @Override
     public boolean isAvailable() {
@@ -223,7 +223,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
   private static final @Nullable Object TITLE_ACTION_SUBTITLE = Crafty.findEnum(CLASS_TITLE_ACTION, "SUBTITLE", 1);
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = Crafty.findEnum(CLASS_TITLE_ACTION, "ACTIONBAR");
 
-  /* package */ static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
+  static class ActionBarModern extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
 
     @Override
     public boolean isAvailable() {
@@ -241,7 +241,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static class ActionBar1_8thru1_11 extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
+  static class ActionBar1_8thru1_11 extends PacketSendingHandler<Player> implements Handler.ActionBar<Player, Object> {
 
     @Override
     public boolean isAvailable() {
@@ -261,7 +261,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static class Titles extends PacketSendingHandler<Player> implements Handler.Titles<Player> {
+  static class Titles extends PacketSendingHandler<Player> implements Handler.Titles<Player> {
 
     @Override
     public boolean isAvailable() {
@@ -308,7 +308,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
+  static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
     private static final Class<?> CLASS_CRAFT_BOSS_BAR = Crafty.findCraftClass("boss.CraftBossBar");
     private static final Class<?> CLASS_BOSS_BAR_ACTION = Crafty.findNmsClass("PacketPlayOutBoss$Action");
     private static final Object BOSS_BAR_ACTION_TITLE = Crafty.findEnum(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
@@ -358,7 +358,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static class BossBars_1_8 extends AbstractBossBarListener<Player, PhantomEntity<Wither>> {
+  static class BossBars_1_8 extends AbstractBossBarListener<Player, PhantomEntity<Wither>> {
     private static final int WITHER_DATA_INVULN_TICKS = 20;
     private static final double WITHER_DISTANCE = 40;
     private static final double WITHER_OFFSET_PITCH = 30 /* degrees */;
@@ -439,7 +439,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     private static final Material BOOK_TYPE = (Material) Crafty.findEnum(Material.class, "WRITTEN_BOOK");
     private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(Material.WRITTEN_BOOK); // will always be copied
 
-    /* package */ AbstractBooks() {
+    AbstractBooks() {
     }
 
     @Override
@@ -569,7 +569,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
     }
   }
 
-  /* package */ static final class Books extends AbstractBooks implements Handler.Books<Player> {
+  static final class Books extends AbstractBooks implements Handler.Books<Player> {
     private static final Class<?> CLASS_ENUM_HAND = Crafty.findNmsClass("EnumHand");
     private static final Object HAND_MAIN = Crafty.findEnum(CLASS_ENUM_HAND, "MAIN_HAND", 0);
     private static final Class<?> PACKET_OPEN_BOOK = Crafty.findNmsClass("PacketPlayOutOpenBook");
@@ -587,7 +587,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer.C
   }
 
   // before 1.13 the open book packet is a packet250
-  /* package */ static final class Books_Pre1_13 extends AbstractBooks {
+  static final class Books_Pre1_13 extends AbstractBooks {
     private static final int HAND_MAIN = 0;
     private static final String PACKET_TYPE_BOOK_OPEN = "MC|BOpen";
     private static final Class<?> CLASS_BYTE_BUF = Crafty.findClass("io.netty.buffer.ByteBuf");

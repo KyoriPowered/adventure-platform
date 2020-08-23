@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class GsonInjections {
+final class GsonInjections {
   private GsonInjections() {
   }
 

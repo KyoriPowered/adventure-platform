@@ -40,7 +40,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>Use at your own risk!</p>
  */
-/* package */ final class Crafty {
+final class Crafty {
   private Crafty() {
   }
 

@@ -38,9 +38,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import static net.kyori.adventure.platform.common.Handler.BossBars.color;
 import static net.kyori.adventure.platform.common.Handler.BossBars.overlay;
 
-/* package */ final class BungeeBossBarListener extends AbstractBossBarListener<ProxiedPlayer, BungeeBossBarListener.Instance> {
+final class BungeeBossBarListener extends AbstractBossBarListener<ProxiedPlayer, BungeeBossBarListener.Instance> {
 
-  /* package */ BungeeBossBarListener() {
+  BungeeBossBarListener() {
   }
 
   @Override
@@ -114,16 +114,16 @@ import static net.kyori.adventure.platform.common.Handler.BossBars.overlay;
     bar.subscribers.clear();
   }
 
-  /* package */ static class Instance {
+  static class Instance {
     private final UUID id = UUID.randomUUID();
     private final BossBar adventure;
     final Set<ProxiedPlayer> subscribers = ConcurrentHashMap.newKeySet();
 
-    /* package */ Instance(final BossBar adventure) {
+    Instance(final BossBar adventure) {
       this.adventure = adventure;
     }
 
-    /* package */ net.md_5.bungee.protocol.packet.@NonNull BossBar newCreatePacket() {
+    net.md_5.bungee.protocol.packet.@NonNull BossBar newCreatePacket() {
       final net.md_5.bungee.protocol.packet.BossBar packet = this.newPacket(Handler.BossBars.ACTION_ADD);
       packet.setTitle(GsonComponentSerializer.gson().serialize(this.adventure.name())); // TODO: Based on viewer protocol
       packet.setHealth(this.adventure.percent());
@@ -133,17 +133,17 @@ import static net.kyori.adventure.platform.common.Handler.BossBars.overlay;
       return packet;
     }
 
-    /* package */ net.md_5.bungee.protocol.packet.@NonNull BossBar newPacket(final int action) {
+    net.md_5.bungee.protocol.packet.@NonNull BossBar newPacket(final int action) {
       return new net.md_5.bungee.protocol.packet.BossBar(this.id, action);
     }
 
-    /* package */ void sendToSubscribers(final int action, final @NonNull Consumer<net.md_5.bungee.protocol.packet.BossBar> packetModifier) {
+    void sendToSubscribers(final int action, final @NonNull Consumer<net.md_5.bungee.protocol.packet.BossBar> packetModifier) {
       final net.md_5.bungee.protocol.packet.BossBar packet = this.newPacket(action);
       packetModifier.accept(packet);
       this.sendToSubscribers(packet);
     }
 
-    /* package */ void sendToSubscribers(final net.md_5.bungee.protocol.packet.@NonNull BossBar packet) {
+    void sendToSubscribers(final net.md_5.bungee.protocol.packet.@NonNull BossBar packet) {
       for(final ProxiedPlayer player : this.subscribers) {
         player.unsafe().sendPacket(packet);
       }

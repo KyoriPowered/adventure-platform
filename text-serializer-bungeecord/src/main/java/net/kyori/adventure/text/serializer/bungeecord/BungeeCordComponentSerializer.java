@@ -146,7 +146,7 @@ public final class BungeeCordComponentSerializer implements ComponentSerializer<
     }
   }
 
-  /* package */ class AdapterComponent extends BaseComponent implements SelfSerializable {
+  class AdapterComponent extends BaseComponent implements SelfSerializable {
     private final Component component;
     private volatile String legacy;
 

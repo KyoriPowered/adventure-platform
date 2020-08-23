@@ -46,7 +46,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * A tracker for phantom entities that handles sending updates as appropriate.
  */
-/* package */ class PhantomEntityTracker implements Listener {
+class PhantomEntityTracker implements Listener {
   private final Plugin owner;
   private final Set<PhantomEntity<?>> trackedEntities = ConcurrentHashMap.newKeySet();
   private volatile boolean open = true;
@@ -54,7 +54,7 @@ import static java.util.Objects.requireNonNull;
   private final AtomicBoolean isListeningToMove = new AtomicBoolean();
   private final Listener moveListener = new Listener() {};
 
-  /* package */ PhantomEntityTracker(final Plugin owner) {
+  PhantomEntityTracker(final Plugin owner) {
     this.owner = requireNonNull(owner, "owner");
     this.owner.getServer().getPluginManager().registerEvents(this, owner);
   }
@@ -76,7 +76,7 @@ import static java.util.Objects.requireNonNull;
     return new PhantomEntity.NoOp<>();
   }
 
-  /* package */ void onPlayerMove(final @NonNull PlayerMoveEvent event) {
+  void onPlayerMove(final @NonNull PlayerMoveEvent event) {
     for(final PhantomEntity<?> entity : this.trackedEntities) {
       entity.updateIfNecessary(event.getPlayer(), event.getTo().clone());
     }
@@ -110,7 +110,7 @@ import static java.util.Objects.requireNonNull;
     this.trackedEntities.clear();
   }
 
-  /* package */ void updateTrackingState(final PhantomEntity<?> entity, final boolean wasRelative) {
+  void updateTrackingState(final PhantomEntity<?> entity, final boolean wasRelative) {
     if(!this.open) {
       Knobs.logError("updating an entity on a closed tracker", new IllegalStateException());
     }
@@ -152,7 +152,7 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
-  /* package */ void handleRemove(final PhantomEntity<?> entity) {
+  void handleRemove(final PhantomEntity<?> entity) {
     this.trackedEntities.remove(entity);
   }
 }

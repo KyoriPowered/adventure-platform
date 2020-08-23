@@ -42,12 +42,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.common.Handler.Titles.ticks;
 
-/* package */ class BungeePlayerAudience extends BungeeSenderAudience implements AdventurePlayerAudience {
+class BungeePlayerAudience extends BungeeSenderAudience implements AdventurePlayerAudience {
 
   private final BungeeAudienceProvider platform;
   private final ProxiedPlayer player;
 
-  /* package */ BungeePlayerAudience(final @NonNull BungeeAudienceProvider platform, final @NonNull ProxiedPlayer player) {
+  BungeePlayerAudience(final @NonNull BungeeAudienceProvider platform, final @NonNull ProxiedPlayer player) {
     super(player);
     this.platform = platform;
     this.player = player;

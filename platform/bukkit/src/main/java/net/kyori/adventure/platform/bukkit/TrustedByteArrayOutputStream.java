@@ -30,7 +30,7 @@ import java.io.InputStream;
 /**
  * A customized output stream that allows creating a new input stream sharing the same array.
  */
-/* package */ class TrustedByteArrayOutputStream extends ByteArrayOutputStream {
+class TrustedByteArrayOutputStream extends ByteArrayOutputStream {
 
   public InputStream toInputStream() {
     return new ByteArrayInputStream(this.buf, 0, this.count);

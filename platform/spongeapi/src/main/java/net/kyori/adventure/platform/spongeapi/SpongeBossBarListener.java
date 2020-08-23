@@ -34,7 +34,7 @@ import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.entity.living.player.Player;
 
-/* package */ class SpongeBossBarListener extends AbstractBossBarListener<Player, ServerBossBar> {
+class SpongeBossBarListener extends AbstractBossBarListener<Player, ServerBossBar> {
 
   SpongeBossBarListener() {
   }

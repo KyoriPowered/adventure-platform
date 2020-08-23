@@ -41,11 +41,11 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ class BungeeSenderAudience implements AdventureAudience {
+class BungeeSenderAudience implements AdventureAudience {
 
   private final CommandSender sender;
 
-  /* package */ BungeeSenderAudience(final @NonNull CommandSender sender) {
+  BungeeSenderAudience(final @NonNull CommandSender sender) {
     this.sender = requireNonNull(sender, "command sender");
   }
 

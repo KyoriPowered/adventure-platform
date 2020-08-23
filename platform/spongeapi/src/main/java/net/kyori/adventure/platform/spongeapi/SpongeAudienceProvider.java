@@ -58,9 +58,9 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
 @Singleton // one instance per plugin module
-/* package */ final class SpongeAudienceProvider extends AbstractAudienceProvider implements SpongeAudiences {
+final class SpongeAudienceProvider extends AbstractAudienceProvider implements SpongeAudiences {
 
-  /* package */ static SpongeAudienceProvider of(final @NonNull PluginContainer container, final Game game) {
+  static SpongeAudienceProvider of(final @NonNull PluginContainer container, final Game game) {
     final SpongeAudienceProvider platform = new SpongeAudienceProvider(game.getEventManager(), game.getPluginManager(), game);
     platform.init(container);
     return platform;
@@ -70,12 +70,12 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     Knobs.logger(new Slf4jLogHandler());
   }
 
-  /* package */ static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements) {
+  static <K, S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements) {
     return Sponge.getRegistry().getType(spongeType, elements.key(requireNonNull(value, "value")))
       .orElseThrow(() -> new IllegalArgumentException("Value " + value + " could not be found in Sponge type " + spongeType));
   }
 
-  /* package */ static <K, S extends CatalogType> K adventure(final @NonNull S sponge, final @NonNull Index<String, K> values) {
+  static <K, S extends CatalogType> K adventure(final @NonNull S sponge, final @NonNull Index<String, K> values) {
     final K value = values.value(requireNonNull(sponge, "sponge").getId());
     if(value == null) {
       throw new IllegalArgumentException("Sponge CatalogType value " + sponge + " could not be converted to its Adventure equivalent");
@@ -83,17 +83,17 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     return value;
   }
 
-  /* package */ static <S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
+  static <S extends CatalogType> S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
     return Sponge.getRegistry().getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
       .orElseThrow(() -> new IllegalArgumentException("Value for Key " + identifier + " could not be found in Sponge type " + spongeType));
   }
 
-  /* package */ static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
+  static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .downsampleColors()
     .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
     .emitLegacyHoverEvent().build();
 
-  /* package */ static final GsonComponentSerializer MODERN_GSON_SERIALIZER = GsonComponentSerializer.builder()
+  static final GsonComponentSerializer MODERN_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
     .build();
 
@@ -109,7 +109,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private HandlerCollection<Viewer, Handler.Books<Viewer>> books;
 
   @Inject
-  /* package */ SpongeAudienceProvider(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
+  SpongeAudienceProvider(final @NonNull EventManager eventManager, final @NonNull PluginManager plugins, final @NonNull Game game) {
     this.eventManager = eventManager;
     this.plugins = plugins;
     this.events = new Events(game);
@@ -124,11 +124,11 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   }
 
   @Inject
-  /* package */ void init(final PluginContainer container) {
+  void init(final PluginContainer container) {
     this.eventManager.registerListeners(container, this.events);
   }
 
-  /* package */ void setupHandlers() {
+  void setupHandlers() {
     final SpongeViaProvider via = new SpongeViaProvider(this.plugins);
 
     this.chat = HandlerCollection.of(

@@ -36,15 +36,15 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ final class BukkitHandlers {
+final class BukkitHandlers {
   private BukkitHandlers() {
   }
 
-  /* package */ static String legacy(final @NonNull Component component) {
+  static String legacy(final @NonNull Component component) {
     return BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(component);
   }
 
-  /* package */ static class Chat implements Handler.Chat<CommandSender, String> {
+  static class Chat implements Handler.Chat<CommandSender, String> {
     @Override
     public boolean isAvailable() {
       return true;
@@ -61,7 +61,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
   }
 
-  /* package */ static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
+  static class BossBarNameSetter implements BukkitBossBarListener.NameSetter {
 
     @Override
     public void name(final org.bukkit.boss.@NonNull BossBar bar, final @NonNull Component name) {
@@ -74,7 +74,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
   }
 
-  /* package */ static abstract class PlaySound implements Handler.PlaySound<Player> {
+  static abstract class PlaySound implements Handler.PlaySound<Player> {
     private static final boolean IS_AT_LEAST_113 = Crafty.hasClass("org.bukkit.NamespacedKey");
 
     @Override
@@ -89,7 +89,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     protected abstract void play(final @NonNull Player viewer, final @NonNull Sound sound, final @NonNull Location position);
 
-    /* package */ static @NonNull String name(final @Nullable Key name) {
+    static @NonNull String name(final @Nullable Key name) {
       if(name == null) {
         return "";
       }
@@ -102,7 +102,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
   }
 
-  /* package */ static class PlaySound_WithCategory extends PlaySound {
+  static class PlaySound_WithCategory extends PlaySound {
     private static final boolean SOUND_CATEGORY_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class, Crafty.findClass("org.bukkit.SoundCategory")); // Added MC 1.11
 
     @Override
@@ -142,7 +142,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
   }
 
-  /* package */ static class PlaySound_NoCategory extends PlaySound {
+  static class PlaySound_NoCategory extends PlaySound {
     private static final boolean SOUND_STOP_SUPPORTED = Crafty.hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
 
     @Override

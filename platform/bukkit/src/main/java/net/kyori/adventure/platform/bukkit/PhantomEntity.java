@@ -40,7 +40,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *
  * <p>Managed entities will not be ticked normally, so all adjustments must be done manually.</p>
  */
-/* package */ interface PhantomEntity<T extends Entity> {
+interface PhantomEntity<T extends Entity> {
 
   /**
    * Get the entity being monitored
@@ -151,7 +151,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   default void updateIfNecessary(final @NonNull Player player, final @NonNull Location playerPos) {
   }
 
-  /* package */ final class Impl<T extends Entity> implements PhantomEntity<T> {
+  final class Impl<T extends Entity> implements PhantomEntity<T> {
 
     // Entity bits //
     private static final Class<? extends World> CLASS_CRAFT_WORLD = Crafty.findCraftClass("CraftWorld", World.class);
@@ -186,7 +186,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     private static final MethodHandle CRAFT_WORLD_GET_HANDLE = Crafty.findMethod(CLASS_CRAFT_WORLD, "getHandle", CLASS_WORLD_SERVER);
     private static final MethodHandle NEW_ENTITY_WITHER = Crafty.findConstructor(CLASS_ENTITY_WITHER, CLASS_WORLD);
 
-    /* package */ static final boolean SUPPORTED = (CRAFT_WORLD_CREATE_ENTITY != null || (NEW_ENTITY_WITHER != null && CRAFT_WORLD_GET_HANDLE != null))
+    static final boolean SUPPORTED = (CRAFT_WORLD_CREATE_ENTITY != null || (NEW_ENTITY_WITHER != null && CRAFT_WORLD_GET_HANDLE != null))
         && CRAFT_ENTITY_GET_HANDLE != null && NMS_ENTITY_GET_BUKKIT_ENTITY != null && NMS_ENTITY_GET_DATA_WATCHER != null;
 
     private final @NonNull PhantomEntityTracker tracker;
@@ -202,7 +202,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       this.entity = entity;
     }
 
-    /* package */ Object nmsEntity() {
+    Object nmsEntity() {
       if(!CLASS_CRAFT_ENTITY.isInstance(this.entity)) return null;
       try {
         return CRAFT_ENTITY_GET_HANDLE.invoke(this.entity);
@@ -213,7 +213,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
 
     @SuppressWarnings("unchecked")
-    /* package */ static <T extends Entity> T createFakeEntity(final Location pos, final Class<T> clazz) {
+    static <T extends Entity> T createFakeEntity(final Location pos, final Class<T> clazz) {
       if(!CLASS_CRAFT_WORLD.isInstance(pos.getWorld())) return null;
 
       try {
@@ -230,7 +230,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       return null;
     }
 
-    /* package */ Object createSpawnPacket() {
+    Object createSpawnPacket() {
       // Later versions of MC add a createSpawnPacket()Packet method on Entity -- for broader support that could be used.
       // For 1.8 and 1.7 at least, we are stuck with this.
       if(this.entity() instanceof LivingEntity) {
@@ -378,7 +378,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
       return false;
     }
 
-    /* package */ void sendSpawnPacket(final @NonNull Player viewer) {
+    void sendSpawnPacket(final @NonNull Player viewer) {
       if(this.relative()) {
         this.location0(this.makeRelative(viewer.getLocation()));
       }

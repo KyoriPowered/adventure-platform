@@ -58,7 +58,7 @@ public class MinecraftComponentSerializer implements ComponentSerializer<Compone
 
   // we use concat here to hide from class relocators
   private static final @Nullable Class<?> CLASS_JSON_DESERIALIZER = Crafty.findClass("com.goo".concat("gle.gson.JsonDeserializer"));
-  /* package */ static final @Nullable Class<?> CLASS_CHAT_COMPONENT = Crafty.findNmsClass("IChatBaseComponent");
+  static final @Nullable Class<?> CLASS_CHAT_COMPONENT = Crafty.findNmsClass("IChatBaseComponent");
   private static final Gson MC_TEXT_GSON;
   private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE;
   private static final MethodHandle TEXT_SERIALIZER_SERIALIZE;

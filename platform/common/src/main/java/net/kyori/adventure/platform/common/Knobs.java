@@ -145,7 +145,7 @@ public final class Knobs {
     void error(final @Nullable Throwable exc, final @NonNull String message, final Object@NonNull... params);
   }
 
-  /* package */ static class DefaultLogHandler implements LogHandler {
+  static class DefaultLogHandler implements LogHandler {
     @Override
     public void info(final @NonNull String message, final Object@NonNull... params) {
       System.out.println(MessageFormat.format(message, params));

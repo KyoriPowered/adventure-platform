@@ -34,12 +34,12 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/* package */ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements AdventurePlayerAudience {
+class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements AdventurePlayerAudience {
 
   private Locale locale;
   private String localeRaw;
 
-  /* package */ BukkitPlayerAudience(final @NonNull Player sender,
+  BukkitPlayerAudience(final @NonNull Player sender,
                                      final @Nullable HandlerCollection<? super Player, ? extends Handler.Chat<? super Player, ?>> chat,
                                      final @Nullable HandlerCollection<? super Player, ? extends Handler.ActionBar<? super Player, ?>> actionBar,
                                      final @Nullable HandlerCollection<? super Player, ? extends Handler.Titles<? super Player>> title,
@@ -81,7 +81,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * @param mcLocale The locale string, in the format provided by the Minecraft client
    * @return A Locale object matching the provided locale string
    */
-  /* package */ static @Nullable Locale toLocale(final @Nullable String mcLocale) {
+  static @Nullable Locale toLocale(final @Nullable String mcLocale) {
     if(mcLocale == null) return null;
 
     final String[] parts = mcLocale.split("_", 3);

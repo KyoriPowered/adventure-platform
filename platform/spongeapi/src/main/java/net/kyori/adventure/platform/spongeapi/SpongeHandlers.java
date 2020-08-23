@@ -46,12 +46,12 @@ import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.text.title.Title;
 import org.spongepowered.api.world.Locatable;
 
-/* package */ final class SpongeHandlers {
+final class SpongeHandlers {
   
   private SpongeHandlers() {
   }
   
-  /* package */ static class Chat implements Handler.Chat<MessageReceiver, Text> {
+  static class Chat implements Handler.Chat<MessageReceiver, Text> {
 
     @Override
     public boolean isAvailable() {
@@ -82,7 +82,7 @@ import org.spongepowered.api.world.Locatable;
     
   }
   
-  /* package */ static class ActionBar implements Handler.ActionBar<MessageReceiver, Text> {
+  static class ActionBar implements Handler.ActionBar<MessageReceiver, Text> {
 
     @Override
     public boolean isAvailable() {
@@ -104,7 +104,7 @@ import org.spongepowered.api.world.Locatable;
     }
   }
   
-  /* package */ static class Titles implements Handler.Titles<Viewer> {
+  static class Titles implements Handler.Titles<Viewer> {
 
     @Override
     public boolean isAvailable() {
@@ -138,7 +138,7 @@ import org.spongepowered.api.world.Locatable;
     }
   }
 
-  /* package */ static class PlaySound implements Handler.PlaySound<Viewer> {
+  static class PlaySound implements Handler.PlaySound<Viewer> {
 
     @Override
     public boolean isAvailable() {
@@ -190,7 +190,7 @@ import org.spongepowered.api.world.Locatable;
     }
   }
 
-  /* package */ static class Books implements Handler.Books<Viewer> {
+  static class Books implements Handler.Books<Viewer> {
 
     @Override
     public boolean isAvailable() {

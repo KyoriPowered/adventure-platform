@@ -36,7 +36,7 @@ import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements AdventureAudience {
+class BukkitSenderAudience<S extends CommandSender> extends HandledAudience<S> implements AdventureAudience {
 
   BukkitSenderAudience(final @NonNull S sender,
                        final @Nullable HandlerCollection<? super S, ? extends Handler.Chat<? super S, ?>> chat,

@@ -31,14 +31,14 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class PaperHandlers {
+final class PaperHandlers {
   
   private static final boolean ENABLED = Knobs.enabled("paper");
   
   private PaperHandlers() {
   }
 
-  /* package */ static class Titles implements Handler.Titles<Player> {
+  static class Titles implements Handler.Titles<Player> {
 
     @Override
     public boolean isAvailable() {

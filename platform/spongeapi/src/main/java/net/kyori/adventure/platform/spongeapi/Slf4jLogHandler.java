@@ -29,7 +29,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/* package */ class Slf4jLogHandler implements Knobs.LogHandler {
+class Slf4jLogHandler implements Knobs.LogHandler {
   private final Logger logger = LoggerFactory.getLogger(SpongeAudienceProvider.class);
   
   @Override

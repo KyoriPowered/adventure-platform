@@ -35,9 +35,9 @@ import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
-/* package */ class SpongeSenderAudience<V extends MessageReceiver> extends HandledAudience<V> implements AdventureAudience {
+class SpongeSenderAudience<V extends MessageReceiver> extends HandledAudience<V> implements AdventureAudience {
 
-  /* package */ SpongeSenderAudience(@NonNull final V viewer,
+  SpongeSenderAudience(@NonNull final V viewer,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.Chat<? super V, ?>> chat,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.ActionBar<? super V, ?>> actionBar,
                               final @Nullable HandlerCollection<? super V, ? extends Handler.Titles<? super V>> title,

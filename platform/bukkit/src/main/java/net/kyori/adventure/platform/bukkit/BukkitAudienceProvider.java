@@ -69,9 +69,9 @@ import us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
 
-/* package */ final class BukkitAudienceProvider extends AbstractAudienceProvider implements BukkitAudiences, Listener {
+final class BukkitAudienceProvider extends AbstractAudienceProvider implements BukkitAudiences, Listener {
 
-  /* package */ static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
+  static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
     BukkitAudienceProvider platform = INSTANCES.get(key);
     if(platform == null) {
@@ -88,8 +88,8 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private static final Map<String, BukkitAudienceProvider> INSTANCES = new ConcurrentHashMap<>();
   private static final String PLUGIN_VIAVERSION = "ViaVersion";
 
-  /* package */ static final boolean IS_1_16 = Crafty.findEnum(Material.class, "NETHERITE_PICKAXE") != null;
-  /* package */ static final GsonComponentSerializer GSON_SERIALIZER;
+  static final boolean IS_1_16 = Crafty.findEnum(Material.class, "NETHERITE_PICKAXE") != null;
+  static final GsonComponentSerializer GSON_SERIALIZER;
   private static final GsonComponentSerializer MODERN_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
     .build();
@@ -98,7 +98,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
     .emitLegacyHoverEvent()
     .build();
-  /* package */ static final LegacyComponentSerializer LEGACY_SERIALIZER;
+  static final LegacyComponentSerializer LEGACY_SERIALIZER;
 
   static {
     Knobs.logger(new JDKLogHandler());
@@ -160,7 +160,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
   private final HandlerCollection<Player, Handler.PlaySound<Player>> playSound;
   private final HandlerCollection<Player, Handler.Books<Player>> books;
 
-  /* package */ BukkitAudienceProvider(final @NonNull Plugin plugin) {
+  BukkitAudienceProvider(final @NonNull Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
     this.entityTracker = new PhantomEntityTracker(plugin);
     injectSoftdepend(this.plugin, "ViaVersion");
@@ -289,12 +289,12 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
     super.close();
   }
 
-  /* package */ static class BukkitViaProvider implements ViaAPIProvider<CommandSender> {
+  static class BukkitViaProvider implements ViaAPIProvider<CommandSender> {
 
     private final PluginManager plugins;
     private volatile ViaPlatform<Player> platform = null;
 
-    /* package */ BukkitViaProvider(final @NonNull PluginManager plugins) {
+    BukkitViaProvider(final @NonNull PluginManager plugins) {
       this.plugins = plugins;
     }
 
@@ -354,7 +354,7 @@ import static net.kyori.adventure.platform.viaversion.ViaAccess.via;
       }
     }
 
-    /* package */ void dirtyVia() {
+    void dirtyVia() {
       this.platform = null;
     }
   }

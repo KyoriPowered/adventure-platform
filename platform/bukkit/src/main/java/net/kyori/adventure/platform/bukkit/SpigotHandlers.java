@@ -39,12 +39,12 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class SpigotHandlers {
+final class SpigotHandlers {
   // net.kyori.adventure.enableBungeeCordAdapters
   private static final boolean FORCE_ENABLE = Boolean.getBoolean("net.kyo".concat("ri.adventure.enableBungeeCordAdapters"));
-  /* package */ static final boolean BOUND = FORCE_ENABLE && Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
+  static final boolean BOUND = FORCE_ENABLE && Knobs.enabled("spigot") && BungeeCordComponentSerializer.nativeSupport();
 
-  /* package */ static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitAudienceProvider.GSON_SERIALIZER, BukkitAudienceProvider.LEGACY_SERIALIZER);
+  static final BungeeCordComponentSerializer SERIALIZER = BungeeCordComponentSerializer.of(BukkitAudienceProvider.GSON_SERIALIZER, BukkitAudienceProvider.LEGACY_SERIALIZER);
 
   private static final Class<?> BUNGEE_CHAT_MESSAGE_TYPE = Crafty.findClass("net.md_5.bungee.api.ChatMessageType");
   private static final Class<?> BUNGEE_COMPONENT_TYPE = Crafty.findClass("net.md_5.bungee.api.chat.BaseComponent");
@@ -68,7 +68,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
   }
 
-  /* package */ static final class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+  static final class Chat extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
     private static final boolean HAS_COMMANDSENDER_SPIGOT = Crafty.hasClass("org.bukkit.command.CommandSender$Spigot");
 
     @Override
@@ -82,7 +82,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
   }
 
-  /* package */ static final class Chat_PlayerWithType extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+  static final class Chat_PlayerWithType extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
     private static final Class<?> PLAYER_SPIGOT = Crafty.findClass("org.bukkit.entity.Player$Spigot");
     private static final boolean HAS_TYPE = Crafty.hasMethod(PLAYER_SPIGOT, "sendMessage", BUNGEE_CHAT_MESSAGE_TYPE, BUNGEE_COMPONENT_TYPE);
 
@@ -106,7 +106,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
   }
 
-  /* package */ static final class Chat_PlayerOnly extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
+  static final class Chat_PlayerOnly extends WithBungeeText<CommandSender> implements Handler.Chat<CommandSender, BaseComponent[]> {
 
     @Override
     public boolean isAvailable(final @NonNull CommandSender viewer) {
@@ -119,7 +119,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
   }
 
-  /* package */ static final class ActionBar extends WithBungeeText<Player> implements Handler.ActionBar<Player, BaseComponent[]> {
+  static final class ActionBar extends WithBungeeText<Player> implements Handler.ActionBar<Player, BaseComponent[]> {
 
     @Override
     public boolean isAvailable() {
@@ -144,7 +144,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
     }
   }
 
-  /* package */ static final class OpenBook implements Handler.Books<Player> {
+  static final class OpenBook implements Handler.Books<Player> {
     private static final boolean SUPPORTED = Crafty.hasMethod(Player.class, "openBook", ItemStack.class); // Added June 2019
 
     @Override

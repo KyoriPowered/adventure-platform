@@ -68,7 +68,7 @@ public final class ViaVersionHandlers {
    *
    * @param <V> user type
    */
-  /* package */ static abstract class ConnectionBased<V> implements Handler<V> {
+  static abstract class ConnectionBased<V> implements Handler<V> {
     protected final ViaAPIProvider<? super V> via;
 
     protected ConnectionBased(final ViaAPIProvider<? super V> via) {
@@ -263,7 +263,7 @@ public final class ViaVersionHandlers {
   protected static abstract class BossBars<V> extends ConnectionBased<V> implements Handler.BossBars<V>, net.kyori.adventure.bossbar.BossBar.Listener {
     private final Map<net.kyori.adventure.bossbar.BossBar, Instance> bars = Collections.synchronizedMap(new IdentityHashMap<>());
 
-    /* package */ BossBars(final ViaAPIProvider<? super V> via) {
+    BossBars(final ViaAPIProvider<? super V> via) {
       super(via);
     }
 
@@ -380,18 +380,18 @@ public final class ViaVersionHandlers {
     /**
      * A single boss bar instance.
      */
-    /* package */ class Instance {
+    class Instance {
       final UUID barId = UUID.randomUUID();
       final Set<UUID> subscribedPlayers = ConcurrentHashMap.newKeySet();
 
-      /* package */ PacketWrapper make(final UserConnection user, final int action) {
+      PacketWrapper make(final UserConnection user, final int action) {
         final PacketWrapper wrapper = new PacketWrapper(ClientboundPackets1_16.BOSSBAR.ordinal(), null, user);
         wrapper.write(Type.UUID, this.barId);
         wrapper.write(Type.VAR_INT, action);
         return wrapper;
       }
 
-      /* package */ void sendToSubscribers(final net.kyori.adventure.bossbar.BossBar adventure, final int action, final BiConsumer<PacketWrapper, net.kyori.adventure.bossbar.BossBar> populator) {
+      void sendToSubscribers(final net.kyori.adventure.bossbar.BossBar adventure, final int action, final BiConsumer<PacketWrapper, net.kyori.adventure.bossbar.BossBar> populator) {
         for(final UUID id : this.subscribedPlayers) {
           final UserConnection conn = ViaVersionHandlers.BossBars.this.via.platform().getConnectionManager().getConnectedClient(id);
           if(conn != null) {

@@ -36,12 +36,12 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/* package */ final class BukkitBossBarListener extends AbstractBossBarListener<Player, org.bukkit.boss.BossBar> {
-  /* package */ static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
+final class BukkitBossBarListener extends AbstractBossBarListener<Player, org.bukkit.boss.BossBar> {
+  static final boolean SUPPORTED = Crafty.hasClass("org.bukkit.boss.BossBar"); // Added MC 1.9
   private static final BossBar.Flag[] FLAGS = BossBar.Flag.values();
   private static final HandlerCollection<org.bukkit.boss.BossBar, NameSetter> SET_NAME = HandlerCollection.of(new CraftBukkitHandlers.BossBarNameSetter(), new BukkitHandlers.BossBarNameSetter());
 
-  /* package */ BukkitBossBarListener() {
+  BukkitBossBarListener() {
   }
 
   @Override
@@ -170,7 +170,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   /**
    * Set the name on a Bukkit boss bar.
    */
-  /* package */ interface NameSetter extends Handler<org.bukkit.boss.BossBar> {
+  interface NameSetter extends Handler<org.bukkit.boss.BossBar> {
     void name(org.bukkit.boss.@NonNull BossBar bar, @NonNull Component name);
   }
 }

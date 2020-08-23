@@ -46,9 +46,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
-/* package */ final class BungeeAudienceProvider extends AbstractAudienceProvider implements BungeeAudiences, Listener {
+final class BungeeAudienceProvider extends AbstractAudienceProvider implements BungeeAudiences, Listener {
 
-  /* package */ static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
+  static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "A plugin instance is required");
 
     final String key = plugin.getDescription().getName().toLowerCase(Locale.ROOT);
@@ -108,16 +108,16 @@ import static java.util.Objects.requireNonNull;
     }
   }
 
-  /* package */ ProxyServer proxy() {
+  ProxyServer proxy() {
     return this.plugin.getProxy();
   }
 
-  /* package */ BungeeBossBarListener bossBars() {
+  BungeeBossBarListener bossBars() {
     return this.bossBars;
   }
 
   public final class Listener implements net.md_5.bungee.api.plugin.Listener {
-    /* package */ Listener() {
+    Listener() {
     }
 
     @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)

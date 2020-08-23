@@ -34,7 +34,7 @@ import java.io.IOException;
 /**
  * A representation of a wrapper adapter, generally between and Adventure type and a native type.
  */
-/* package */ interface SelfSerializable {
+interface SelfSerializable {
 
   /**
    * Write this object to a json writer
