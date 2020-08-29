@@ -17,9 +17,9 @@
   <version>4.0.0-SNAPSHOT</version>
 </dependency>
 ```
-Replace platform with `bukkit` for bukkit based servers, `spongeapi` for Sponge based.
+Replace PLATFORM with `bukkit` for bukkit based servers, `spongeapi` for Sponge based.
 A full list can be found [here](https://oss.sonatype.org/#nexus-search;quick~adventure-platform)
 
 # text-extras
 
-[![Build Status](https://travis-ci.org/KyoriPowered/text-extras.svg?branch=master)](https://travis-ci.org/KyoriPowered/text-extras)
+[![Build Status](https://travis-ci.org/KyoriPowered/text-extras.svg?branch=master)](https://travis-ci.org/KyoriPowered/text-extras).
