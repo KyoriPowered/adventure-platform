@@ -201,9 +201,9 @@ public class FacetAudience<V> implements Audience, Closeable {
 
     final Object mainTitle = this.createMessage(original.title(), this.title);
     final Object subTitle = this.createMessage(original.subtitle(), this.title);
-    final int inTicks = this.title.toTicks(original.fadeInTime());
-    final int stayTicks = this.title.toTicks(original.stayTime());
-    final int outTicks = this.title.toTicks(original.fadeOutTime());
+    final int inTicks = this.title.toTicks(original.times().fadeIn());
+    final int stayTicks = this.title.toTicks(original.times().stay());
+    final int outTicks = this.title.toTicks(original.times().fadeOut());
 
     final Object title = this.title.createTitle(mainTitle, subTitle, inTicks, stayTicks, outTicks);
     if(title == null) return;
