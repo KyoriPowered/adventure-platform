@@ -1,3 +1,3 @@
-# text-extras
+# adventure-platform [![Build Status](https://travis-ci.org/KyoriPowered/adventure-platform.svg?branch=master)](https://travis-ci.org/KyoriPowered/adventure-platform)
 
-[![Build Status](https://travis-ci.org/KyoriPowered/text-extras.svg?branch=master)](https://travis-ci.org/KyoriPowered/text-extras)
+Adventure platform implementations, including Bukkit (including Paper and Spigot), BungeeCord, and SpongeAPI 7.
