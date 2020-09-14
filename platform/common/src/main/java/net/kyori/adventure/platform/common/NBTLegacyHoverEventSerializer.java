@@ -59,7 +59,7 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
     }
     final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
     final CompoundBinaryTag tag = contents.getCompound(ITEM_TAG);
-    return new HoverEvent.ShowItem(
+    return HoverEvent.ShowItem.of(
       Key.of(contents.getString(ITEM_TYPE)),
       contents.getByte(ITEM_COUNT, (byte) 1),
       tag == CompoundBinaryTag.empty() ? null : BinaryTagHolder.encode(tag, SNBT_CODEC)
@@ -78,7 +78,7 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
     } catch(final Exception e) {
       name = TextComponent.of(contents.getString(ENTITY_NAME));
     }
-    return new HoverEvent.ShowEntity(
+    return HoverEvent.ShowEntity.of(
       Key.of(contents.getString(ENTITY_TYPE)),
       UUID.fromString(contents.getString(ENTITY_ID)),
       name
