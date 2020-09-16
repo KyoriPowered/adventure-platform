@@ -28,6 +28,8 @@ import com.google.common.graph.MutableGraph;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
+import net.kyori.adventure.platform.facet.Knob;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -50,11 +52,14 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logError;
@@ -64,10 +69,23 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
 @SuppressWarnings("unchecked")
 final class BukkitAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BukkitAudience> implements BukkitAudienceProvider, Listener {
+
+  static {
+    Knob.OUT = message -> Bukkit.getLogger().log(Level.INFO, message);
+    Knob.ERR = (message, error) -> Bukkit.getLogger().log(Level.WARNING, message, error);
+  }
+
+  private static final Map<String, BukkitAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+
+  static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
+    requireNonNull(plugin, "plugin");
+    return INSTANCES.computeIfAbsent(plugin.getName(), name -> new BukkitAudienceProviderImpl(plugin));
+  }
+
   private final Plugin plugin;
 
   BukkitAudienceProviderImpl(final @NonNull Plugin plugin) {
-    this.plugin = requireNonNull(plugin, "plugin");
+    this.plugin = plugin;
     this.softDepend("ViaVersion");
 
     final CommandSender console = this.plugin.getServer().getConsoleSender();

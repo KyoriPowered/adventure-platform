@@ -23,9 +23,12 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import com.google.gson.Gson;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
+import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -37,14 +40,44 @@ import net.md_5.bungee.event.EventHandler;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import static java.util.Objects.requireNonNull;
+import static net.kyori.adventure.platform.facet.Knob.logError;
 
 final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudienceProvider {
+
+  static {
+    Knob.OUT = message -> ProxyServer.getInstance().getLogger().log(Level.INFO, message);
+    Knob.ERR = (message, error) -> ProxyServer.getInstance().getLogger().log(Level.WARNING, message, error);
+
+    // Inject our adapter component into Bungee's Gson instance
+    // (this is separate from the ComponentSerializer Gson instance)
+    // Please, just use Velocity!
+    try {
+      final Field gsonField = ProxyServer.getInstance().getClass().getDeclaredField("gson");
+      gsonField.setAccessible(true);
+      final Gson gson = (Gson) gsonField.get(ProxyServer.getInstance());
+      BungeeComponentSerializer.inject(gson);
+    } catch(final Throwable error) {
+      logError(error, "Failed to inject ProxyServer gson");
+    }
+  }
+
+  private static final Map<String, BungeeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+
+  static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
+    requireNonNull(plugin, "plugin");
+    return INSTANCES.computeIfAbsent(plugin.getDescription().getName(), name -> new BungeeAudienceProviderImpl(plugin));
+  }
+
   private final Plugin plugin;
   private final Listener listener;
 

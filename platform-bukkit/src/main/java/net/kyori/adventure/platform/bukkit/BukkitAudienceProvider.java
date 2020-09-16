@@ -27,6 +27,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.function.Predicate;
@@ -37,6 +38,18 @@ import java.util.function.Predicate;
  * @see AudienceProvider
  */
 public interface BukkitAudienceProvider extends AudienceProvider {
+  /**
+   * Creates an audience provider for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin
+   * @return an audience provider
+   */
+  static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
+    return BukkitAudienceProviderImpl.of(plugin);
+  }
+
   /**
    * Gets an audience for a command sender.
    *

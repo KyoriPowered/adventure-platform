@@ -26,8 +26,11 @@ package net.kyori.adventure.platform.spongeapi;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
+import net.kyori.adventure.platform.facet.Knob;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.GameState;
 import org.spongepowered.api.block.tileentity.CommandBlock;
@@ -52,10 +55,32 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import static java.util.Objects.requireNonNull;
 
 @Singleton // one instance per plugin module
 final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageReceiver, SpongeAudience> implements SpongeAudienceProvider {
+
+  static {
+    final Logger logger = LoggerFactory.getLogger(SpongeAudienceProvider.class);
+    Knob.OUT = logger::debug;
+    Knob.ERR = logger::warn;
+  }
+
+  private static final Map<String, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+
+  static SpongeAudienceProvider of(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+    requireNonNull(plugin, "plugin");
+    requireNonNull(game, "game");
+    return INSTANCES.computeIfAbsent(plugin.getId(), id -> {
+      final SpongeAudienceProviderImpl provider = new SpongeAudienceProviderImpl(game);
+      provider.init(plugin);
+      return provider;
+    });
+  }
 
   private final Game game;
   private final EventManager eventManager;

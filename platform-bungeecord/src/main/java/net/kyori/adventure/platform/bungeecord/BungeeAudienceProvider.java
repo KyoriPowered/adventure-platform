@@ -27,6 +27,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.function.Predicate;
@@ -35,6 +36,18 @@ import java.util.function.Predicate;
  * A provider for creating {@link Audience}s for BungeeCord.
  */
 public interface BungeeAudienceProvider extends AudienceProvider {
+  /**
+   * Creates an audience provider for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin
+   * @return an audience provider
+   */
+  static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
+    return BungeeAudienceProviderImpl.of(plugin);
+  }
+
   /**
    * Gets an audience for a command sender.
    *

@@ -27,13 +27,28 @@ import com.google.inject.ImplementedBy;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.Game;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.channel.MessageReceiver;
 
 import java.util.function.Predicate;
 
 @ImplementedBy(SpongeAudienceProviderImpl.class)
 public interface SpongeAudienceProvider extends AudienceProvider {
+  /**
+   * Creates an audience provider for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin container
+   * @param game a game
+   * @return an audience provider
+   */
+  static SpongeAudienceProvider of(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+    return SpongeAudienceProviderImpl.of(plugin, game);
+  }
+
   /**
    * Gets an audience for a message receiver.
    *
