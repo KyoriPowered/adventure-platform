@@ -46,8 +46,22 @@ public interface BukkitAudienceProvider extends AudienceProvider {
    * @param plugin a plugin
    * @return an audience provider
    */
-  static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
+  static @NonNull BukkitAudienceProvider of(final @NonNull Plugin plugin) {
     return BukkitAudienceProviderImpl.of(plugin);
+  }
+
+  /**
+   * Creates an audience provider for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin
+   * @return an audience provider
+   * @deprecated Use {@link #of(Plugin)} instead, will be removed before 4.0.0 release.
+   */
+  @Deprecated
+  static @NonNull BukkitAudienceProvider create(final @NonNull Plugin plugin) {
+    return of(plugin);
   }
 
   /**
