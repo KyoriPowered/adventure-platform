@@ -86,5 +86,8 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     PLUGIN.set(this.plugin);
 
     super.showBossBar(bar);
+
+    // Unset plugin after boss bar is created.
+    PLUGIN.set(null);
   }
 }

@@ -51,20 +51,6 @@ public interface BukkitAudienceProvider extends AudienceProvider {
   }
 
   /**
-   * Creates an audience provider for a plugin.
-   *
-   * <p>There will only be one provider for each plugin.</p>
-   *
-   * @param plugin a plugin
-   * @return an audience provider
-   * @deprecated Use {@link #of(Plugin)} instead, will be removed before 4.0.0 release.
-   */
-  @Deprecated
-  static @NonNull BukkitAudienceProvider create(final @NonNull Plugin plugin) {
-    return of(plugin);
-  }
-
-  /**
    * Gets an audience for a command sender.
    *
    * @param sender a command sender

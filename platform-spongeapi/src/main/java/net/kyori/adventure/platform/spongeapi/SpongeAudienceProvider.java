@@ -34,6 +34,9 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 
 import java.util.function.Predicate;
 
+/**
+ * A provider for creating {@link Audience}s for Sponge.
+ */
 @ImplementedBy(SpongeAudienceProviderImpl.class)
 public interface SpongeAudienceProvider extends AudienceProvider {
   /**
@@ -47,21 +50,6 @@ public interface SpongeAudienceProvider extends AudienceProvider {
    */
   static @NonNull SpongeAudienceProvider of(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     return SpongeAudienceProviderImpl.of(plugin, game);
-  }
-
-  /**
-   * Creates an audience provider for a plugin.
-   *
-   * <p>There will only be one provider for each plugin.</p>
-   *
-   * @param plugin a plugin container
-   * @param game a game
-   * @return an audience provider
-   * @deprecated Use {@link #of(PluginContainer, Game)} instead, will be removed before 4.0.0 release.
-   */
-  @Deprecated
-  static @NonNull SpongeAudienceProvider create(final @NonNull PluginContainer plugin, final @NonNull Game game) {
-    return of(plugin, game);
   }
 
   /**
