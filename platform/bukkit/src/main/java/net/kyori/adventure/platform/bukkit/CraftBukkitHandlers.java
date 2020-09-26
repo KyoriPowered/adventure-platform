@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.bukkit;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
@@ -508,13 +509,15 @@ final class CraftBukkitHandlers {
         for(final Method method : CLASS_NBT_IO.getDeclaredMethods()) {
           if(Modifier.isStatic(method.getModifiers())
             && method.getReturnType().equals(CLASS_NBT_TAG_COMPOUND)
-            && method.getParameterCount() == 1
-            && method.getParameterTypes()[0].equals(DataInputStream.class)) {
-            try {
-              nbtIoDeserialize = Crafty.lookup().unreflect(method);
-            } catch(final IllegalAccessException ignore) {
+            && method.getParameterCount() == 1) {
+            final Class<?> firstParam = method.getParameterTypes()[0];
+            if (firstParam.equals(DataInputStream.class) || firstParam.equals(DataInput.class)) {
+              try {
+                nbtIoDeserialize = Crafty.lookup().unreflect(method);
+              } catch(final IllegalAccessException ignore) {
+              }
+              break;
             }
-            break;
           }
         }
       }
