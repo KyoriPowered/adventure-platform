@@ -28,6 +28,7 @@ import io.netty.buffer.Unpooled;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -384,13 +385,15 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         for(final Method method : CLASS_NBT_IO.getDeclaredMethods()) {
           if(Modifier.isStatic(method.getModifiers())
             && method.getReturnType().equals(CLASS_NBT_TAG_COMPOUND)
-            && method.getParameterCount() == 1
-            && method.getParameterTypes()[0].equals(DataInputStream.class)) {
-            try {
-              nbtIoDeserialize = lookup().unreflect(method);
-            } catch(final IllegalAccessException ignore) {
+            && method.getParameterCount() == 1) {
+            final Class<?> firstParam = method.getParameterTypes()[0];
+            if(firstParam.equals(DataInputStream.class) || firstParam.equals(DataInput.class)) {
+              try {
+                nbtIoDeserialize = lookup().unreflect(method);
+              } catch(final IllegalAccessException ignore) {
+              }
+              break;
             }
-            break;
           }
         }
       }
