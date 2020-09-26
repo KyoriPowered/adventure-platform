@@ -511,7 +511,7 @@ final class CraftBukkitHandlers {
             && method.getReturnType().equals(CLASS_NBT_TAG_COMPOUND)
             && method.getParameterCount() == 1) {
             final Class<?> firstParam = method.getParameterTypes()[0];
-            if (firstParam.equals(DataInputStream.class) || firstParam.equals(DataInput.class)) {
+            if(firstParam.equals(DataInputStream.class) || firstParam.equals(DataInput.class)) {
               try {
                 nbtIoDeserialize = Crafty.lookup().unreflect(method);
               } catch(final IllegalAccessException ignore) {
