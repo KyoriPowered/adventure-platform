@@ -59,8 +59,8 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
     this.viewers = new ConcurrentHashMap<>();
     this.players = new ConcurrentHashMap<>();
     this.consoles = new CopyOnWriteArraySet<>();
-    this.console = Audience.of(this.consoles);
-    this.player = Audience.of(this.players.values());
+    this.console = Audience.audience(this.consoles);
+    this.player = Audience.audience(this.players.values());
     this.empty = this.createAudience(Collections.emptyList());
     this.closed = false;
   }
@@ -195,7 +195,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    * @return an audience
    */
   public @NonNull Audience filter(final @NonNull Predicate<V> predicate) {
-    return Audience.of(filter(this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
+    return Audience.audience(filter(this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
   }
 
   @Override

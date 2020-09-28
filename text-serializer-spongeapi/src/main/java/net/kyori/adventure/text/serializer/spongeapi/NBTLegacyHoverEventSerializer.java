@@ -61,7 +61,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
     final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
     final CompoundBinaryTag tag = contents.getCompound(ITEM_TAG);
     return HoverEvent.ShowItem.of(
-      Key.of(contents.getString(ITEM_TYPE)),
+      Key.key(contents.getString(ITEM_TYPE)),
       contents.getByte(ITEM_COUNT, (byte) 1),
       tag == CompoundBinaryTag.empty() ? null : BinaryTagHolder.encode(tag, SNBT_CODEC)
     );
@@ -77,10 +77,10 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
     try {
       name = componentCodec.decode(contents.getString(ENTITY_NAME));
     } catch(final Exception e) {
-      name = TextComponent.of(contents.getString(ENTITY_NAME));
+      name = Component.text(contents.getString(ENTITY_NAME));
     }
     return HoverEvent.ShowEntity.of(
-      Key.of(contents.getString(ENTITY_TYPE)),
+      Key.key(contents.getString(ENTITY_TYPE)),
       UUID.fromString(contents.getString(ENTITY_ID)),
       name
     );
@@ -95,7 +95,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
       builder.put(ITEM_TAG, input.nbt().get(SNBT_CODEC));
     }
 
-    return TextComponent.of(SNBT_CODEC.encode(builder.build()));
+    return Component.text(SNBT_CODEC.encode(builder.build()));
   }
 
   @Override
@@ -106,6 +106,6 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
     if(input.name() != null) {
       builder.putString(ENTITY_NAME, componentCodec.encode(input.name()));
     }
-    return TextComponent.of(SNBT_CODEC.encode(builder.build()));
+    return Component.text(SNBT_CODEC.encode(builder.build()));
   }
 }

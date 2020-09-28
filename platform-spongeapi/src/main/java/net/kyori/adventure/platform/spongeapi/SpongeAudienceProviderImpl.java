@@ -108,7 +108,7 @@ final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageRece
       || (receiver instanceof RconSource && ((RconSource) receiver).getLoggedIn())) {
       return this.console();
     } else if(receiver instanceof World) {
-      return this.world(Key.of(((World) receiver).getName()));
+      return this.world(Key.key(((World) receiver).getName()));
     } else if(receiver instanceof ProxySource) {
       return this.receiver(((ProxySource) receiver).getOriginalSource());
     } else if(receiver instanceof CommandBlock) {

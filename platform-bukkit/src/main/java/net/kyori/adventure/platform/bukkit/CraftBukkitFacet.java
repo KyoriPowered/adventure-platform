@@ -261,7 +261,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public Object createMessage(final @NonNull Player viewer, final @NonNull Component message) {
       // Due to a Minecraft client bug, Action bars through the chat packet don't properly support formatting
-      final TextComponent legacyMessage = TextComponent.of(legacy().serialize(message));
+      final TextComponent legacyMessage = Component.text(legacy().serialize(message));
       try {
         return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(super.createMessage(viewer, legacyMessage), (byte) 2);
       } catch(final Throwable error) {
