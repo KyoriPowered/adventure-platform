@@ -50,7 +50,7 @@ final class SpongePlayerAudience extends SpongeSenderAudience<Player> implements
 
   @Override
   public @NonNull Key world() {
-    return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName());
+    return Key.key(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName());
   }
 
   @Override

@@ -252,7 +252,7 @@ final class CraftBukkitHandlers {
     @Override
     public Object initState(final @NonNull Component message) {
       // Action bar through the chat packet doesn't properly support formatting
-      final TextComponent legacyMessage = TextComponent.of(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(message));
+      final TextComponent legacyMessage = Component.text(BukkitAudienceProvider.LEGACY_SERIALIZER.serialize(message));
       try {
         return LEGACY_CHAT_PACKET_CONSTRUCTOR.invoke(mcTextFromComponent(legacyMessage), Chat.TYPE_ACTIONBAR);
       } catch(final Throwable throwable) {

@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.common;
 
 import java.io.IOException;
 import java.util.UUID;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.kyori.adventure.nbt.TagStringIO;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
@@ -35,6 +34,8 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.gson.LegacyHoverEventSerializer;
 import net.kyori.adventure.util.Codec;
 import org.checkerframework.checker.nullness.qual.NonNull;
+
+import static net.kyori.adventure.key.Key.key;
 
 public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
   public static final NBTLegacyHoverEventSerializer INSTANCE = new NBTLegacyHoverEventSerializer();
@@ -60,7 +61,7 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
     final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
     final CompoundBinaryTag tag = contents.getCompound(ITEM_TAG);
     return HoverEvent.ShowItem.of(
-      Key.of(contents.getString(ITEM_TYPE)),
+      key(contents.getString(ITEM_TYPE)),
       contents.getByte(ITEM_COUNT, (byte) 1),
       tag == CompoundBinaryTag.empty() ? null : BinaryTagHolder.encode(tag, SNBT_CODEC)
     );
@@ -76,10 +77,10 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
     try {
       name = componentCodec.decode(contents.getString(ENTITY_NAME));
     } catch(final Exception e) {
-      name = TextComponent.of(contents.getString(ENTITY_NAME));
+      name = Component.text(contents.getString(ENTITY_NAME));
     }
     return HoverEvent.ShowEntity.of(
-      Key.of(contents.getString(ENTITY_TYPE)),
+      key(contents.getString(ENTITY_TYPE)),
       UUID.fromString(contents.getString(ENTITY_ID)),
       name
     );
@@ -94,7 +95,7 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
       builder.put(ITEM_TAG, input.nbt().get(SNBT_CODEC));
     }
 
-    return TextComponent.of(SNBT_CODEC.encode(builder.build()));
+    return Component.text(SNBT_CODEC.encode(builder.build()));
   }
 
   @Override
@@ -105,6 +106,6 @@ public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSeri
     if(input.name() != null) {
       builder.putString(ENTITY_NAME, componentCodec.encode(input.name()));
     }
-    return TextComponent.of(SNBT_CODEC.encode(builder.build()));
+    return Component.text(SNBT_CODEC.encode(builder.build()));
   }
 }

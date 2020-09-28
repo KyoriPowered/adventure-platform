@@ -56,7 +56,7 @@ class BukkitPlayerAudience extends BukkitSenderAudience<Player> implements Adven
 
   @Override
   public @Nullable Key world() {
-    return Key.of(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName()); // TODO: handle Keys
+    return Key.key(Key.MINECRAFT_NAMESPACE, this.viewer.getWorld().getName()); // TODO: handle Keys
   }
 
   @Override
