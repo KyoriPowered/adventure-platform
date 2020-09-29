@@ -21,40 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.serializer.legacytext3;
+package net.kyori.adventure.text.serializer.spongeapi;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.Platform;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * A component serializer betweeen text 3.x's {@link net.kyori.text.Component} and adventure's {@link Component}.
+ * A component serializer for SpongeAPI's {@link Text}.
  */
-public final class LegacyText3ComponentSerializer implements ComponentSerializer<Component, Component, net.kyori.text.Component> {
-  private static final LegacyText3ComponentSerializer INSTANCE = new LegacyText3ComponentSerializer();
+public final class SpongeComponentSerializer implements ComponentSerializer<Component, Component, Text> {
+  private static final SpongeComponentSerializer INSTANCE = new SpongeComponentSerializer();
+  private static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
+    .downsampleColors()
+    .emitLegacyHoverEvent()
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .build();
 
   /**
-   * Gets a component serializer for adapting text 3.x components to adventure.
+   * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.
    *
    * @return a component serializer
    */
-  public static @NonNull LegacyText3ComponentSerializer get() {
+  public static @NonNull SpongeComponentSerializer get() {
     return INSTANCE;
   }
 
-  private LegacyText3ComponentSerializer() {
+  private SpongeComponentSerializer() {
   }
 
   @Override
-  public @NonNull Component deserialize(final net.kyori.text.@NonNull Component input) {
-    return GsonComponentSerializer.gson().deserialize(net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.serialize(requireNonNull(input, "text")));
+  public @NonNull Component deserialize(final @NonNull Text input) {
+    return LEGACY_GSON_SERIALIZER.deserialize(TextSerializers.JSON.serialize(requireNonNull(input, "text")));
   }
 
   @Override
-  public net.kyori.text.@NonNull Component serialize(final @NonNull Component component) {
-    return net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
+  public @NonNull Text serialize(final @NonNull Component component) {
+    return TextSerializers.JSON.deserialize(LEGACY_GSON_SERIALIZER.serialize(requireNonNull(component, "component")));
   }
 }

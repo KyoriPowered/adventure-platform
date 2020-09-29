@@ -1,0 +1,13 @@
+repositories {
+  maven {
+    url 'https://repo.spongepowered.org/maven/'
+  }
+}
+
+dependencies {
+  api project(":adventure-platform-api")
+  api project(":adventure-text-serializer-spongeapi")
+  implementation project(":adventure-platform-facet")
+  implementation project(":adventure-platform-viaversion")
+  compileOnly 'org.spongepowered:spongeapi:7.1.0'
+}
