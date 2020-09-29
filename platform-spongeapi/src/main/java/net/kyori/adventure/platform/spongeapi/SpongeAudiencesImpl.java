@@ -75,11 +75,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   static SpongeAudiences instanceFor(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     requireNonNull(plugin, "plugin");
     requireNonNull(game, "game");
-    return INSTANCES.computeIfAbsent(plugin.getId(), id -> {
-      final SpongeAudiencesImpl provider = new SpongeAudiencesImpl(game);
-      provider.init(plugin);
-      return provider;
-    });
+    return INSTANCES.computeIfAbsent(plugin.getId(), id -> new SpongeAudiencesImpl(plugin, game));
   }
 
   private final Game game;
@@ -87,10 +83,11 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final EventListener eventListener;
 
   @Inject
-  SpongeAudiencesImpl(final @NonNull Game game) {
+  SpongeAudiencesImpl(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
+    this.eventManager.registerListeners(plugin, this.eventListener);
     if(game.isServerAvailable() && game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
       this.addViewer(game.getServer().getConsole());
       for(final Player player : game.getServer().getOnlinePlayers()) {
@@ -121,11 +118,6 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   @Override
   public Audience player(final @NonNull Player player) {
     return this.player(player.getUniqueId());
-  }
-
-  @Inject
-  void init(final PluginContainer container) {
-    this.eventManager.registerListeners(container, this.eventListener);
   }
 
   @Override
