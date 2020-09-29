@@ -35,7 +35,7 @@ import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
 
 class PaperFacet<V extends CommandSender> extends FacetBase<V> {
-  private static final boolean SUPPORTED = isEnabled("paper");
+  private static final boolean SUPPORTED = isEnabled("paper", true);
 
   protected PaperFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);

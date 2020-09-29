@@ -50,7 +50,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
 
 class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
-  private static final boolean SUPPORTED = isEnabled("spigot") && isNative();
+  private static final boolean SUPPORTED = isEnabled("spigot", true) && isNative();
 
   protected SpigotFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);

@@ -39,7 +39,7 @@ public final class Knob {
   }
 
   private static final String NAMESPACE = "net.kyo".concat("ri.adventure"); // Concat is used to trick package relocations
-  private static final boolean DEBUG = isEnabled("debug");
+  private static final boolean DEBUG = isEnabled("debug", false);
   private static final Set<Object> UNSUPPORTED = new CopyOnWriteArraySet<>();
 
   public static volatile Consumer<String> OUT = System.out::println;
@@ -56,10 +56,11 @@ public final class Knob {
    * <p>Use the JVM flag, {@code -Dnet.kyori.adventure.<key>=true}, to enable the facet.</p>
    *
    * @param key a key
+   * @param defaultValue the default value
    * @return if the feature is enabled
    */
-  public static boolean isEnabled(final @NonNull String key) {
-    return System.getProperty(NAMESPACE + "." + key, "true").equalsIgnoreCase("true");
+  public static boolean isEnabled(final @NonNull String key, final boolean defaultValue) {
+    return System.getProperty(NAMESPACE + "." + key, Boolean.toString(defaultValue)).equalsIgnoreCase("true");
   }
 
   /**

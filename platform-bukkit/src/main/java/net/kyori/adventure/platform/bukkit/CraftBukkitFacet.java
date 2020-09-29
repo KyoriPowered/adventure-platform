@@ -131,7 +131,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     PLAYER_CONNECTION_SEND_PACKET = playerConnectionSendPacket;
   }
 
-  private static final boolean SUPPORTED = isEnabled("craftbukkit")
+  private static final boolean SUPPORTED = isEnabled("craftbukkit", true)
     && MinecraftComponentSerializer.isSupported()
     && CRAFT_PLAYER_GET_HANDLE != null && ENTITY_PLAYER_GET_CONNECTION != null && PLAYER_CONNECTION_SEND_PACKET != null;
 
