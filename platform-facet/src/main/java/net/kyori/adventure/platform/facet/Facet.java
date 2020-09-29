@@ -26,19 +26,15 @@ package net.kyori.adventure.platform.facet;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.renderer.TranslatableComponentRenderer;
-import net.kyori.adventure.translation.TranslationRegistry;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.Closeable;
-import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -614,22 +610,5 @@ public interface Facet<V> {
      */
     @Override
     void close();
-  }
-
-  Translator TRANSLATOR = new Translator();
-
-  class Translator extends TranslatableComponentRenderer<Locale> {
-    private static final TranslationRegistry TRANSLATIONS = TranslationRegistry.get();
-    private static final Locale DEFAULT_LOCALE = Locale.US; // Default for vanilla clients and servers
-
-    @Override
-    protected @Nullable MessageFormat translate(final @NonNull String key, final @NonNull Locale locale) {
-      final MessageFormat format = TRANSLATIONS.translate(key, locale);
-      if(format != null) return format;
-      if(DEFAULT_LOCALE.equals(locale)) {
-        return new MessageFormat("<missing translation key ''" + key + "''>");
-      }
-      return this.translate(key, DEFAULT_LOCALE);
-    }
   }
 }
