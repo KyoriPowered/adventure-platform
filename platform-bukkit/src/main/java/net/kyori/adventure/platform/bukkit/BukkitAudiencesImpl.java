@@ -52,7 +52,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,7 +75,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
     Knob.ERR = (message, error) -> Bukkit.getLogger().log(Level.WARNING, message, error);
   }
 
-  private static final Map<String, BukkitAudiences> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  private static final Map<String, BukkitAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
   static BukkitAudiences instanceFor(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "plugin");

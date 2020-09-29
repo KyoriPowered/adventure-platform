@@ -43,7 +43,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -71,7 +71,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     }
   }
 
-  private static final Map<String, BungeeAudiences> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  private static final Map<String, BungeeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
   static BungeeAudiences instanceFor(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "plugin");

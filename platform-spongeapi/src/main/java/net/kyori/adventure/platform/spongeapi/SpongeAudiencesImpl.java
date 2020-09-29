@@ -55,7 +55,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -70,7 +70,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     Knob.ERR = logger::warn;
   }
 
-  private static final Map<String, SpongeAudiences> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  private static final Map<String, SpongeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
   static SpongeAudiences instanceFor(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     requireNonNull(plugin, "plugin");
