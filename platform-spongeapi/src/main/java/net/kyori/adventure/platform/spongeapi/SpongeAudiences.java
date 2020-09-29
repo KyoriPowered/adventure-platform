@@ -21,40 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bungeecord;
+package net.kyori.adventure.platform.spongeapi;
 
+import com.google.inject.ImplementedBy;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.Game;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.text.channel.MessageReceiver;
 
 import java.util.function.Predicate;
 
 /**
- * A provider for creating {@link Audience}s for BungeeCord.
+ * A provider for creating {@link Audience}s for Sponge.
  */
-public interface BungeeAudienceProvider extends AudienceProvider {
+@ImplementedBy(SpongeAudiencesImpl.class)
+public interface SpongeAudiences extends AudienceProvider {
   /**
    * Creates an audience provider for a plugin.
    *
    * <p>There will only be one provider for each plugin.</p>
    *
-   * @param plugin a plugin
+   * @param plugin a plugin container
+   * @param game a game
    * @return an audience provider
    */
-  static @NonNull BungeeAudienceProvider of(final @NonNull Plugin plugin) {
-    return BungeeAudienceProviderImpl.of(plugin);
+  static @NonNull SpongeAudiences create(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+    return SpongeAudiencesImpl.instanceFor(plugin, game);
   }
 
   /**
-   * Gets an audience for a command sender.
+   * Gets an audience for a message receiver.
    *
-   * @param sender a command sender
+   * @param receiver a message receiver
    * @return an audience
    */
-  @NonNull Audience sender(final @NonNull CommandSender sender);
+  @NonNull Audience receiver(final @NonNull MessageReceiver receiver);
 
   /**
    * Gets an audience for a player.
@@ -62,7 +66,7 @@ public interface BungeeAudienceProvider extends AudienceProvider {
    * @param player a player
    * @return an audience
    */
-  @NonNull Audience player(final @NonNull ProxiedPlayer player);
+  @NonNull Audience player(final @NonNull Player player);
 
   /**
    * Creates an audience based on a filter.
@@ -70,6 +74,6 @@ public interface BungeeAudienceProvider extends AudienceProvider {
    * @param filter a filter
    * @return an audience
    */
-  @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
+  @NonNull Audience filter(final @NonNull Predicate<MessageReceiver> filter);
 }
 

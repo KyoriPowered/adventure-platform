@@ -62,21 +62,21 @@ import java.util.UUID;
 import static java.util.Objects.requireNonNull;
 
 @Singleton // one instance per plugin module
-final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageReceiver, SpongeAudience> implements SpongeAudienceProvider {
+final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, SpongeAudience> implements SpongeAudiences {
 
   static {
-    final Logger logger = LoggerFactory.getLogger(SpongeAudienceProvider.class);
+    final Logger logger = LoggerFactory.getLogger(SpongeAudiences.class);
     Knob.OUT = logger::debug;
     Knob.ERR = logger::warn;
   }
 
-  private static final Map<String, SpongeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  private static final Map<String, SpongeAudiences> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
-  static SpongeAudienceProvider of(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+  static SpongeAudiences instanceFor(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     requireNonNull(plugin, "plugin");
     requireNonNull(game, "game");
     return INSTANCES.computeIfAbsent(plugin.getId(), id -> {
-      final SpongeAudienceProviderImpl provider = new SpongeAudienceProviderImpl(game);
+      final SpongeAudiencesImpl provider = new SpongeAudiencesImpl(game);
       provider.init(plugin);
       return provider;
     });
@@ -87,7 +87,7 @@ final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageRece
   private final EventListener eventListener;
 
   @Inject
-  SpongeAudienceProviderImpl(final @NonNull Game game) {
+  SpongeAudiencesImpl(final @NonNull Game game) {
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
@@ -177,27 +177,27 @@ final class SpongeAudienceProviderImpl extends FacetAudienceProvider<MessageRece
   public final class EventListener {
     @Listener(order = Order.FIRST)
     public void onLogin(final ClientConnectionEvent.@NonNull Join event) {
-      SpongeAudienceProviderImpl.this.addViewer(event.getTargetEntity());
+      SpongeAudiencesImpl.this.addViewer(event.getTargetEntity());
     }
 
     @Listener(order = Order.LAST)
     public void onDisconnect(final ClientConnectionEvent.@NonNull Disconnect event) {
-      SpongeAudienceProviderImpl.this.removeViewer(event.getTargetEntity());
+      SpongeAudiencesImpl.this.removeViewer(event.getTargetEntity());
     }
 
     @Listener(order = Order.LAST)
     public void onChangeSettings(final @NonNull PlayerChangeClientSettingsEvent event) {
-      SpongeAudienceProviderImpl.this.changeViewer(event.getTargetEntity(), event.getLocale());
+      SpongeAudiencesImpl.this.changeViewer(event.getTargetEntity(), event.getLocale());
     }
 
     @Listener
     public void onStart(final @NonNull GameStartingServerEvent event) {
-      SpongeAudienceProviderImpl.this.addViewer(SpongeAudienceProviderImpl.this.game.getServer().getConsole());
+      SpongeAudiencesImpl.this.addViewer(SpongeAudiencesImpl.this.game.getServer().getConsole());
     }
 
     @Listener
     public void onStop(final @NonNull GameStoppedServerEvent event) {
-      SpongeAudienceProviderImpl.this.removeViewer(SpongeAudienceProviderImpl.this.game.getServer().getConsole());
+      SpongeAudiencesImpl.this.removeViewer(SpongeAudiencesImpl.this.game.getServer().getConsole());
     }
   }
 }

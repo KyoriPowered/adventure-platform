@@ -68,23 +68,23 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needField;
 
 @SuppressWarnings("unchecked")
-final class BukkitAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BukkitAudience> implements BukkitAudienceProvider, Listener {
+final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, BukkitAudience> implements BukkitAudiences, Listener {
 
   static {
     Knob.OUT = message -> Bukkit.getLogger().log(Level.INFO, message);
     Knob.ERR = (message, error) -> Bukkit.getLogger().log(Level.WARNING, message, error);
   }
 
-  private static final Map<String, BukkitAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  private static final Map<String, BukkitAudiences> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
-  static BukkitAudienceProvider of(final @NonNull Plugin plugin) {
+  static BukkitAudiences instanceFor(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "plugin");
-    return INSTANCES.computeIfAbsent(plugin.getName(), name -> new BukkitAudienceProviderImpl(plugin));
+    return INSTANCES.computeIfAbsent(plugin.getName(), name -> new BukkitAudiencesImpl(plugin));
   }
 
   private final Plugin plugin;
 
-  BukkitAudienceProviderImpl(final @NonNull Plugin plugin) {
+  BukkitAudiencesImpl(final @NonNull Plugin plugin) {
     this.plugin = plugin;
     this.softDepend("ViaVersion");
 

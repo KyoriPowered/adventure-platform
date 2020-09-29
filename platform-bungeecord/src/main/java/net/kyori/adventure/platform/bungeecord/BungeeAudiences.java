@@ -21,23 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.bukkit;
+package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.function.Predicate;
 
 /**
- * An audience provider for {@link org.bukkit.Bukkit}.
- *
- * @see AudienceProvider
+ * A provider for creating {@link Audience}s for BungeeCord.
  */
-public interface BukkitAudienceProvider extends AudienceProvider {
+public interface BungeeAudiences extends AudienceProvider {
   /**
    * Creates an audience provider for a plugin.
    *
@@ -46,8 +44,8 @@ public interface BukkitAudienceProvider extends AudienceProvider {
    * @param plugin a plugin
    * @return an audience provider
    */
-  static @NonNull BukkitAudienceProvider of(final @NonNull Plugin plugin) {
-    return BukkitAudienceProviderImpl.of(plugin);
+  static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
+    return BungeeAudiencesImpl.instanceFor(plugin);
   }
 
   /**
@@ -64,7 +62,7 @@ public interface BukkitAudienceProvider extends AudienceProvider {
    * @param player a player
    * @return an audience
    */
-  @NonNull Audience player(final @NonNull Player player);
+  @NonNull Audience player(final @NonNull ProxiedPlayer player);
 
   /**
    * Creates an audience based on a filter.

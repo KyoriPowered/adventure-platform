@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
-final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudienceProvider {
+final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudiences {
 
   static {
     Knob.OUT = message -> ProxyServer.getInstance().getLogger().log(Level.INFO, message);
@@ -71,17 +71,17 @@ final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSend
     }
   }
 
-  private static final Map<String, BungeeAudienceProvider> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
+  private static final Map<String, BungeeAudiences> INSTANCES = Collections.synchronizedMap(new IdentityHashMap<>(4));
 
-  static BungeeAudienceProvider of(final @NonNull Plugin plugin) {
+  static BungeeAudiences instanceFor(final @NonNull Plugin plugin) {
     requireNonNull(plugin, "plugin");
-    return INSTANCES.computeIfAbsent(plugin.getDescription().getName(), name -> new BungeeAudienceProviderImpl(plugin));
+    return INSTANCES.computeIfAbsent(plugin.getDescription().getName(), name -> new BungeeAudiencesImpl(plugin));
   }
 
   private final Plugin plugin;
   private final Listener listener;
 
-  BungeeAudienceProviderImpl(final Plugin plugin) {
+  BungeeAudiencesImpl(final Plugin plugin) {
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
     this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);
@@ -158,17 +158,17 @@ final class BungeeAudienceProviderImpl extends FacetAudienceProvider<CommandSend
   public final class Listener implements net.md_5.bungee.api.plugin.Listener {
     @EventHandler(priority = Byte.MIN_VALUE /* before EventPriority.LOWEST */)
     public void onLogin(final PostLoginEvent event) {
-      BungeeAudienceProviderImpl.this.addViewer(event.getPlayer());
+      BungeeAudiencesImpl.this.addViewer(event.getPlayer());
     }
 
     @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
     public void onDisconnect(final PlayerDisconnectEvent event) {
-      BungeeAudienceProviderImpl.this.removeViewer(event.getPlayer());
+      BungeeAudiencesImpl.this.removeViewer(event.getPlayer());
     }
 
     @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
     public void onSettingsChanged(final SettingsChangedEvent event) {
-      BungeeAudienceProviderImpl.this.changeViewer(event.getPlayer(), event.getPlayer().getLocale());
+      BungeeAudiencesImpl.this.changeViewer(event.getPlayer(), event.getPlayer().getLocale());
     }
   }
 }

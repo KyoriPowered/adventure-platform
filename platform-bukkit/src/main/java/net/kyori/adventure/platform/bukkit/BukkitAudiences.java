@@ -21,44 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.platform.spongeapi;
+package net.kyori.adventure.platform.bukkit;
 
-import com.google.inject.ImplementedBy;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.Game;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.text.channel.MessageReceiver;
 
 import java.util.function.Predicate;
 
 /**
- * A provider for creating {@link Audience}s for Sponge.
+ * An audience provider for {@link org.bukkit.Bukkit}.
+ *
+ * @see AudienceProvider
  */
-@ImplementedBy(SpongeAudienceProviderImpl.class)
-public interface SpongeAudienceProvider extends AudienceProvider {
+public interface BukkitAudiences extends AudienceProvider {
   /**
    * Creates an audience provider for a plugin.
    *
    * <p>There will only be one provider for each plugin.</p>
    *
-   * @param plugin a plugin container
-   * @param game a game
+   * @param plugin a plugin
    * @return an audience provider
    */
-  static @NonNull SpongeAudienceProvider of(final @NonNull PluginContainer plugin, final @NonNull Game game) {
-    return SpongeAudienceProviderImpl.of(plugin, game);
+  static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
+    return BukkitAudiencesImpl.instanceFor(plugin);
   }
 
   /**
-   * Gets an audience for a message receiver.
+   * Gets an audience for a command sender.
    *
-   * @param receiver a message receiver
+   * @param sender a command sender
    * @return an audience
    */
-  @NonNull Audience receiver(final @NonNull MessageReceiver receiver);
+  @NonNull Audience sender(final @NonNull CommandSender sender);
 
   /**
    * Gets an audience for a player.
@@ -74,6 +72,6 @@ public interface SpongeAudienceProvider extends AudienceProvider {
    * @param filter a filter
    * @return an audience
    */
-  @NonNull Audience filter(final @NonNull Predicate<MessageReceiver> filter);
+  @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
 }
 
