@@ -28,7 +28,7 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.renderer.TranslatableComponentRenderer;
+import net.kyori.adventure.translation.GlobalTranslationSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -287,9 +287,8 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   private @Nullable Object createMessage(final @NonNull Component original, final Facet.@NonNull Message<V, Object> facet) {
-    final Component message = TranslatableComponentRenderer.get().render(original, this.locale);
+    final Component message = GlobalTranslationSource.render(original, this.locale);
     final V viewer = this.viewer;
-
     return viewer == null ? null : facet.createMessage(viewer, message);
   }
 }
