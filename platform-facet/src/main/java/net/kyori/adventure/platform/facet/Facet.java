@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.facet;
 
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -36,7 +37,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 import static net.kyori.adventure.platform.facet.Knob.logError;
@@ -161,10 +161,11 @@ public interface Facet<V> {
      * Sends a chat message.
      *
      * @param viewer a viewer
+     * @param source the sender's identity
      * @param message a message
      * @param type a message type
      */
-    void sendMessage(final @NonNull V viewer, final @NonNull M message, final @NonNull MessageType type);
+    void sendMessage(final @NonNull V viewer, final @NonNull Identity source, final @NonNull M message, final @NonNull MessageType type);
   }
 
   /**
@@ -177,7 +178,6 @@ public interface Facet<V> {
     byte TYPE_CHAT = 0;
     byte TYPE_SYSTEM = 1;
     byte TYPE_ACTION_BAR = 2;
-    UUID SENDER_NULL = new UUID(0, 0);
 
     /**
      * Creates a message type.

@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
@@ -67,7 +68,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
       viewer.sendMessage(message);
     }
   }
@@ -99,7 +100,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull ProxiedPlayer viewer, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Identity source, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
       final ChatMessageType chat = this.createType(type);
       if(chat != null) {
         viewer.sendMessage(chat, message);

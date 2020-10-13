@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.facet;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -118,14 +119,14 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void sendMessage(final @NonNull Component original, final @NonNull MessageType type) {
+  public void sendMessage(final @NonNull Identity source, final @NonNull Component original, final @NonNull MessageType type) {
     if(this.chat == null) return;
 
     final Object message = this.createMessage(original, this.chat);
     if(message == null) return;
 
     for(final V viewer : this.viewers) {
-      this.chat.sendMessage(viewer, message, type);
+      this.chat.sendMessage(viewer, source, message, type);
     }
   }
 
