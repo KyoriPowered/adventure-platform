@@ -29,6 +29,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.translation.Translator;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -254,18 +255,16 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   /**
    * Converts a raw locale given by the client to a nicer Locale object.
    *
-   * @param locale a raw locale
+   * @param string a raw locale
    * @return a parsed locale
    */
-  private static @NonNull Locale toLocale(final @Nullable String locale) {
-    if(locale == null) return Locale.US;
-
-    final String[] parts = locale.split("_", 3);
-    switch(parts.length) {
-      case 1: return parts[0].isEmpty() ? Locale.US : new Locale(parts[0]);
-      case 2: return new Locale(parts[0], parts[1]);
-      case 3: return new Locale(parts[0], parts[1], parts[2]);
-      default: return Locale.US;
+  private static @NonNull Locale toLocale(final @Nullable String string) {
+    if(string != null) {
+      final Locale locale = Translator.parseLocale(string);
+      if(locale != null) {
+        return locale;
+      }
     }
+    return Locale.US;
   }
 }

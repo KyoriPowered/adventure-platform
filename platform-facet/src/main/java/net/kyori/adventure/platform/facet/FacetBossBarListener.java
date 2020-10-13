@@ -25,7 +25,7 @@ package net.kyori.adventure.platform.facet;
 
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.renderer.TranslatableComponentRenderer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Locale;
@@ -49,7 +49,7 @@ class FacetBossBarListener<V> implements Facet.BossBar<V> {
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    this.facet.bossBarNameChanged(bar, oldName, TranslatableComponentRenderer.get().render(newName, this.locale.get()));
+    this.facet.bossBarNameChanged(bar, oldName, GlobalTranslator.render(newName, this.locale.get()));
   }
 
   @Override
