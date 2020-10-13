@@ -44,14 +44,14 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
   private static final Function<Player, UserConnection> VIA = new BukkitFacet.ViaHook();
   private static final Collection<Facet.Chat<? extends CommandSender, ?>> CHAT = Facet.of(
     () -> new ViaFacet.Chat<>(Player.class, VIA),
-//    () -> new SpigotFacet.ChatWithType(),
-//    () -> new SpigotFacet.Chat(),
+    //    () -> new SpigotFacet.ChatWithType(),
+    //    () -> new SpigotFacet.Chat(),
     () -> new CraftBukkitFacet.Chat(),
     () -> new BukkitFacet.Chat());
   private static final Collection<Facet.ActionBar<Player, ?>> ACTION_BAR = Facet.of(
     () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
     () -> new ViaFacet.ActionBar<>(Player.class, VIA),
-//    () -> new SpigotFacet.ActionBar(),
+    //    () -> new SpigotFacet.ActionBar(),
     () -> new CraftBukkitFacet.ActionBar(),
     () -> new CraftBukkitFacet.ActionBarLegacy());
   private static final Collection<Facet.Title<Player, ?, ?>> TITLE = Facet.of(
@@ -62,7 +62,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new BukkitFacet.SoundWithCategory(),
     () -> new BukkitFacet.Sound());
   private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(
-//    () -> new SpigotFacet.Book(),
+    //    () -> new SpigotFacet.Book(),
     () -> new CraftBukkitFacet.Book(),
     () -> new CraftBukkitFacet.BookLegacy());
   private static final Collection<Facet.BossBar.Builder<Player, ?>> BOSS_BAR = Facet.of(
