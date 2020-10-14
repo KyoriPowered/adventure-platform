@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
@@ -91,7 +92,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
       viewer.spigot().sendMessage(message);
     }
   }
@@ -121,7 +122,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void sendMessage(final @NonNull Player viewer, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull Player viewer, final @NonNull Identity source, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
       final ChatMessageType chat = this.createType(type);
       if(chat != null) {
         viewer.spigot().sendMessage(chat, message);

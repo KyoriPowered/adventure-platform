@@ -26,6 +26,7 @@ package net.kyori.adventure.platform.spongeapi;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.Lists;
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
@@ -91,9 +92,8 @@ class SpongeFacet<V> extends FacetBase<V> {
       super(viewerClass);
     }
 
-    @NonNull
     @Override
-    public Text createMessage(final @NonNull V viewer, final @NonNull Component message) {
+    public @NonNull Text createMessage(final @NonNull V viewer, final @NonNull Component message) {
       return get().serialize(message);
     }
   }
@@ -104,7 +104,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull MessageReceiver viewer, final @NonNull Text message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull MessageReceiver viewer, final @NonNull Identity source, final @NonNull Text message, final @NonNull MessageType type) {
       viewer.sendMessage(message);
     }
   }
@@ -125,7 +125,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Text message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Identity source, final @NonNull Text message, final @NonNull MessageType type) {
       final ChatType chat = this.type(type);
       if(chat != null) {
         viewer.sendMessage(chat, message);

@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
@@ -76,7 +77,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull String message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final @NonNull String message, final @NonNull MessageType type) {
       viewer.sendMessage(message);
     }
   }

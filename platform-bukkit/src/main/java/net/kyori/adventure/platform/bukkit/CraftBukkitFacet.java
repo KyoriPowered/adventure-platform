@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.nbt.BinaryTagIO;
 import net.kyori.adventure.nbt.BinaryTagTypes;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
@@ -207,18 +208,16 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class Chat extends PacketFacet<CommandSender> implements Facet.Chat<CommandSender, Object> {
-    private static final UUID NULL_UUID = new UUID(0, 0);
-
     @Override
     public boolean isSupported() {
       return super.isSupported() && CHAT_PACKET_CONSTRUCTOR != null;
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Object message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final @NonNull Object message, final @NonNull MessageType type) {
       final Object messageType = type == MessageType.CHAT ? MESSAGE_TYPE_CHAT : MESSAGE_TYPE_SYSTEM;
       try {
-        this.sendMessage(viewer, CHAT_PACKET_CONSTRUCTOR.invoke(message, messageType, NULL_UUID));
+        this.sendMessage(viewer, CHAT_PACKET_CONSTRUCTOR.invoke(message, messageType, source.uuid()));
       } catch(final Throwable error) {
         logError(error, "Failed to invoke PacketPlayOutChat constructor: %s %s", message, messageType);
       }

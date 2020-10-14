@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.viaversion;
 
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
@@ -175,11 +176,11 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void sendMessage(final @NonNull V viewer, final @NonNull String message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull V viewer, final @NonNull Identity source, final @NonNull String message, final @NonNull MessageType type) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.STRING, message);
       packet.write(Type.BYTE, this.createMessageType(type));
-      packet.write(Type.UUID, SENDER_NULL);
+      packet.write(Type.UUID, source.uuid());
       this.sendPacket(packet);
     }
   }
@@ -196,7 +197,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
 
     @Override
     public void sendMessage(final @NonNull V viewer, final @NonNull String message) {
-      this.sendMessage(viewer, message, MessageType.CHAT);
+      this.sendMessage(viewer, Identity.nil(), message, MessageType.CHAT);
     }
   }
 
