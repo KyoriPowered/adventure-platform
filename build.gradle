@@ -7,7 +7,7 @@ plugins {
 }
 
 // Adventure version
-ext.adventure = "4.0.0-SNAPSHOT"
+ext.adventure = "4.1.1"
 
 subprojects {
   apply plugin: 'checkstyle'
