@@ -234,7 +234,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       getMethod = findMethod(eventClass, "getNewLocale", String.class);
     }
 
-    if(getMethod != null && eventClass.isAssignableFrom(PlayerEvent.class)) {
+    if(getMethod != null && PlayerEvent.class.isAssignableFrom(eventClass)) {
       final Class<? extends PlayerEvent> localeEvent = (Class<? extends PlayerEvent>) eventClass;
       final MethodHandle getLocale = getMethod;
 
