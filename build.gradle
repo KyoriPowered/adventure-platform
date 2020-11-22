@@ -1,56 +1,32 @@
+buildscript {
+  ext {
+    indraVersion = '1.2.1'
+  }
+}
+
 plugins {
-  id 'net.kyori.invent' version '1.0.4' apply false
-  id 'net.kyori.invent-javadoc-jar' version '1.0.4' apply false
-  id 'net.kyori.invent-sonatype-repository' version '1.0.4' apply false
-  id 'net.kyori.invent-sources-jar' version '1.0.4' apply false
-  id 'net.minecrell.licenser' version '0.4.1' apply false
+  id 'net.kyori.indra' version "$indraVersion" apply false
+  id 'net.kyori.indra.publishing.sonatype' version "$indraVersion" apply false
+  id 'net.kyori.indra.license-header' version "$indraVersion" apply false
 }
 
 // Adventure version
 ext.adventure = "4.1.1"
 
 subprojects {
-  apply plugin: 'checkstyle'
-  apply plugin: 'java-library'
-  apply plugin: 'maven-publish'
-  apply plugin: 'signing'
-  apply plugin: 'net.kyori.invent'
-  apply plugin: 'net.kyori.invent-javadoc-jar'
-  apply plugin: 'net.kyori.invent-sonatype-repository'
-  apply plugin: 'net.kyori.invent-sources-jar'
-  apply plugin: 'net.minecrell.licenser'
+  apply plugin: 'net.kyori.indra'
+  apply plugin: 'net.kyori.indra.publishing.sonatype'
+  apply plugin: 'net.kyori.indra.checkstyle'
+  apply plugin: 'net.kyori.indra.license-header'
 
   group 'net.kyori'
   version '4.0.0-SNAPSHOT'
   description 'Platform integrations for the adventure UI library'
 
-  tasks.withType(JavaCompile) {
-    options.compilerArgs += ['-Xlint:all']
-  }
-
-  tasks.withType(Javadoc) {
-    options.addBooleanOption("Xdoclint:-missing", true) // don't warn about missing JD
-  }
-
-  license {
-    header rootProject.file('header.txt')
-    include '**/*.java'
-    newLine false
-  }
-
-  checkstyle {
-    def configRoot = new File(rootProject.projectDir, ".checkstyle")
-    toolVersion = "8.34"
-    configDirectory = configRoot
-    configProperties= [basedir: configRoot.getAbsolutePath()]
-  }
-
   repositories {
     mavenLocal()
     mavenCentral()
-    maven {
-      url 'https://oss.sonatype.org/content/groups/public/'
-    }
+    sonatypeSnapshots()
     maven {
       name = 'viaversion'
       url = 'https://repo.viaversion.com'
@@ -58,74 +34,47 @@ subprojects {
   }
 
   dependencies {
-    checkstyle 'ca.stellardrift:stylecheck:0.1-SNAPSHOT'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0-M1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.0-M1'
+    checkstyle 'ca.stellardrift:stylecheck:0.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
   }
 
-  inventSonatypeRepository.enabled = System.getenv('GITHUB_ACTIONS') == null || project.version.endsWith('-SNAPSHOT')
+  indra {
+    javaVersions {
+      testWith(8, 11, 15)
+    }
 
-  publishing {
-    publications {
-      maven(MavenPublication) {
-        from components.java
+    github("KyoriPowered", "adventure-platform") {
+      ci = true
+    }
+    mitLicense()
 
-        artifact javadocJar
-        artifact sourcesJar
-
-        pom {
-          name = project.name
-          url = 'https://github.com/KyoriPowered/adventure-platform'
-          description = project.description
-
-          developers {
-            developer {
-              id = 'kashike'
-              timezone = 'America/Vancouver'
-            }
-
-            developer {
-              id = 'lucko'
-              name = 'Luck'
-              url = 'https://lucko.me'
-              email = 'git@lucko.me'
-            }
-
-            developer {
-              id = 'zml'
-              name = 'zml'
-              timezone = 'America/Vancouver'
-            }
-
-            developer {
-              id = 'Electroid'
-            }
+    configurePublications {
+      pom {
+        developers {
+          developer {
+            id = 'kashike'
+            timezone = 'America/Vancouver'
           }
 
-          issueManagement {
-            system = 'GitHub Issues'
-            url = 'https://github.com/KyoriPowered/adventure-platform/issues'
+          developer {
+            id = 'lucko'
+            name = 'Luck'
+            url = 'https://lucko.me'
+            email = 'git@lucko.me'
           }
 
-          licenses {
-            license {
-              name = 'MIT License'
-              url = 'https://opensource.org/licenses/MIT'
-            }
+          developer {
+            id = 'zml'
+            name = 'zml'
+            timezone = 'America/Vancouver'
           }
 
-          scm {
-            connection = 'scm:git@github.com:KyoriPowered/adventure-platform.git'
-            developerConnection = 'scm:git@github.com:KyoriPowered/adventure-platform.git'
-            url = 'https://github.com/KyoriPowered/adventure-platform/'
+          developer {
+            id = 'Electroid'
           }
         }
       }
     }
-  }
-
-  signing {
-    required { project.hasProperty('signing.keyId') && gradle.taskGraph.hasTask(':publish') && !project.version.endsWith('-SNAPSHOT') }
-    sign publishing.publications.maven
   }
 }
