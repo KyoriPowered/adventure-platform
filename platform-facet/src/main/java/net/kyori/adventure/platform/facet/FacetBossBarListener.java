@@ -53,8 +53,8 @@ class FacetBossBarListener<V> implements Facet.BossBar<V> {
   }
 
   @Override
-  public void bossBarPercentChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
-    this.facet.bossBarPercentChanged(bar, oldPercent, newPercent);
+  public void bossBarProgressChanged(final @NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    this.facet.bossBarProgressChanged(bar, oldPercent, newPercent);
   }
 
   @Override

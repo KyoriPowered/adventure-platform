@@ -397,7 +397,7 @@ public interface Facet<V> {
     default void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       this.bossBarNameChanged(bar, bar.name(), bar.name());
       this.bossBarColorChanged(bar, bar.color(), bar.color());
-      this.bossBarPercentChanged(bar, bar.percent(), bar.percent());
+      this.bossBarProgressChanged(bar, bar.progress(), bar.progress());
       this.bossBarFlagsChanged(bar, bar.flags(), Collections.emptySet());
       this.bossBarOverlayChanged(bar, bar.overlay(), bar.overlay());
     }
@@ -541,8 +541,8 @@ public interface Facet<V> {
     int INVULNERABLE_TICKS = 890;
 
     @Override
-    default void bossBarPercentChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
-      this.health(newPercent);
+    default void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldProgress, final float newProgress) {
+      this.health(newProgress);
     }
 
     @Override

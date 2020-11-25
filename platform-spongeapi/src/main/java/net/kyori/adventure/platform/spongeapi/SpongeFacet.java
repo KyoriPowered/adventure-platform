@@ -293,7 +293,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarPercentChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
       this.bar.setPercent(newPercent);
     }
 

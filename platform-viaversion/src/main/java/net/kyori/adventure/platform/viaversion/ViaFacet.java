@@ -325,7 +325,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void bossBarPercentChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
       this.health = newPercent;
       this.broadcastPacket(ACTION_HEALTH);
     }

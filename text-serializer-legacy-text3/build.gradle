@@ -6,7 +6,7 @@ repositories {
 
 dependencies {
     api "net.kyori:adventure-api:${rootProject.adventure}"
-    implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
+    implementation("net.kyori:adventure-text-serializer-gson") {
       exclude group: "com.google.code.gson"
     }
     compileOnly "net.kyori:text-serializer-gson:3.0.4"

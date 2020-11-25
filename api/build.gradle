@@ -1,3 +1,4 @@
 dependencies {
-  api "net.kyori:adventure-api:${rootProject.adventure}"
+  api platform("net.kyori:adventure-bom:${rootProject.adventure}")
+  api "net.kyori:adventure-api"
 }

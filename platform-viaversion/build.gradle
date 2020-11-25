@@ -1,19 +1,11 @@
 import org.gradle.api.publish.maven.MavenPublication
 
-configurations {
-  shadedApi // A configuration that will be on the compile classpath only, and exposed to dependencies
-            // This prevents it from being picked up by shadowJar tasks.
-
-  apiElements.extendsFrom(shadedApi)
-  compileOnly.extendsFrom(shadedApi)
-}
-
 dependencies {
-  shadedApi 'us.myles:viaversion-common:3.0.0'
-  implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
+  compileOnlyApi 'us.myles:viaversion-common:3.0.0'
+  implementation project(':adventure-platform-facet')
+  implementation("net.kyori:adventure-text-serializer-gson") {
     exclude group: "com.google.code.gson"
   }
-  implementation project(':adventure-platform-facet')
   compileOnly "io.netty:netty-all:4.0.20.Final"
 }
 
