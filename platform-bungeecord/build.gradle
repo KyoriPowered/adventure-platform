@@ -5,6 +5,7 @@ repositories {
 }
 
 dependencies {
+  api platform("net.kyori:adventure-bom:${rootProject.adventure}")
   api project(":adventure-platform-api")
   api "net.kyori:adventure-text-serializer-legacy"
   api("net.kyori:adventure-text-serializer-gson") {
