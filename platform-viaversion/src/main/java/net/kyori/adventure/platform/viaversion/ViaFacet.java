@@ -27,6 +27,7 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -62,7 +63,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     } catch(final Throwable error) {
       // Silently fail, ViaVersion is not loaded
     }
-    SUPPORTED = supported;
+    SUPPORTED = supported && Knob.isEnabled("viaversion", true);
   }
 
   private final Function<V, UserConnection> connectionFunction;
