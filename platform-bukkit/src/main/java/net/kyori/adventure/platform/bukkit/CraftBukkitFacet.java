@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -315,6 +316,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   protected static abstract class AbstractBook extends PacketFacet<Player> implements Facet.Book<Player, Object, ItemStack> {
+    protected static final int HAND_MAIN = 0;
     private static final Material BOOK_TYPE = (Material) findEnum(Material.class, "WRITTEN_BOOK");
     private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(BOOK_TYPE);
 
@@ -443,7 +445,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static final class Book extends AbstractBook {
+  static final class BookPost1_13 extends AbstractBook {
     private static final Class<?> CLASS_ENUM_HAND = findNmsClass("EnumHand");
     private static final Object HAND_MAIN = findEnum(CLASS_ENUM_HAND, "MAIN_HAND", 0);
     private static final Class<?> PACKET_OPEN_BOOK = findNmsClass("PacketPlayOutOpenBook");
@@ -460,8 +462,44 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static final class BookLegacy extends AbstractBook {
-    private static final int HAND_MAIN = 0;
+  static final class Book1_13 extends AbstractBook {
+    private static final Class<?> CLASS_BYTE_BUF = findClass("io.netty.buffer.ByteBuf");
+    private static final Class<?> CLASS_PACKET_CUSTOM_PAYLOAD = findNmsClass("PacketPlayOutCustomPayload");
+    private static final Class<?> CLASS_FRIENDLY_BYTE_BUF = findNmsClass("PacketDataSerializer");
+    private static final Class<?> CLASS_RESOURCE_LOCATION = findNmsClass("MinecraftKey");
+    private static final Object PACKET_TYPE_BOOK_OPEN;
+
+    private static final MethodHandle NEW_PACKET_CUSTOM_PAYLOAD = findConstructor(CLASS_PACKET_CUSTOM_PAYLOAD, CLASS_RESOURCE_LOCATION, CLASS_FRIENDLY_BYTE_BUF); // (channelId: String, payload: PacketByteBuf)
+    private static final MethodHandle NEW_FRIENDLY_BYTE_BUF = findConstructor(CLASS_FRIENDLY_BYTE_BUF, CLASS_BYTE_BUF); // (wrapped: ByteBuf)
+
+    static {
+      Object packetType = null;
+      if(CLASS_RESOURCE_LOCATION != null) {
+        try {
+          packetType = CLASS_RESOURCE_LOCATION.getConstructor(String.class).newInstance("minecraft:book_open");
+        } catch(InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+          // ignore, we will be unsupported
+        }
+      }
+      PACKET_TYPE_BOOK_OPEN = packetType;
+    }
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && CLASS_BYTE_BUF != null && NEW_PACKET_CUSTOM_PAYLOAD != null && PACKET_TYPE_BOOK_OPEN != null;
+    }
+
+    @Override
+    protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
+      final ByteBuf data = Unpooled.buffer();
+      data.writeByte(HAND_MAIN);
+      final Object packetByteBuf = NEW_FRIENDLY_BYTE_BUF.invoke(data);
+      this.sendMessage(viewer, NEW_PACKET_CUSTOM_PAYLOAD.invoke(PACKET_TYPE_BOOK_OPEN, packetByteBuf));
+    }
+
+  }
+
+  static final class BookPre1_13 extends AbstractBook {
     private static final String PACKET_TYPE_BOOK_OPEN = "MC|BOpen"; // Before 1.13 the open book packet is a packet250
     private static final Class<?> CLASS_BYTE_BUF = findClass("io.netty.buffer.ByteBuf");
     private static final Class<?> CLASS_PACKET_CUSTOM_PAYLOAD = findNmsClass("PacketPlayOutCustomPayload");
@@ -472,7 +510,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public boolean isSupported() {
-      return super.isSupported() && CLASS_BYTE_BUF != null && CLASS_PACKET_CUSTOM_PAYLOAD != null;
+      return super.isSupported() && CLASS_BYTE_BUF != null && CLASS_PACKET_CUSTOM_PAYLOAD != null && NEW_PACKET_CUSTOM_PAYLOAD != null;
     }
 
     @Override

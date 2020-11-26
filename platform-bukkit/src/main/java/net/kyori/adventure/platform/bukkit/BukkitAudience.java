@@ -63,8 +63,9 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new BukkitFacet.Sound());
   private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(
     //    () -> new SpigotFacet.Book(),
-    () -> new CraftBukkitFacet.Book(),
-    () -> new CraftBukkitFacet.BookLegacy());
+    () -> new CraftBukkitFacet.BookPost1_13(),
+    () -> new CraftBukkitFacet.Book1_13(),
+    () -> new CraftBukkitFacet.BookPre1_13());
   private static final Collection<Facet.BossBar.Builder<Player, ?>> BOSS_BAR = Facet.of(
     () -> new ViaFacet.BossBar.Builder<>(Player.class, VIA),
     () -> new ViaFacet.BossBar.Builder1_9_To_1_15<>(Player.class, VIA),
