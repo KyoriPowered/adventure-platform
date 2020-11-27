@@ -36,6 +36,8 @@ import java.util.function.Predicate;
 
 /**
  * A provider for creating {@link Audience}s for Sponge.
+ *
+ * @since 4.0.0
  */
 @ImplementedBy(SpongeAudiencesImpl.class)
 public interface SpongeAudiences extends AudienceProvider {
@@ -47,6 +49,7 @@ public interface SpongeAudiences extends AudienceProvider {
    * @param plugin a plugin container
    * @param game a game
    * @return an audience provider
+   * @since 4.0.0
    */
   static @NonNull SpongeAudiences create(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     return SpongeAudiencesImpl.instanceFor(plugin, game);
@@ -57,6 +60,7 @@ public interface SpongeAudiences extends AudienceProvider {
    *
    * @param receiver a message receiver
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience receiver(final @NonNull MessageReceiver receiver);
 
@@ -65,6 +69,7 @@ public interface SpongeAudiences extends AudienceProvider {
    *
    * @param player a player
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience player(final @NonNull Player player);
 
@@ -73,6 +78,7 @@ public interface SpongeAudiences extends AudienceProvider {
    *
    * @param filter a filter
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience filter(final @NonNull Predicate<MessageReceiver> filter);
 }

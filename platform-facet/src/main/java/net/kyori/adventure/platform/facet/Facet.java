@@ -47,6 +47,7 @@ import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
  * A unit of functionality for a viewer.
  *
  * @param <V> a viewer type
+ * @since 4.0.0
  */
 public interface Facet<V> {
   /**
@@ -56,6 +57,7 @@ public interface Facet<V> {
    * @param <V> a viewer type
    * @param <F> a facet type
    * @return a collection of facets
+   * @since 4.0.0
    */
   @SafeVarargs
   static <V, F extends Facet<? extends V>> @NonNull Collection<F> of(final @NonNull Supplier<F>... suppliers) {
@@ -89,6 +91,7 @@ public interface Facet<V> {
    * @param <V> a viewer type
    * @param <F> a facet type
    * @return a facet or {@code null} if none are applicable
+   * @since 4.0.0
    */
   static <V, F extends Facet<V>> @Nullable F of(final @Nullable Collection<F> facets, final @Nullable V viewer) {
     if(facets == null || viewer == null) return null;
@@ -111,6 +114,7 @@ public interface Facet<V> {
    * <p>If not, this can be discarded since it will fail for all viewers.</p>
    *
    * @return if this handler is supported
+   * @since 4.0.0
    */
   default boolean isSupported() {
     return true;
@@ -123,6 +127,7 @@ public interface Facet<V> {
    *
    * @param viewer a viewer
    * @return if this handler is applicable to a viewer
+   * @since 4.0.0
    */
   default boolean isApplicable(final @NonNull V viewer) {
     return true;
@@ -133,6 +138,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <M> a message type
+   * @since 4.0.0
    */
   interface Message<V, M> extends Facet<V> {
     int PROTOCOL_HEX_COLOR = 713; // Added 20w17a
@@ -146,6 +152,7 @@ public interface Facet<V> {
      * @param viewer a viewer
      * @param message a message
      * @return a message or {@code null}
+     * @since 4.0.0
      */
     @Nullable M createMessage(final @NonNull V viewer, final @NonNull Component message);
   }
@@ -155,6 +162,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <M> a message type
+   * @since 4.0.0
    */
   interface Chat<V, M> extends Message<V, M> {
     /**
@@ -164,6 +172,7 @@ public interface Facet<V> {
      * @param source the sender's identity
      * @param message a message
      * @param type a message type
+     * @since 4.0.0
      */
     void sendMessage(final @NonNull V viewer, final @NonNull Identity source, final @NonNull M message, final @NonNull MessageType type);
   }
@@ -173,6 +182,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <M> a message type
+   * @since 4.0.0
    */
   interface ChatPacket<V, M> extends Chat<V, M> {
     byte TYPE_CHAT = 0;
@@ -184,6 +194,7 @@ public interface Facet<V> {
      *
      * @param type a message type
      * @return an ordinal
+     * @since 4.0.0
      */
     default byte createMessageType(final @NonNull MessageType type) {
       if(type == MessageType.CHAT) {
@@ -201,6 +212,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <M> a message type
+   * @since 4.0.0
    */
   interface ActionBar<V, M> extends Message<V, M> {
     /**
@@ -208,6 +220,7 @@ public interface Facet<V> {
      *
      * @param viewer a viewer
      * @param message a message
+     * @since 4.0.0
      */
     void sendMessage(final @NonNull V viewer, final @NonNull M message);
   }
@@ -218,6 +231,7 @@ public interface Facet<V> {
    * @param <V> a viewer type
    * @param <M> a message type
    * @param <T> a title type
+   * @since 4.0.0
    */
   interface Title<V, M, T> extends Message<V, M> {
     int PROTOCOL_ACTION_BAR = 310; // Added 16w40a
@@ -231,6 +245,7 @@ public interface Facet<V> {
      * @param stayTicks number of stay ticks
      * @param outTicks number of fade out ticks
      * @return a title or {@code null}
+     * @since 4.0.0
      */
     @Nullable T createTitle(final @Nullable M title, final @Nullable M subTitle, final int inTicks, final int stayTicks, final int outTicks);
 
@@ -239,6 +254,7 @@ public interface Facet<V> {
      *
      * @param viewer a viewer
      * @param title a title
+     * @since 4.0.0
      */
     void showTitle(final @NonNull V viewer, final @NonNull T title);
 
@@ -246,6 +262,7 @@ public interface Facet<V> {
      * Clears a title.
      *
      * @param viewer a viewer
+     * @since 4.0.0
      */
     void clearTitle(final @NonNull V viewer);
 
@@ -253,6 +270,7 @@ public interface Facet<V> {
      * Resets a title.
      *
      * @param viewer a viewer
+     * @since 4.0.0
      */
     void resetTitle(final @NonNull V viewer);
 
@@ -261,6 +279,7 @@ public interface Facet<V> {
      *
      * @param duration a duration
      * @return the ticks
+     * @since 4.0.0
      */
     default int toTicks(final @Nullable Duration duration) {
       if(duration == null || duration.isNegative()) {
@@ -276,6 +295,7 @@ public interface Facet<V> {
    * @param <V> a viewer type
    * @param <M> a message type
    * @param <T> a title type
+   * @since 4.0.0
    */
   interface TitlePacket<V, M, T> extends Title<V, M, T> {
     int ACTION_TITLE = 0;
@@ -291,6 +311,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <P> a position type
+   * @since 4.0.0
    */
   interface Position<V, P> extends Facet<V> {
     /**
@@ -298,6 +319,7 @@ public interface Facet<V> {
      *
      * @param viewer a viewer
      * @return a position or {@code null} if cannot be found
+     * @since 4.0.0
      */
     @Nullable P createPosition(final @NonNull V viewer);
 
@@ -308,6 +330,7 @@ public interface Facet<V> {
      * @param y a y coordinate
      * @param z a z coordinate
      * @return a position
+     * @since 4.0.0
      */
     @NonNull P createPosition(final double x, final double y, final double z);
   }
@@ -317,6 +340,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <P> a position type
+   * @since 4.0.0
    */
   interface Sound<V, P> extends Position<V, P> {
     /**
@@ -325,6 +349,7 @@ public interface Facet<V> {
      * @param viewer a viewer
      * @param sound a sound
      * @param position a position
+     * @since 4.0.0
      */
     void playSound(final @NonNull V viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull P position);
 
@@ -333,6 +358,7 @@ public interface Facet<V> {
      *
      * @param viewer a viewer
      * @param sound a sound stop
+     * @since 4.0.0
      */
     void stopSound(final @NonNull V viewer, final @NonNull SoundStop sound);
   }
@@ -343,6 +369,7 @@ public interface Facet<V> {
    * @param <V> a viewer type
    * @param <M> a message type
    * @param <B> a book type
+   * @since 4.0.0
    */
   interface Book<V, M, B> extends Message<V, M> {
     /**
@@ -352,6 +379,7 @@ public interface Facet<V> {
      * @param author an author
      * @param pages a collection of pages
      * @return a book or {@code null}
+     * @since 4.0.0
      */
     @Nullable B createBook(final @NonNull M title, final @NonNull M author, final @NonNull Iterable<M> pages);
 
@@ -360,6 +388,7 @@ public interface Facet<V> {
      *
      * @param viewer a viewer
      * @param book a book
+     * @since 4.0.0
      */
     void openBook(final @NonNull V viewer, final @NonNull B book);
   }
@@ -368,6 +397,7 @@ public interface Facet<V> {
    * A facet that listens to boss bar changes.
    *
    * @param <V> a viewer type
+   * @since 4.0.0
    */
   interface BossBar<V> extends net.kyori.adventure.bossbar.BossBar.Listener, Closeable {
     int PROTOCOL_BOSS_BAR = 356; // Added 18w05a
@@ -377,6 +407,7 @@ public interface Facet<V> {
      *
      * @param <V> a viewer type
      * @param <B> a boss bar type
+     * @since 4.0.0
      */
     @FunctionalInterface
     interface Builder<V, B extends BossBar<V>> extends Facet<V> {
@@ -385,6 +416,7 @@ public interface Facet<V> {
        *
        * @param viewer a viewer
        * @return a boss bar
+       * @since 4.0.0
        */
       @NonNull B createBossBar(final @NonNull Collection<V> viewer);
     }
@@ -393,6 +425,7 @@ public interface Facet<V> {
      * Initializes the boss bar.
      *
      * @param bar a boss bar
+     * @since 4.0.0
      */
     default void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
       this.bossBarNameChanged(bar, bar.name(), bar.name());
@@ -406,6 +439,7 @@ public interface Facet<V> {
      * Adds a viewer to the boss bar.
      *
      * @param viewer a viewer
+     * @since 4.0.0
      */
     void addViewer(final @NonNull V viewer);
 
@@ -413,6 +447,7 @@ public interface Facet<V> {
      * Removes a viewer from the boss bar.
      *
      * @param viewer a viewer
+     * @since 4.0.0
      */
     void removeViewer(final @NonNull V viewer);
 
@@ -420,11 +455,14 @@ public interface Facet<V> {
      * Gets whether the boss bar has no viewers.
      *
      * @return if the boss bar is empty
+     * @since 4.0.0
      */
     boolean isEmpty();
 
     /**
      * Removes all viewers.
+     *
+     * @since 4.0.0
      */
     @Override
     void close();
@@ -434,6 +472,7 @@ public interface Facet<V> {
    * A facet that listens to boss bar changes, using packets.
    *
    * @param <V> a viewer type
+   * @since 4.0.0
    */
   interface BossBarPacket<V> extends BossBar<V> {
     int ACTION_ADD = 0;
@@ -448,6 +487,7 @@ public interface Facet<V> {
      *
      * @param color a color
      * @return an ordinal
+     * @since 4.0.0
      */
     default int createColor(final net.kyori.adventure.bossbar.BossBar.@NonNull Color color) {
       if(color == net.kyori.adventure.bossbar.BossBar.Color.PURPLE) {
@@ -474,6 +514,7 @@ public interface Facet<V> {
      *
      * @param overlay an overlay
      * @return an ordinal
+     * @since 4.0.0
      */
     default int createOverlay(final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay overlay) {
       if(overlay == net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS) {
@@ -498,6 +539,7 @@ public interface Facet<V> {
      * @param flagsAdded a set of added flags
      * @param flagsRemoved a set of removed flags
      * @return an ordinal
+     * @since 4.0.0
      */
     default byte createFlag(final byte flagBit, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
       byte bit = flagBit;
@@ -532,6 +574,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <P> a position type
+   * @since 4.0.0
    */
   interface BossBarEntity<V, P> extends BossBar<V>, FakeEntity<V, P> {
     int OFFSET_PITCH = 30;
@@ -566,6 +609,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <P> a position type
+   * @since 4.0.0
    */
   interface FakeEntity<V, P> extends Position<V, P>, Closeable {
     /**
@@ -573,6 +617,7 @@ public interface Facet<V> {
      *
      * @param viewer a viewer
      * @param position an entity position or {@code null} to remove
+     * @since 4.0.0
      */
     void teleport(final @NonNull V viewer, final @Nullable P position);
 
@@ -581,6 +626,7 @@ public interface Facet<V> {
      *
      * @param position a metadata position
      * @param data a value
+     * @since 4.0.0
      */
     void metadata(final int position, final @NonNull Object data);
 
@@ -588,6 +634,7 @@ public interface Facet<V> {
      * Sets the entity visibility.
      *
      * @param invisible if invisible
+     * @since 4.0.0
      */
     void invisible(final boolean invisible);
 
@@ -595,6 +642,7 @@ public interface Facet<V> {
      * Sets the entity health.
      *
      * @param health health level, between 0 and 1
+     * @since 4.0.0
      */
     void health(final float health);
 
@@ -602,11 +650,14 @@ public interface Facet<V> {
      * Sets the entity name.
      *
      * @param name a name
+     * @since 4.0.0
      */
     void name(final @NonNull Component name);
 
     /**
      * Remove the entity for all viewers.
+     *
+     * @since 4.0.0
      */
     @Override
     void close();

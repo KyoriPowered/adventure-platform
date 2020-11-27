@@ -33,6 +33,8 @@ import java.util.function.Consumer;
 
 /**
  * Facet utilities and logging pipeline.
+ *
+ * @since 4.0.0
  */
 public final class Knob {
   private Knob() {
@@ -58,6 +60,7 @@ public final class Knob {
    * @param key a key
    * @param defaultValue the default value
    * @return if the feature is enabled
+   * @since 4.0.0
    */
   public static boolean isEnabled(final @NonNull String key, final boolean defaultValue) {
     return System.getProperty(NAMESPACE + "." + key, Boolean.toString(defaultValue)).equalsIgnoreCase("true");
@@ -69,6 +72,7 @@ public final class Knob {
    * @param error an error
    * @param format a string format
    * @param arguments an array of arguments
+   * @since 4.0.0
    */
   public static void logError(final @Nullable Throwable error, final @NonNull String format, final @NonNull Object... arguments) {
     if(DEBUG) {
@@ -81,6 +85,7 @@ public final class Knob {
    *
    * @param format a string format
    * @param arguments an array of arguments
+   * @since 4.0.0
    */
   public static void logMessage(final @NonNull String format, final @NonNull Object... arguments) {
     if(DEBUG) {
@@ -93,6 +98,7 @@ public final class Knob {
    *
    * @param facet a facet
    * @param value a value
+   * @since 4.0.0
    */
   public static void logUnsupported(final @NonNull Object facet, final @NonNull Object value) {
     if(DEBUG && UNSUPPORTED.add(value)) {

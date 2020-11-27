@@ -34,6 +34,8 @@ import java.util.function.Predicate;
 
 /**
  * A provider for creating {@link Audience}s for BungeeCord.
+ *
+ * @since 4.0.0
  */
 public interface BungeeAudiences extends AudienceProvider {
   /**
@@ -43,6 +45,7 @@ public interface BungeeAudiences extends AudienceProvider {
    *
    * @param plugin a plugin
    * @return an audience provider
+   * @since 4.0.0
    */
   static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
     return BungeeAudiencesImpl.instanceFor(plugin);
@@ -53,6 +56,7 @@ public interface BungeeAudiences extends AudienceProvider {
    *
    * @param sender a command sender
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience sender(final @NonNull CommandSender sender);
 
@@ -61,6 +65,7 @@ public interface BungeeAudiences extends AudienceProvider {
    *
    * @param player a player
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience player(final @NonNull ProxiedPlayer player);
 
@@ -69,6 +74,7 @@ public interface BungeeAudiences extends AudienceProvider {
    *
    * @param filter a filter
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
 }

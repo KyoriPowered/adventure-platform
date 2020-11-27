@@ -53,6 +53,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @param <V> a viewer type
  * @see Facet
+ * @since 4.0.0
  */
 public class FacetAudience<V> implements Audience, Closeable {
   private final @NonNull Set<V> viewers;
@@ -67,6 +68,19 @@ public class FacetAudience<V> implements Audience, Closeable {
   private final Facet.BossBar.@Nullable Builder<V, Facet.BossBar<V>> bossBar;
   private final @Nullable Map<BossBar, Facet.BossBar<V>> bossBars;
 
+  /**
+   * Create a new facet-based audience.
+   *
+   * @param viewers the viewers receiving content sent to this audience
+   * @param locale the locale of this audience
+   * @param chat chat facet candidates
+   * @param actionBar action bar facet candidates
+   * @param title title facet candidates
+   * @param sound sound facet candidates
+   * @param book book facet candidates
+   * @param bossBar boss bar facet candidates
+   * @since 4.0.0
+   */
   @SuppressWarnings({"unchecked", "rawtypes"}) // Without suppression, this constructor becomes unreadable
   public FacetAudience(
     final @NonNull Collection<? extends V> viewers,
@@ -92,12 +106,24 @@ public class FacetAudience<V> implements Audience, Closeable {
     this.bossBars = this.bossBar == null ? null : Collections.synchronizedMap(new IdentityHashMap<>(4));
   }
 
+  /**
+   * Add a member to this audience.
+   *
+   * @param viewer the viewer
+   * @since 4.0.0
+   */
   public void addViewer(final @NonNull V viewer) {
     if(this.viewers.add(viewer) && this.viewer == null) {
       this.viewer = viewer;
     }
   }
 
+  /**
+   * Remove a viewer from this audience.
+   *
+   * @param viewer the viewer to remove
+   * @since 4.0.0
+   */
   public void removeViewer(final @NonNull V viewer) {
     if(this.viewers.remove(viewer) && this.viewer == viewer) {
       this.viewer = this.viewers.isEmpty() ? null : this.viewers.iterator().next();
@@ -113,6 +139,7 @@ public class FacetAudience<V> implements Audience, Closeable {
    * Changes the locale.
    *
    * @param locale a locale
+   * @since 4.0.0
    */
   public void changeLocale(final @NonNull Locale locale) {
     this.locale = requireNonNull(locale, "locale");

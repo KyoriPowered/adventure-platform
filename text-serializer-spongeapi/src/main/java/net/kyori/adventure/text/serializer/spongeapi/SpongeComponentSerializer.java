@@ -35,6 +35,8 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * A component serializer for SpongeAPI's {@link Text}.
+ *
+ * @since 4.0.0
  */
 public final class SpongeComponentSerializer implements ComponentSerializer<Component, Component, Text> {
   private static final SpongeComponentSerializer INSTANCE = new SpongeComponentSerializer();
@@ -48,6 +50,7 @@ public final class SpongeComponentSerializer implements ComponentSerializer<Comp
    * Gets a component serializer for the current {@link Platform#getMinecraftVersion()}.
    *
    * @return a component serializer
+   * @since 4.0.0
    */
   public static @NonNull SpongeComponentSerializer get() {
     return INSTANCE;

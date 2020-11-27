@@ -42,6 +42,7 @@ import static java.util.Objects.requireNonNull;
  * <p>This is not an official API and can break at any time. You've been warned.</p>
  */
 @Beta // Causes users to see "UnstableApiUsage"
+@SuppressWarnings("FilteringWriteTag") // NON-API, no compatibility information needs tracking
 public final class MinecraftReflection {
   private MinecraftReflection() {
   }

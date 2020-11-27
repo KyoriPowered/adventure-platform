@@ -26,6 +26,12 @@ package net.kyori.adventure.platform.facet;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+/**
+ * A base implementation of a facet that validates viewer type.
+ *
+ * @param <V> the viewer type
+ * @since 4.0.0
+ */
 public abstract class FacetBase<V> implements Facet<V> {
   protected final Class<? extends V> viewerClass;
 

@@ -32,6 +32,8 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * A component serializer betweeen text 3.x's {@link net.kyori.text.Component} and adventure's {@link Component}.
+ *
+ * @since 4.0.0
  */
 public final class LegacyText3ComponentSerializer implements ComponentSerializer<Component, Component, net.kyori.text.Component> {
   private static final LegacyText3ComponentSerializer INSTANCE = new LegacyText3ComponentSerializer();
@@ -40,6 +42,7 @@ public final class LegacyText3ComponentSerializer implements ComponentSerializer
    * Gets a component serializer for adapting text 3.x components to adventure.
    *
    * @return a component serializer
+   * @since 4.0.0
    */
   public static @NonNull LegacyText3ComponentSerializer get() {
     return INSTANCE;

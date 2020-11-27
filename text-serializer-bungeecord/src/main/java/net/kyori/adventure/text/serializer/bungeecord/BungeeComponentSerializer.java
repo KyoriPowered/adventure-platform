@@ -38,6 +38,8 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * A component serializer for BungeeCord's {@link BaseComponent}.
+ *
+ * @since 4.0.0
  */
 public final class BungeeComponentSerializer implements ComponentSerializer<Component, Component, BaseComponent[]> {
   private static boolean SUPPORTED = true;
@@ -55,6 +57,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
    * <p>Even if this is {@code false}, the serializer will still work.</p>
    *
    * @return if there is native support
+   * @since 4.0.0
    */
   public static boolean isNative() {
     return SUPPORTED;
@@ -64,6 +67,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
    * Gets a component serializer.
    *
    * @return a component serializer
+   * @since 4.0.0
    */
   public static BungeeComponentSerializer get() {
     return MODERN;
@@ -73,6 +77,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
    * Gets a component serializer, with color downsampling.
    *
    * @return a component serializer
+   * @since 4.0.0
    */
   public static BungeeComponentSerializer legacy() {
     return PRE_1_16;
@@ -84,6 +89,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
    * @param serializer The serializer creating a JSON representation of the component
    * @param legacySerializer The serializer creating a representation of the component with legacy formatting codes
    * @return a new serializer
+   * @since 4.0.0
    */
   public static BungeeComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
     if(serializer == null || legacySerializer == null) return null;
@@ -91,13 +97,14 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
   }
 
   /**
-   * Inject Adventure's adapter serializer into an existing Gson instance
+   * Inject Adventure's adapter serializer into an existing Gson instance.
    *
    * <p>This is primarily for internal use, but may be useful if interfacing
    * with existing libraries that maintain their own Gson instances.</p>
    *
    * @param existing gson instance
    * @return true if injection was successful
+   * @since 4.0.0
    */
   public static boolean inject(final Gson existing) {
     final boolean result = GsonInjections.injectGson(requireNonNull(existing, "existing"), builder -> {

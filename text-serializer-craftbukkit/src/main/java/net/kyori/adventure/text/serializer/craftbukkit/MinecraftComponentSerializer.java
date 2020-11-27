@@ -55,6 +55,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
  * <p>If not {@link #isSupported()}, an {@link UnsupportedOperationException} will be thrown on any serialize or deserialize operations.</p>
  *
  * @see #get()
+ * @since 4.0.0
  */
 @Beta // Causes users to see "UnstableApiUsage"
 public final class MinecraftComponentSerializer implements ComponentSerializer<Component, Component, Object> {
@@ -64,6 +65,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
    * Gets whether this serializer is supported.
    *
    * @return if the serializer is supported.
+   * @since 4.0.0
    */
   public static boolean isSupported() {
     return SUPPORTED;
@@ -73,6 +75,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
    * Gets the component serializer.
    *
    * @return a component serializer
+   * @since 4.0.0
    */
   public static @NonNull MinecraftComponentSerializer get() {
     return INSTANCE;

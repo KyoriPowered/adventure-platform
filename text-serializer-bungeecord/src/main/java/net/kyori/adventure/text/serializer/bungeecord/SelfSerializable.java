@@ -37,7 +37,7 @@ import java.io.IOException;
 interface SelfSerializable {
 
   /**
-   * Write this object to a json writer
+   * Write this object to a json writer.
    *
    * @param out writer to write to
    * @throws IOException when any serialization-related error occurs
@@ -45,7 +45,7 @@ interface SelfSerializable {
   void write(JsonWriter out) throws IOException;
 
   /**
-   * Gson adapter factory that will appropriately unwrap wrapped values
+   * Gson adapter factory that will appropriately unwrap wrapped values.
    */
   class AdapterFactory implements TypeAdapterFactory {
 

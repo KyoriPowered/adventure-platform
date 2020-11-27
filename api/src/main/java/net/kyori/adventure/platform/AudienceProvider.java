@@ -31,6 +31,8 @@ import java.util.UUID;
 
 /**
  * A provider for creating {@link Audience}s.
+ *
+ * @since 4.0.0
  */
 public interface AudienceProvider extends AutoCloseable {
   /**
@@ -39,6 +41,7 @@ public interface AudienceProvider extends AutoCloseable {
    * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' and console audience
+   * @since 4.0.0
    */
   @NonNull Audience all();
 
@@ -46,6 +49,7 @@ public interface AudienceProvider extends AutoCloseable {
    * Gets an audience for the server's console.
    *
    * @return the console audience
+   * @since 4.0.0
    */
   @NonNull Audience console();
 
@@ -55,6 +59,7 @@ public interface AudienceProvider extends AutoCloseable {
    * <p>The audience is dynamically updated as players join and leave.</p>
    *
    * @return the players' audience
+   * @since 4.0.0
    */
   @NonNull Audience players();
 
@@ -65,6 +70,7 @@ public interface AudienceProvider extends AutoCloseable {
    *
    * @param playerId a player uuid
    * @return a player audience
+   * @since 4.0.0
    */
   @NonNull Audience player(final @NonNull UUID playerId);
 
@@ -75,6 +81,7 @@ public interface AudienceProvider extends AutoCloseable {
    *
    * @param permission the permission to filter sending to
    * @return a permissible audience
+   * @since 4.0.0
    */
   default @NonNull Audience permission(final @NonNull Key permission) {
     return this.permission(permission.namespace() + '.' + permission.value());
@@ -87,6 +94,7 @@ public interface AudienceProvider extends AutoCloseable {
    *
    * @param permission the permission to filter sending to
    * @return a permissible audience
+   * @since 4.0.0
    */
   @NonNull Audience permission(final @NonNull String permission);
 
@@ -100,6 +108,7 @@ public interface AudienceProvider extends AutoCloseable {
    *
    * @param world identifier for a world
    * @return the world's audience
+   * @since 4.0.0
    */
   @NonNull Audience world(final @NonNull Key world);
 
@@ -110,11 +119,14 @@ public interface AudienceProvider extends AutoCloseable {
    *
    * @param serverName a server name
    * @return a server's audience
+   * @since 4.0.0
    */
   @NonNull Audience server(final @NonNull String serverName);
 
   /**
    * Closes the provider and forces audiences to be empty.
+   *
+   * @since 4.0.0
    */
   @Override
   void close();

@@ -51,6 +51,8 @@ import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson;
 import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.colorDownsamplingGson;
 
+// Non-API
+@SuppressWarnings({"checkstyle:FilteringWriteTag", "checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})
 public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String> {
   private static final String PACKAGE = "us.myles.ViaVersion";
   private static final boolean SUPPORTED;

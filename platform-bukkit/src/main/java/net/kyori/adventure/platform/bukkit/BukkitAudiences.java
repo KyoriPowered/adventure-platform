@@ -36,6 +36,7 @@ import java.util.function.Predicate;
  * An audience provider for {@link org.bukkit.Bukkit}.
  *
  * @see AudienceProvider
+ * @since 4.0.0
  */
 public interface BukkitAudiences extends AudienceProvider {
   /**
@@ -45,6 +46,7 @@ public interface BukkitAudiences extends AudienceProvider {
    *
    * @param plugin a plugin
    * @return an audience provider
+   * @since 4.0.0
    */
   static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
     return BukkitAudiencesImpl.instanceFor(plugin);
@@ -55,6 +57,7 @@ public interface BukkitAudiences extends AudienceProvider {
    *
    * @param sender a command sender
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience sender(final @NonNull CommandSender sender);
 
@@ -63,6 +66,7 @@ public interface BukkitAudiences extends AudienceProvider {
    *
    * @param player a player
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience player(final @NonNull Player player);
 
@@ -71,6 +75,7 @@ public interface BukkitAudiences extends AudienceProvider {
    *
    * @param filter a filter
    * @return an audience
+   * @since 4.0.0
    */
   @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
 }

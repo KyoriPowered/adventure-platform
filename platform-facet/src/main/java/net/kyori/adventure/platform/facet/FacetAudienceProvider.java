@@ -46,6 +46,13 @@ import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * An audience provider implementation using facets.
+ *
+ * @param <V> the viewer type
+ * @param <A> the audience type
+ * @since 4.0.0
+ */
 public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> implements AudienceProvider, ForwardingAudience {
   private final Audience console;
   private final Audience player;
@@ -55,6 +62,11 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   private final A empty;
   private volatile boolean closed;
 
+  /**
+   * Create a new empty provider.
+   *
+   * @since 4.0.0
+   */
   public FacetAudienceProvider() {
     this.viewers = new ConcurrentHashMap<>();
     this.players = new ConcurrentHashMap<>();
@@ -69,6 +81,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    * Adds a viewer.
    *
    * @param viewer a viewer
+   * @since 4.0.0
    */
   public void addViewer(final @NonNull V viewer) {
     if(this.closed) return;
@@ -86,6 +99,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    * Removes a viewer.
    *
    * @param viewer a viewer
+   * @since 4.0.0
    */
   public void removeViewer(final @NonNull V viewer) {
     final A audience = this.viewers.remove(viewer);
@@ -104,6 +118,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    *
    * @param viewer a viewer
    * @param locale a locale
+   * @since 4.0.0
    */
   public void changeViewer(final @NonNull V viewer, final @NonNull Locale locale) {
     final A audience = this.viewers.get(viewer);
@@ -193,6 +208,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    *
    * @param predicate a predicate
    * @return an audience
+   * @since 4.0.0
    */
   public @NonNull Audience filter(final @NonNull Predicate<V> predicate) {
     return Audience.audience(filter(this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));

@@ -32,6 +32,8 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 
 /**
  * A pair of component serializers for {@link org.bukkit.Bukkit}.
+ *
+ * @since 4.0.0
  */
 public final class BukkitComponentSerializer {
   private BukkitComponentSerializer() {
@@ -69,6 +71,7 @@ public final class BukkitComponentSerializer {
    * Gets the legacy component serializer.
    *
    * @return a legacy component serializer
+   * @since 4.0.0
    */
   public static @NonNull LegacyComponentSerializer legacy() {
     return LEGACY_SERIALIZER;
@@ -80,6 +83,7 @@ public final class BukkitComponentSerializer {
    * <p>Not available on servers before 1.8, will be {@code null}.</p>
    *
    * @return a gson component serializer
+   * @since 4.0.0
    */
   public static @NonNull GsonComponentSerializer gson() {
     return GSON_SERIALIZER;

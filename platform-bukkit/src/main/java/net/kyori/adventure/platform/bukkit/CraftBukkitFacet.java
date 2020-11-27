@@ -189,7 +189,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
         if(chatPacketConstructor == null) {
           if(CLASS_MESSAGE_TYPE != null) {
-            chatPacketConstructor = findConstructor(chatPacketClass,CLASS_CHAT_COMPONENT, CLASS_MESSAGE_TYPE, UUID.class);
+            chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, CLASS_MESSAGE_TYPE, UUID.class);
           }
         } else {
           // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
@@ -477,7 +477,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       if(CLASS_RESOURCE_LOCATION != null) {
         try {
           packetType = CLASS_RESOURCE_LOCATION.getConstructor(String.class).newInstance("minecraft:book_open");
-        } catch(InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch(final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
           // ignore, we will be unsupported
         }
       }
@@ -680,7 +680,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         try {
           return NEW_SPAWN_LIVING_PACKET.invoke(this.entityHandle);
         } catch(final Throwable error) {
-          logError(error,"Failed to create spawn packet: %s", this.entity);
+          logError(error, "Failed to create spawn packet: %s", this.entity);
         }
       }
       return null;
@@ -690,7 +690,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       try {
         return NEW_ENTITY_DESTROY_PACKET.invoke(this.entity.getEntityId());
       } catch(final Throwable error) {
-        logError(error,"Failed to create despawn packet: %s", this.entity);
+        logError(error, "Failed to create despawn packet: %s", this.entity);
         return null;
       }
     }
@@ -700,7 +700,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(this.entityHandle);
         return NEW_ENTITY_METADATA_PACKET.invoke(this.entity.getEntityId(), dataWatcher, false);
       } catch(final Throwable error) {
-        logError(error,"Failed to create update metadata packet: %s", this.entity);
+        logError(error, "Failed to create update metadata packet: %s", this.entity);
         return null;
       }
     }
@@ -709,7 +709,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       try {
         return NEW_ENTITY_TELEPORT_PACKET.invoke(this.entityHandle);
       } catch(final Throwable error) {
-        logError(error,"Failed to create teleport packet: %s", this.entity);
+        logError(error, "Failed to create teleport packet: %s", this.entity);
         return null;
       }
     }
@@ -748,7 +748,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       try {
         NMS_ENTITY_SET_LOCATION.invoke(this.entityHandle, position.getX(), position.getY(), position.getZ(), position.getPitch(), position.getYaw());
       } catch(final Throwable error) {
-        logError(error,"Failed to set entity location: %s %s", this.entity, position);
+        logError(error, "Failed to set entity location: %s %s", this.entity, position);
       }
       this.sendPacket(viewer, this.createLocationPacket());
     }
@@ -761,7 +761,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           final Object dataWatcher = NMS_ENTITY_GET_DATA_WATCHER.invoke(this.entityHandle);
           DATA_WATCHER_WATCH.invoke(dataWatcher, position, data);
         } catch(final Throwable error) {
-          logError(error,"Failed to set entity metadata: %s %s=%s", this.entity, position, data);
+          logError(error, "Failed to set entity metadata: %s %s=%s", this.entity, position, data);
         }
         this.broadcastPacket(this.createMetadataPacket());
       }
@@ -773,7 +773,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         try {
           NMS_ENTITY_SET_INVISIBLE.invoke(this.entityHandle, invisible);
         } catch(final Throwable error) {
-          logError(error,"Failed to change entity visibility: %s", this.entity);
+          logError(error, "Failed to change entity visibility: %s", this.entity);
         }
       }
     }
