@@ -19,6 +19,7 @@ ext.adventure = "4.2.0"
  * To suppress compiler warnings from being unable to find the appropriate annotations,
  * we inject the dependencies here.
  */
+@CacheableRule
 class BukkitAnnotationsRule implements ComponentMetadataRule {
 
   @Override
