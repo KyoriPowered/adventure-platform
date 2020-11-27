@@ -1,12 +1,6 @@
-repositories {
-    maven {
-        url 'https://oss.sonatype.org/content/groups/public/'
-    }
-}
-
 dependencies {
     api "net.kyori:adventure-api:${rootProject.adventure}"
-    implementation("net.kyori:adventure-text-serializer-gson") {
+    implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
       exclude group: "com.google.code.gson"
     }
     compileOnly "net.kyori:text-serializer-gson:3.0.4"

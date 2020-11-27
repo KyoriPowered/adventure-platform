@@ -2,9 +2,6 @@ repositories {
   maven {
     url 'https://papermc.io/repo/repository/maven-public/'
   }
-  maven {
-    url 'https://oss.sonatype.org/content/repositories/snapshots/'
-  }
 }
 
 /* configurations.runtimeClasspath {
@@ -12,13 +9,12 @@ repositories {
 }*/
 
 dependencies {
-  api platform("net.kyori:adventure-bom:${rootProject.adventure}")
   api project(":adventure-platform-api")
   api project(":adventure-text-serializer-craftbukkit")
   api project(":adventure-text-serializer-bungeecord")
-  api "net.kyori:adventure-text-serializer-legacy"
-  implementation "net.kyori:adventure-nbt"
-  implementation("net.kyori:adventure-text-serializer-gson") {
+  api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+  implementation "net.kyori:adventure-nbt:${rootProject.adventure}"
+  implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
   }
   implementation project(":adventure-platform-facet")

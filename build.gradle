@@ -13,6 +13,25 @@ plugins {
 // Adventure version
 ext.adventure = "4.2.0"
 
+/**
+ * Bukkit and its dependencies have metadata that is incorrect and excludes some annotation APIs.
+ *
+ * To suppress compiler warnings from being unable to find the appropriate annotations,
+ * we inject the dependencies here.
+ */
+class BukkitAnnotationsRule implements ComponentMetadataRule {
+
+  @Override
+  void execute(final ComponentMetadataContext componentMetadataContext) {
+    componentMetadataContext.details.withVariant("compile") {
+      withDependencies {
+        add("com.google.errorprone:error_prone_annotations:2.4.0")
+        add("org.jetbrains:annotations:20.1.0")
+      }
+    }
+  }
+}
+
 subprojects {
   apply plugin: 'net.kyori.indra'
   apply plugin: 'net.kyori.indra.publishing.sonatype'
@@ -24,7 +43,6 @@ subprojects {
   description 'Platform integrations for the adventure UI library'
 
   repositories {
-    mavenLocal()
     mavenCentral()
     sonatypeSnapshots()
     maven {
@@ -34,6 +52,9 @@ subprojects {
   }
 
   dependencies {
+    components {
+      withModule("com.destroystokyo.paper:paper-api", BukkitAnnotationsRule)
+    }
     checkstyle 'ca.stellardrift:stylecheck:0.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'

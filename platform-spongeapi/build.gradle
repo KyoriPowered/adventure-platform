@@ -5,7 +5,6 @@ repositories {
 }
 
 dependencies {
-  api platform("net.kyori:adventure-bom:${rootProject.adventure}")
   api project(":adventure-platform-api")
   api project(":adventure-text-serializer-spongeapi")
   implementation project(":adventure-platform-facet")

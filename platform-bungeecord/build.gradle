@@ -1,14 +1,7 @@
-repositories {
-  maven {
-    url 'https://oss.sonatype.org/content/repositories/snapshots/'
-  }
-}
-
 dependencies {
-  api platform("net.kyori:adventure-bom:${rootProject.adventure}")
   api project(":adventure-platform-api")
-  api "net.kyori:adventure-text-serializer-legacy"
-  api("net.kyori:adventure-text-serializer-gson") {
+  api "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure}"
+  api("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
   }
   implementation project(":adventure-platform-facet")
