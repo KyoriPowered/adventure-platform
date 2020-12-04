@@ -56,7 +56,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new CraftBukkitFacet.ActionBarLegacy());
   private static final Collection<Facet.Title<Player, ?, ?>> TITLE = Facet.of(
     () -> new ViaFacet.Title<>(Player.class, VIA),
-    () -> new PaperFacet.Title(),
+    // () -> new PaperFacet.Title(),
     () -> new CraftBukkitFacet.Title());
   private static final Collection<Facet.Sound<Player, Vector>> SOUND = Facet.of(
     () -> new BukkitFacet.SoundWithCategory(),
@@ -72,11 +72,17 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new CraftBukkitFacet.BossBar.Builder(),
     () -> new BukkitFacet.BossBarBuilder(),
     () -> new CraftBukkitFacet.BossBarWither.Builder());
+  private static final Collection<Facet.TabList<Player, ?>> TAB_LIST = Facet.of(
+    () -> new ViaFacet.TabList<>(Player.class, VIA),
+    // () -> new PaperFacet.TabList(),
+    () -> new CraftBukkitFacet.TabList(),
+    () -> new BukkitFacet.TabList()
+  );
 
   private final @NonNull Plugin plugin;
 
   BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
-    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR);
+    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
     this.plugin = plugin;
   }
 

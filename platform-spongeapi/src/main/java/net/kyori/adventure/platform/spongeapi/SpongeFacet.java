@@ -356,4 +356,22 @@ class SpongeFacet<V> extends FacetBase<V> {
       return Via.getManager().getConnection(player.getUniqueId());
     }
   }
+
+  static class TabList extends Message<Player> implements Facet.TabList<Player, Text> {
+
+    TabList() {
+      super(Player.class);
+    }
+
+    @Override
+    public void send(final Player viewer, final @Nullable Text header, final @Nullable Text footer) {
+      if(header != null && footer != null) {
+        viewer.getTabList().setHeaderAndFooter(header, footer);
+      } else if(header != null) {
+        viewer.getTabList().setHeader(header);
+      } else if(footer != null) {
+        viewer.getTabList().setFooter(footer);
+      }
+    }
+  }
 }

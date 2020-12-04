@@ -63,7 +63,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   private static final Class<?> BUNGEE_CHAT_MESSAGE_TYPE = findClass("net.md_5.bungee.api.ChatMessageType");
-  private static final Class<?> BUNGEE_COMPONENT_TYPE = findClass("net.md_5.bungee.api.chat.BaseComponent");
+  static final Class<?> BUNGEE_COMPONENT_TYPE = findClass("net.md_5.bungee.api.chat.BaseComponent");
 
   static class Message<V extends CommandSender> extends SpigotFacet<V> implements Facet.Message<V, BaseComponent[]> {
     private static final BungeeComponentSerializer SERIALIZER = BungeeComponentSerializer.of(gson(), legacy());

@@ -24,6 +24,7 @@
 package net.kyori.adventure.text.serializer.craftbukkit;
 
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.legacyimpl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -52,12 +53,12 @@ public final class BukkitComponentSerializer {
               .useUnusualXRepeatedCharacterHexFormat()
               .build();
       GSON_SERIALIZER = GsonComponentSerializer.builder()
-              .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+              .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
               .build();
     } else if(IS_1_8) {
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
       GSON_SERIALIZER = GsonComponentSerializer.builder()
-              .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+              .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
               .emitLegacyHoverEvent()
               .downsampleColors()
               .build();

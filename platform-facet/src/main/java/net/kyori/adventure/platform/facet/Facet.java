@@ -662,4 +662,23 @@ public interface Facet<V> {
     @Override
     void close();
   }
+
+  /**
+   * Methods for working with the player tab list.
+   *
+   * @param <V> viewer
+   * @param <M> message type
+   * @since 4.0.0
+   */
+  interface TabList<V, M> extends Message<V, M> {
+
+    /**
+     * Update the tab list header and footer.
+     *
+     * @param header header, null if should be left unchanged
+     * @param footer footer, null if should be left unchanged
+     * @since 4.0.0
+     */
+    void send(final V viewer, final @Nullable M header, final @Nullable M footer);
+  }
 }

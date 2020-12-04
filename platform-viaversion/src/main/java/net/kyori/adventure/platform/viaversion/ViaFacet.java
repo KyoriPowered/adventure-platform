@@ -403,4 +403,19 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
       this.viewers.clear();
     }
   }
+
+  public static final class TabList<V> extends ProtocolBased<V> implements Facet.TabList<V, String> {
+
+    public TabList(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> userConnection) {
+      super("1_16", "1_15_2", PROTOCOL_HEX_COLOR, "TAB_LIST", viewerClass, userConnection);
+    }
+
+    @Override
+    public void send(final V viewer, final @Nullable String header, final @Nullable String footer) {
+      final PacketWrapper packet = this.createPacket(viewer);
+      packet.write(Type.STRING, header);
+      packet.write(Type.STRING, footer);
+      this.sendPacket(packet);
+    }
+  }
 }

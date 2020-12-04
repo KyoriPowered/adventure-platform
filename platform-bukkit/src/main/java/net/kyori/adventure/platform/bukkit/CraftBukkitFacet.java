@@ -85,8 +85,10 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findCraftClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findEnum;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findField;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMethod;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findSetterOf;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findStaticMethod;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needField;
@@ -844,4 +846,47 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       return !this.initialized || this.viewers.isEmpty();
     }
   }
+
+  static final class TabList extends PacketFacet<Player> implements Facet.TabList<Player, Object> {
+    private static final Class<?> CLIENTBOUND_TAB_LIST_PACKET = findNmsClass("PacketPlayOutPlayerListHeaderFooter");
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR = findConstructor(CLIENTBOUND_TAB_LIST_PACKET);
+    // Fields added by spigot -- names stable
+    private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_HEADER = findField(CLASS_CRAFT_PLAYER, "playerListHeader");
+    private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_FOOTER = findField(CLASS_CRAFT_PLAYER, "playerListFooter");
+
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header"));
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer"));
+
+    @Override
+    public boolean isSupported() {
+      return CLIENTBOUND_TAB_LIST_PACKET_CTOR != null && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null && super.isSupported();
+    }
+
+    @Override
+    public void send(final Player viewer, @Nullable Object header, @Nullable Object footer) {
+      try {
+        final Object packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke();
+        if(CRAFT_PLAYER_TAB_LIST_HEADER != null && CRAFT_PLAYER_TAB_LIST_FOOTER != null) {
+          if(header == null) {
+            header = CRAFT_PLAYER_TAB_LIST_HEADER.get(viewer);
+          } else {
+            CRAFT_PLAYER_TAB_LIST_HEADER.set(viewer, header);
+          }
+
+          if(footer == null) {
+            footer = CRAFT_PLAYER_TAB_LIST_FOOTER.get(viewer);
+          } else {
+            CRAFT_PLAYER_TAB_LIST_FOOTER.set(viewer, footer);
+          }
+        }
+
+        CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
+        CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER.invoke(packet, footer == null ? this.createMessage(viewer, Component.empty()) : footer);
+        this.sendPacket(viewer, packet);
+      } catch(final Throwable thr) {
+        logError(thr, "Failed to send tab list header and footer to %s", viewer);
+      }
+    }
+  }
+
 }

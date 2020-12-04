@@ -33,6 +33,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
 
 class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("paper", true);
@@ -47,7 +48,7 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class Title extends SpigotFacet.Message<Player> implements Facet.Title<Player, BaseComponent[], com.destroystokyo.paper.Title> {
-    private final static boolean SUPPORTED = hasClass("com.destroystokyo.paper.Title");
+    private static final boolean SUPPORTED = hasClass("com.destroystokyo.paper.Title");
 
     protected Title() {
       super(Player.class);
@@ -84,6 +85,25 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void resetTitle(final @NonNull Player viewer) {
       viewer.resetTitle();
+    }
+  }
+
+  static class TabList extends SpigotFacet.Message<Player> implements Facet.TabList<Player, BaseComponent[]> {
+
+    private static final boolean SUPPORTED = hasMethod(Player.class, "setPlayerTabListHeaderFooter", BUNGEE_COMPONENT_TYPE, BUNGEE_COMPONENT_TYPE);
+
+    TabList() {
+      super(Player.class);
+    }
+
+    @Override
+    public boolean isSupported() {
+      return SUPPORTED && super.isSupported();
+    }
+
+    @Override
+    public void send(final Player viewer, final BaseComponent @Nullable [] header, final BaseComponent @Nullable [] footer) {
+      viewer.setPlayerListHeaderFooter(header, footer); // TODO: Nullability??
     }
   }
 }

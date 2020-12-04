@@ -48,6 +48,8 @@ import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSeri
 import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.get;
 
 class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
+  static final BaseComponent[] EMPTY_COMPONENT_ARRAY = new BaseComponent[0];
+
   protected BungeeFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
   }
@@ -257,6 +259,16 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
         }
         this.bar.setAction(lastAction);
       }
+    }
+  }
+
+  static final class TabList extends Message implements Facet.TabList<ProxiedPlayer, BaseComponent[]> {
+
+    @Override
+    public void send(final ProxiedPlayer viewer, final BaseComponent@Nullable[] header, final BaseComponent@Nullable[] footer) {
+      viewer.setTabHeader(
+        header == null ? EMPTY_COMPONENT_ARRAY : header,
+        footer == null ? EMPTY_COMPONENT_ARRAY : footer);
     }
   }
 }

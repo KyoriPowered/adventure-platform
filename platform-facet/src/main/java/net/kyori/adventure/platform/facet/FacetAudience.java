@@ -67,6 +67,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   private final Facet.@Nullable Book<V, Object, Object> book;
   private final Facet.BossBar.@Nullable Builder<V, Facet.BossBar<V>> bossBar;
   private final @Nullable Map<BossBar, Facet.BossBar<V>> bossBars;
+  private final Facet.@Nullable TabList<V, Object> tabList;
 
   /**
    * Create a new facet-based audience.
@@ -90,7 +91,8 @@ public class FacetAudience<V> implements Audience, Closeable {
     final @Nullable Collection<? extends Facet.Title> title,
     final @Nullable Collection<? extends Facet.Sound> sound,
     final @Nullable Collection<? extends Facet.Book> book,
-    final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar
+    final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
+    final @Nullable Collection<? extends Facet.TabList> tabList
   ) {
     this.viewers = new CopyOnWriteArraySet<>();
     this.locale = locale == null ? Locale.US : locale;
@@ -104,6 +106,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     this.book = Facet.of(book, this.viewer);
     this.bossBar = Facet.of(bossBar, this.viewer);
     this.bossBars = this.bossBar == null ? null : Collections.synchronizedMap(new IdentityHashMap<>(4));
+    this.tabList = Facet.of(tabList, this.viewer);
   }
 
   /**
@@ -296,6 +299,41 @@ public class FacetAudience<V> implements Audience, Closeable {
     if(listener.isEmpty() && this.bossBars.remove(bar) != null) {
       bar.removeListener(listener);
       listener.close();
+    }
+  }
+
+  @Override
+  public void sendPlayerListHeader(final @NonNull Component header) {
+    if(this.tabList != null) {
+      final Object headerFormatted = this.createMessage(header, this.tabList);
+      if(headerFormatted == null) return;
+      for(final V viewer : this.viewers) {
+        this.tabList.send(viewer, headerFormatted, null);
+      }
+    }
+  }
+
+  @Override
+  public void sendPlayerListFooter(final @NonNull Component footer) {
+    if(this.tabList != null) {
+      final Object footerFormatted = this.createMessage(footer, this.tabList);
+      if(footerFormatted == null) return;
+      for(final V viewer : this.viewers) {
+        this.tabList.send(viewer, null, footerFormatted);
+      }
+    }
+  }
+
+  @Override
+  public void sendPlayerListHeaderAndFooter(final @NonNull Component header, final @NonNull Component footer) {
+    if(this.tabList != null) {
+      final Object headerFormatted = this.createMessage(header, this.tabList);
+      final Object footerFormatted = this.createMessage(footer, this.tabList);
+      if(headerFormatted == null || footerFormatted == null) return;
+
+      for(final V viewer : this.viewers) {
+        this.tabList.send(viewer, headerFormatted, footerFormatted);
+      }
     }
   }
 

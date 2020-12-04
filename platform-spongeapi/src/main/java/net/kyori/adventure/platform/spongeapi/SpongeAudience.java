@@ -55,8 +55,12 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
   private static final Collection<Facet.BossBar.Builder<Player, ? extends Facet.BossBar<Player>>> BOSS_BAR = Facet.of(
     () -> new ViaFacet.BossBar.Builder<>(Player.class, VIA),
     SpongeFacet.BossBarBuilder::new);
+  private static final Collection<Facet.TabList<Player, ?>> TAB_LIST = Facet.of(
+    () -> new ViaFacet.TabList<>(Player.class, VIA),
+    SpongeFacet.TabList::new
+  );
 
   SpongeAudience(final @NonNull Collection<MessageReceiver> viewers) {
-    super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR);
+    super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
   }
 }

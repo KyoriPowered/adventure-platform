@@ -341,10 +341,35 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class ViaHook implements Function<Player, UserConnection> {
+  static final class ViaHook implements Function<Player, UserConnection> {
     @Override
     public UserConnection apply(final @NonNull Player player) {
       return Via.getManager().getConnection(player.getUniqueId());
+    }
+  }
+
+  static final class TabList extends Message<Player> implements Facet.TabList<Player, String> {
+    // All methods added at the same time
+    private static final boolean SUPPORTED = hasMethod(Player.class, "setPlayerListHeader", String.class);
+
+    TabList() {
+      super(Player.class);
+    }
+
+    @Override
+    public boolean isSupported() {
+      return SUPPORTED && super.isSupported();
+    }
+
+    @Override
+    public void send(final Player viewer, final @Nullable String header, final @Nullable String footer) {
+      if(header != null && footer != null) {
+        viewer.setPlayerListHeaderFooter(header, footer);
+      } else if(header != null) {
+        viewer.setPlayerListHeader(header);
+      } else if(footer != null) {
+        viewer.setPlayerListFooter(footer);
+      }
     }
   }
 }

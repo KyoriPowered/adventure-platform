@@ -193,6 +193,59 @@ public final class MinecraftReflection {
   }
 
   /**
+   * Gets a class field if possible and makes it accessible.
+   *
+   * @param holderClass a class
+   * @param fieldName a field name
+   * @return an accessible field
+   */
+  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NonNull String fieldName) {
+    if(holderClass == null) return null;
+
+    final Field field;
+    try {
+      field = holderClass.getDeclaredField(fieldName);
+    } catch(final NoSuchFieldException ex) {
+      return null;
+    }
+
+    field.setAccessible(true);
+    return field;
+  }
+
+  /**
+   * Return a method handle that can set the value of the provided field.
+   *
+   * @param field the field to set
+   * @return a handle, if accessible
+   */
+  public static @Nullable MethodHandle findSetterOf(final @Nullable Field field) {
+    if(field == null) return null;
+
+    try {
+      return LOOKUP.unreflectSetter(field);
+    } catch(final IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Return a method handle that can get the value of the provided field.
+   *
+   * @param field the field to get
+   * @return a handle, if accessible
+   */
+  public static @Nullable MethodHandle findGetterOf(final @Nullable Field field) {
+    if(field == null) return null;
+
+    try {
+      return LOOKUP.unreflectGetter(field);
+    } catch(final IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /**
    * Gets an enum value.
    *
    * @param enumClass an enum class
