@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.facet;
 
+import java.util.HashSet;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
@@ -340,7 +341,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   @Override
   public void close() {
     if(this.bossBars != null) {
-      for(final BossBar bar : this.bossBars.keySet()) {
+      for(final BossBar bar : new HashSet<>(this.bossBars.keySet())) {
         this.hideBossBar(bar);
       }
       this.bossBars.clear();
