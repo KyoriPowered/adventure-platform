@@ -30,6 +30,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -233,9 +234,10 @@ public class FacetAudience<V> implements Audience, Closeable {
 
     final Object mainTitle = this.createMessage(original.title(), this.title);
     final Object subTitle = this.createMessage(original.subtitle(), this.title);
-    final int inTicks = this.title.toTicks(original.times().fadeIn());
-    final int stayTicks = this.title.toTicks(original.times().stay());
-    final int outTicks = this.title.toTicks(original.times().fadeOut());
+    final Title.@Nullable Times times = original.times();
+    final int inTicks = times == null ? -1 : this.title.toTicks(times.fadeIn());
+    final int stayTicks = times == null ? -1 : this.title.toTicks(times.stay());
+    final int outTicks = times == null ? -1 : this.title.toTicks(times.fadeOut());
 
     final Object title = this.title.createTitle(mainTitle, subTitle, inTicks, stayTicks, outTicks);
     if(title == null) return;
