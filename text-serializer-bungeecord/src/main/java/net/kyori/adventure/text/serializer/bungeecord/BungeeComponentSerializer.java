@@ -25,6 +25,7 @@ package net.kyori.adventure.text.serializer.bungeecord;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+import java.awt.Color;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import net.kyori.adventure.text.Component;
@@ -110,6 +111,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
     final boolean result = GsonInjections.injectGson(requireNonNull(existing, "existing"), builder -> {
       GsonComponentSerializer.gson().populator().apply(builder); // TODO: this might be unused?
       builder.registerTypeAdapterFactory(new SelfSerializable.AdapterFactory());
+      builder.registerTypeAdapter(Color.class, new ColorSerializer());
     });
     SUPPORTED &= result;
     return result;
