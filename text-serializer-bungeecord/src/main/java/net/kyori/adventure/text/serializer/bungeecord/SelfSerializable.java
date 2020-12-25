@@ -55,7 +55,6 @@ interface SelfSerializable {
         return null;
       }
 
-      final TypeAdapter<T> delegated = gson.getDelegateAdapter(this, type);
       return new TypeAdapter<T>() {
         @Override
         public void write(final JsonWriter out, final T value) throws IOException {
@@ -63,8 +62,8 @@ interface SelfSerializable {
         }
 
         @Override
-        public T read(final JsonReader in) throws IOException {
-          return delegated.read(in);
+        public T read(final JsonReader in) {
+          throw new UnsupportedOperationException("Cannot load values of type " + type.getRawType());
         }
       };
     }
