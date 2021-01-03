@@ -867,7 +867,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       for(int i = 0; i < handles.length; i++) {
         final MethodHandle handle = handles[i];
         if(handle != null) {
-          return null;
+          return handle;
         }
       }
       return null;
