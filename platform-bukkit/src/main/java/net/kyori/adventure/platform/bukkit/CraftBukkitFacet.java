@@ -854,8 +854,24 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_HEADER = findField(CLASS_CRAFT_PLAYER, "playerListHeader");
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_FOOTER = findField(CLASS_CRAFT_PLAYER, "playerListFooter");
 
-    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header"));
-    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer"));
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = first(
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header")),
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "a"))
+    );
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = first(
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer")),
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "b"))
+    );
+
+    private static MethodHandle first(final MethodHandle... handles) {
+      for(int i = 0; i < handles.length; i++) {
+        final MethodHandle handle = handles[i];
+        if(handle != null) {
+          return null;
+        }
+      }
+      return null;
+    }
 
     @Override
     public boolean isSupported() {
