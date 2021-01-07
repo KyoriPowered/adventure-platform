@@ -200,6 +200,17 @@ public final class MinecraftReflection {
    * @return an accessible field
    */
   public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NonNull String fieldName) {
+    return findField(holderClass, fieldName, null);
+  }
+
+  /**
+   * Gets a class field if it exists and is of the appropriate type and makes it accessible.
+   *
+   * @param holderClass a class
+   * @param fieldName a field name
+   * @return an accessible field
+   */
+  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NonNull String fieldName, final @Nullable Class<?> expectedType) {
     if(holderClass == null) return null;
 
     final Field field;
@@ -210,6 +221,10 @@ public final class MinecraftReflection {
     }
 
     field.setAccessible(true);
+    if(expectedType != null && !expectedType.isAssignableFrom(field.getType())) {
+      return null;
+    }
+
     return field;
   }
 

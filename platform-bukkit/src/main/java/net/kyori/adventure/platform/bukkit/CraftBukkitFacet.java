@@ -873,12 +873,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_FOOTER = findField(CLASS_CRAFT_PLAYER, "playerListFooter");
 
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = first(
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header")),
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "a"))
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header", CLASS_CHAT_COMPONENT)),
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "a", CLASS_CHAT_COMPONENT))
     );
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = first(
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer")),
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "b"))
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer", CLASS_CHAT_COMPONENT)),
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "b", CLASS_CHAT_COMPONENT))
     );
 
     private static MethodHandle first(final MethodHandle... handles) {
