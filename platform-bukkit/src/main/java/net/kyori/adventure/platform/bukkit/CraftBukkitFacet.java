@@ -234,6 +234,8 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   private static final @Nullable Object TITLE_ACTION_TITLE = findEnum(CLASS_TITLE_ACTION, "TITLE", 0);
   private static final @Nullable Object TITLE_ACTION_SUBTITLE = findEnum(CLASS_TITLE_ACTION, "SUBTITLE", 1);
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = findEnum(CLASS_TITLE_ACTION, "ACTIONBAR");
+  private static final @Nullable Object TITLE_ACTION_CLEAR = findEnum(CLASS_TITLE_ACTION, "CLEAR");
+  private static final @Nullable Object TITLE_ACTION_RESET = findEnum(CLASS_TITLE_ACTION, "RESET");
 
   static class ActionBar extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
     @Override
@@ -308,12 +310,28 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public void clearTitle(final @NonNull Player viewer) {
-      viewer.sendTitle("", "", -1, -1, -1);
+      try {
+        if(TITLE_ACTION_CLEAR != null) {
+          this.sendPacket(viewer, CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_CLEAR, null));
+        } else {
+          viewer.sendTitle("", "", -1, -1, -1);
+        }
+      } catch(final Throwable error) {
+        logError(error, "Failed to clear title");
+      }
     }
 
     @Override
     public void resetTitle(final @NonNull Player viewer) {
-      viewer.resetTitle();
+      try {
+        if(TITLE_ACTION_RESET != null) {
+          this.sendPacket(viewer, CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_RESET, null));
+        } else {
+          viewer.resetTitle();
+        }
+      } catch(final Throwable error) {
+        logError(error, "Failed to clear title");
+      }
     }
   }
 
