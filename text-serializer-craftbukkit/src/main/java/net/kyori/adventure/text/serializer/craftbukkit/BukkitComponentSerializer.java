@@ -41,7 +41,6 @@ public final class BukkitComponentSerializer {
   }
 
   private static final boolean IS_1_16 = findEnum(Material.class, "NETHERITE_PICKAXE") != null;
-  private static final boolean IS_1_8 = findEnum(Material.class, "PRISMARINE") != null;
 
   private static final LegacyComponentSerializer LEGACY_SERIALIZER;
   private static final GsonComponentSerializer GSON_SERIALIZER;
@@ -55,16 +54,13 @@ public final class BukkitComponentSerializer {
       GSON_SERIALIZER = GsonComponentSerializer.builder()
               .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
               .build();
-    } else if(IS_1_8) {
-      LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
-      GSON_SERIALIZER = GsonComponentSerializer.builder()
-              .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
-              .emitLegacyHoverEvent()
-              .downsampleColors()
-              .build();
     } else {
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
-      GSON_SERIALIZER = null;
+      GSON_SERIALIZER = GsonComponentSerializer.builder()
+        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
+        .emitLegacyHoverEvent()
+        .downsampleColors()
+        .build();
     }
   }
 

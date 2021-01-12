@@ -98,9 +98,20 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
       if(CLASS_CHAT_COMPONENT != null) {
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
-          .filter(c -> CLASS_JSON_DESERIALIZER != null && CLASS_JSON_DESERIALIZER.isAssignableFrom(c))
+          .filter(c -> {
+            if(CLASS_JSON_DESERIALIZER != null) {
+              return CLASS_JSON_DESERIALIZER.isAssignableFrom(c);
+            } else {
+              for(final Class<?> itf : c.getInterfaces()) {
+                if(itf.getSimpleName().equals("JsonDeserializer")) {
+                  return true;
+                }
+              }
+              return false;
+            }
+          })
           .findAny()
-          .orElse(null);
+          .orElse(findNmsClass("ChatSerializer")); // 1.7.10 compat
         if(chatSerializerClass != null) {
           final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
             .filter(m -> Modifier.isStatic(m.getModifiers()))
