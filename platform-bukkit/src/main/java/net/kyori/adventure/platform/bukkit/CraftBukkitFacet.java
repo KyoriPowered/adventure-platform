@@ -430,7 +430,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     private @NonNull Object createTag(final @NonNull CompoundBinaryTag tag) throws IOException {
       final TrustedByteArrayOutputStream output = new TrustedByteArrayOutputStream();
-      BinaryTagIO.writeOutputStream(tag, output);
+      BinaryTagIO.writer().write(tag, output);
 
       try(final DataInputStream dis = new DataInputStream(output.toInputStream())) {
         return NBT_IO_DESERIALIZE.invoke(dis);

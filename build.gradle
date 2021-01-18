@@ -11,7 +11,7 @@ plugins {
 }
 
 // Adventure version
-ext.adventure = "4.3.0"
+ext.adventure = "4.4.0"
 
 /**
  * Bukkit and its dependencies have metadata that is incorrect and excludes some annotation APIs.
