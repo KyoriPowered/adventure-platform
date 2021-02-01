@@ -314,22 +314,12 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
     };
   }
 
-  /**
-   * Gets the active locale-based renderer for operations on provided audiences.
-   *
-   * @return Active renderer
-   * @since 4.0.0
-   */
+  @Override
   public ComponentRenderer<Locale> localeRenderer() {
     return this.renderer;
   }
 
-  /**
-   * Sets the active locale-based renderer for operations on provided audiences.
-   *
-   * @param renderer Active renderer
-   * @since 4.0.0
-   */
+  @Override
   public void localeRenderer(final @NonNull ComponentRenderer<Locale> renderer) {
     this.renderer = renderer;
   }

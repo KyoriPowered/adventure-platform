@@ -25,8 +25,10 @@ package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -122,6 +124,22 @@ public interface AudienceProvider extends AutoCloseable {
    * @since 4.0.0
    */
   @NonNull Audience server(final @NonNull String serverName);
+
+  /**
+   * Gets the active locale-based renderer for operations on provided audiences.
+   *
+   * @return Active renderer
+   * @since 4.0.0
+   */
+  ComponentRenderer<Locale> localeRenderer();
+
+  /**
+   * Sets the active locale-based renderer for operations on provided audiences.
+   *
+   * @param renderer Active renderer
+   * @since 4.0.0
+   */
+  void localeRenderer(final @NonNull ComponentRenderer<Locale> renderer);
 
   /**
    * Closes the provider and forces audiences to be empty.
