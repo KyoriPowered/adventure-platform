@@ -81,8 +81,11 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
 
   private final @NonNull Plugin plugin;
 
-  BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
-    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
+  BukkitAudience(final @NonNull BukkitAudiencesImpl audienceProvider,
+                 final @NonNull Plugin plugin,
+                 final @NonNull Collection<CommandSender> viewers,
+                 final @Nullable Locale locale) {
+    super(viewers, locale, audienceProvider, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
     this.plugin = plugin;
   }
 

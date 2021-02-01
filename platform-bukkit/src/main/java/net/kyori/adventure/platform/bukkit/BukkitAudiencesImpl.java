@@ -159,7 +159,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   @NonNull
   @Override
   protected BukkitAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
-    return new BukkitAudience(this.plugin, viewers, null);
+    return new BukkitAudience(this, this.plugin, viewers, null);
   }
 
   /**

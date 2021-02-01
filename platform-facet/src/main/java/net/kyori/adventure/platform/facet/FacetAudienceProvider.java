@@ -27,6 +27,8 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -61,6 +63,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   private final Set<A> consoles;
   private final A empty;
   private volatile boolean closed;
+  private ComponentRenderer<Locale> renderer;
 
   /**
    * Create a new empty provider.
@@ -75,6 +78,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
     this.player = Audience.audience(this.players.values());
     this.empty = this.createAudience(Collections.emptyList());
     this.closed = false;
+    this.renderer = GlobalTranslator.renderer();
   }
 
   /**
@@ -308,5 +312,25 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
         }
       }
     };
+  }
+
+  /**
+   * Gets the active locale-based renderer for operations on provided audiences.
+   *
+   * @return Active renderer
+   * @since 4.0.0
+   */
+  public ComponentRenderer<Locale> localeRenderer() {
+    return this.renderer;
+  }
+
+  /**
+   * Sets the active locale-based renderer for operations on provided audiences.
+   *
+   * @param renderer Active renderer
+   * @since 4.0.0
+   */
+  public void localeRenderer(final @NonNull ComponentRenderer<Locale> renderer) {
+    this.renderer = renderer;
   }
 }

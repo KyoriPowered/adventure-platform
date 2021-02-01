@@ -31,7 +31,6 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import net.kyori.adventure.translation.GlobalTranslator;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -62,6 +61,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   private volatile @Nullable V viewer; // The first viewer is used for facet and message selection
   private volatile @NonNull Locale locale;
 
+  private final FacetAudienceProvider<V, ? extends FacetAudience<V>> audienceProvider;
   private final Facet.@Nullable Chat<V, Object> chat;
   private final Facet.@Nullable ActionBar<V, Object> actionBar;
   private final Facet.@Nullable Title<V, Object, Object> title;
@@ -74,6 +74,8 @@ public class FacetAudience<V> implements Audience, Closeable {
   /**
    * Create a new facet-based audience.
    *
+   *
+   * @param audienceProvider the audience provider
    * @param viewers the viewers receiving content sent to this audience
    * @param locale the locale of this audience
    * @param chat chat facet candidates
@@ -86,21 +88,23 @@ public class FacetAudience<V> implements Audience, Closeable {
    */
   @SuppressWarnings({"unchecked", "rawtypes"}) // Without suppression, this constructor becomes unreadable
   public FacetAudience(
-    final @NonNull Collection<? extends V> viewers,
-    final @Nullable Locale locale,
-    final @Nullable Collection<? extends Facet.Chat> chat,
-    final @Nullable Collection<? extends Facet.ActionBar> actionBar,
-    final @Nullable Collection<? extends Facet.Title> title,
-    final @Nullable Collection<? extends Facet.Sound> sound,
-    final @Nullable Collection<? extends Facet.Book> book,
-    final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
-    final @Nullable Collection<? extends Facet.TabList> tabList
+          final @NonNull Collection<? extends V> viewers,
+          final @Nullable Locale locale,
+          final @NonNull FacetAudienceProvider audienceProvider,
+          final @Nullable Collection<? extends Facet.Chat> chat,
+          final @Nullable Collection<? extends Facet.ActionBar> actionBar,
+          final @Nullable Collection<? extends Facet.Title> title,
+          final @Nullable Collection<? extends Facet.Sound> sound,
+          final @Nullable Collection<? extends Facet.Book> book,
+          final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
+          final @Nullable Collection<? extends Facet.TabList> tabList
   ) {
     this.viewers = new CopyOnWriteArraySet<>();
     this.locale = locale == null ? Locale.US : locale;
     for(final V viewer : requireNonNull(viewers, "viewers")) {
       this.addViewer(viewer);
     }
+    this.audienceProvider = audienceProvider;
     this.chat = Facet.of(chat, this.viewer);
     this.actionBar = Facet.of(actionBar, this.viewer);
     this.title = Facet.of(title, this.viewer);
@@ -273,7 +277,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     synchronized(this.bossBars) {
       listener = this.bossBars.get(bar);
       if(listener == null) {
-        listener = new FacetBossBarListener<>(this.bossBar.createBossBar(this.viewers), () -> this.locale);
+        listener = new FacetBossBarListener<>(this.audienceProvider, this.bossBar.createBossBar(this.viewers), () -> this.locale);
         this.bossBars.put(bar, listener);
       }
     }
@@ -356,7 +360,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   private @Nullable Object createMessage(final @NonNull Component original, final Facet.@NonNull Message<V, Object> facet) {
-    final Component message = GlobalTranslator.render(original, this.locale);
+    final Component message = this.audienceProvider.localeRenderer().render(original, this.locale);
     final V viewer = this.viewer;
     return viewer == null ? null : facet.createMessage(viewer, message);
   }

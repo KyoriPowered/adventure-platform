@@ -45,7 +45,8 @@ final class BungeeAudience extends FacetAudience<CommandSender> {
     BungeeFacet.TabList::new
   );
 
-  BungeeAudience(final @NonNull Collection<? extends CommandSender> viewers) {
-    super(viewers, null, CHAT, ACTION_BAR, TITLE, null, null, BOSS_BAR, TAB_LIST);
+  BungeeAudience(final @NonNull BungeeAudiencesImpl audienceProvider,
+                 final @NonNull Collection<? extends CommandSender> viewers) {
+    super(viewers, null, audienceProvider, CHAT, ACTION_BAR, TITLE, null, null, BOSS_BAR, TAB_LIST);
   }
 }

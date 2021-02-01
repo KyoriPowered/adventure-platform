@@ -146,7 +146,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   @NonNull
   @Override
   protected BungeeAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
-    return new BungeeAudience(viewers);
+    return new BungeeAudience(this, viewers);
   }
 
   @Override

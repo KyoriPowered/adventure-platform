@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.facet;
 
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.translation.GlobalTranslator;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Locale;
@@ -33,10 +32,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 class FacetBossBarListener<V> implements Facet.BossBar<V> {
+  private final FacetAudienceProvider<V, ? extends FacetAudience<V>> audienceProvider;
   private final Facet.BossBar<V> facet;
   private final Supplier<Locale> locale;
 
-  FacetBossBarListener(final Facet.@NonNull BossBar<V> facet, final @NonNull Supplier<Locale> locale) {
+  FacetBossBarListener(final FacetAudienceProvider<V, ? extends FacetAudience<V>> audienceProvider, final Facet.@NonNull BossBar<V> facet, final @NonNull Supplier<Locale> locale) {
+    this.audienceProvider = audienceProvider;
     this.facet = facet;
     this.locale = locale;
   }
@@ -49,7 +50,7 @@ class FacetBossBarListener<V> implements Facet.BossBar<V> {
 
   @Override
   public void bossBarNameChanged(final @NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
-    this.facet.bossBarNameChanged(bar, oldName, GlobalTranslator.render(newName, this.locale.get()));
+    this.facet.bossBarNameChanged(bar, oldName, this.audienceProvider.localeRenderer().render(newName, this.locale.get()));
   }
 
   @Override

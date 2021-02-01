@@ -60,7 +60,8 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
     SpongeFacet.TabList::new
   );
 
-  SpongeAudience(final @NonNull Collection<MessageReceiver> viewers) {
-    super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
+  SpongeAudience(final @NonNull SpongeAudiencesImpl audienceProvider,
+                 final @NonNull Collection<MessageReceiver> viewers) {
+    super(viewers, null, audienceProvider, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
   }
 }

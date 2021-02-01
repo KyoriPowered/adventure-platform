@@ -111,7 +111,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     } else if(receiver instanceof CommandBlock) {
       return Audience.empty();
     }
-    return new SpongeAudience(Collections.singletonList(receiver));
+    return new SpongeAudience(this, Collections.singletonList(receiver));
   }
 
   @NonNull
@@ -157,7 +157,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   @NonNull
   @Override
   protected SpongeAudience createAudience(final @NonNull Collection<MessageReceiver> viewers) {
-    return new SpongeAudience(viewers);
+    return new SpongeAudience(this, viewers);
   }
 
   @Override
