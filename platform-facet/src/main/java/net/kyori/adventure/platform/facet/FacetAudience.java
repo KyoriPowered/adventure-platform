@@ -88,16 +88,16 @@ public class FacetAudience<V> implements Audience, Closeable {
    */
   @SuppressWarnings({"unchecked", "rawtypes"}) // Without suppression, this constructor becomes unreadable
   public FacetAudience(
-          final @NonNull Collection<? extends V> viewers,
-          final @Nullable Locale locale,
-          final @NonNull FacetAudienceProvider audienceProvider,
-          final @Nullable Collection<? extends Facet.Chat> chat,
-          final @Nullable Collection<? extends Facet.ActionBar> actionBar,
-          final @Nullable Collection<? extends Facet.Title> title,
-          final @Nullable Collection<? extends Facet.Sound> sound,
-          final @Nullable Collection<? extends Facet.Book> book,
-          final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
-          final @Nullable Collection<? extends Facet.TabList> tabList
+      final @NonNull Collection<? extends V> viewers,
+      final @Nullable Locale locale,
+      final @NonNull FacetAudienceProvider audienceProvider,
+      final @Nullable Collection<? extends Facet.Chat> chat,
+      final @Nullable Collection<? extends Facet.ActionBar> actionBar,
+      final @Nullable Collection<? extends Facet.Title> title,
+      final @Nullable Collection<? extends Facet.Sound> sound,
+      final @Nullable Collection<? extends Facet.Book> book,
+      final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
+      final @Nullable Collection<? extends Facet.TabList> tabList
   ) {
     this.viewers = new CopyOnWriteArraySet<>();
     this.locale = locale == null ? Locale.US : locale;
