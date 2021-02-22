@@ -25,26 +25,23 @@ package net.kyori.adventure.platform.spongeapi;
 
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
-import net.kyori.adventure.platform.viaversion.ViaFacet;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
-import us.myles.ViaVersion.api.data.UserConnection;
 
 import java.util.Collection;
-import java.util.function.Function;
 
 final class SpongeAudience extends FacetAudience<MessageReceiver> {
-  private static final Function<Player, UserConnection> VIA = new SpongeFacet.ViaHook();
+  // private static final Function<Player, UserConnection> VIA = new SpongeFacet.ViaHook();
   private static final Collection<Facet.Chat<?, ?>> CHAT = Facet.of(
-    () -> new ViaFacet.Chat<>(Player.class, VIA),
+    // () -> new ViaFacet.Chat<>(Player.class, VIA),
     SpongeFacet.ChatWithType::new,
     SpongeFacet.Chat::new);
   private static final Collection<Facet.ActionBar<? extends ChatTypeMessageReceiver, ?>> ACTION_BAR = Facet.of(
-    () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
-    () -> new ViaFacet.ActionBar<>(Player.class, VIA),
+    // () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
+    // () -> new ViaFacet.ActionBar<>(Player.class, VIA),
     SpongeFacet.ActionBar::new);
   private static final Collection<Facet.Title<Viewer, ?, ?>> TITLE = Facet.of(
     SpongeFacet.Title::new);
@@ -53,10 +50,10 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
   private static final Collection<Facet.Book<Viewer, ?, ?>> BOOK = Facet.of(
     SpongeFacet.Book::new);
   private static final Collection<Facet.BossBar.Builder<Player, ? extends Facet.BossBar<Player>>> BOSS_BAR = Facet.of(
-    () -> new ViaFacet.BossBar.Builder<>(Player.class, VIA),
+    // () -> new ViaFacet.BossBar.Builder<>(Player.class, VIA),
     SpongeFacet.BossBarBuilder::new);
   private static final Collection<Facet.TabList<Player, ?>> TAB_LIST = Facet.of(
-    () -> new ViaFacet.TabList<>(Player.class, VIA),
+    // () -> new ViaFacet.TabList<>(Player.class, VIA),
     SpongeFacet.TabList::new
   );
 

@@ -53,12 +53,9 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.Locatable;
-import us.myles.ViaVersion.api.Via;
-import us.myles.ViaVersion.api.data.UserConnection;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
@@ -350,12 +347,12 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
   }
 
-  static class ViaHook implements Function<Player, UserConnection> {
+  /*static class ViaHook implements Function<Player, UserConnection> {
     @Override
     public UserConnection apply(final @NonNull Player player) {
       return Via.getManager().getConnection(player.getUniqueId());
     }
-  }
+  } */
 
   static class TabList extends Message<Player> implements Facet.TabList<Player, Text> {
 
