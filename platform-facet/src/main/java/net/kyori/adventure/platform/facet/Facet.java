@@ -235,6 +235,7 @@ public interface Facet<V> {
    */
   interface Title<V, M, T> extends Message<V, M> {
     int PROTOCOL_ACTION_BAR = 310; // Added 16w40a
+    long MAX_SECONDS = Long.MAX_VALUE / 20;
 
     /**
      * Creates a title.
@@ -285,7 +286,14 @@ public interface Facet<V> {
       if(duration == null || duration.isNegative()) {
         return -1;
       }
-      return (int) (duration.toMillis() / 50.0);
+
+      if(duration.getSeconds() > MAX_SECONDS) {
+        // TODO: throw an exception here?
+        return Integer.MAX_VALUE;
+      }
+
+      return (int) (duration.getSeconds() * 20 // 20ticks/sec
+        + duration.getNano() / 50_000_000); // 50ms * 1ms/1000000ns
     }
   }
 
