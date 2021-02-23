@@ -140,6 +140,25 @@ public final class MinecraftReflection {
    * Gets whether a class has a method.
    *
    * @param holderClass a class
+   * @param name a method name
+   * @param type the field type
+   * @return if the method exists
+   */
+  public static boolean hasField(final @Nullable Class<?> holderClass, final String name, final Class<?> type) {
+    if(holderClass == null) return false;
+
+    try {
+      final Field field = holderClass.getDeclaredField(name);
+      return field.getType() == type;
+    } catch(final NoSuchFieldException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Gets whether a class has a method.
+   *
+   * @param holderClass a class
    * @param methodName a method name
    * @param parameterClasses an array of method parameter classes
    * @return if the method exists

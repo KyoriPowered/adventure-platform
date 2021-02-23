@@ -74,7 +74,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new CraftBukkitFacet.BossBarWither.Builder());
   private static final Collection<Facet.TabList<Player, ?>> TAB_LIST = Facet.of(
     () -> new ViaFacet.TabList<>(Player.class, VIA),
-    // () -> new PaperFacet.TabList(),
+    () -> new PaperFacet.TabList(),
     () -> new CraftBukkitFacet.TabList(),
     () -> new BukkitFacet.TabList()
   );

@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -33,6 +34,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasField;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
 
 class PaperFacet<V extends CommandSender> extends FacetBase<V> {
@@ -88,13 +90,8 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class TabList extends SpigotFacet.Message<Player> implements Facet.TabList<Player, BaseComponent[]> {
-
-    private static final boolean SUPPORTED = hasMethod(Player.class, "setPlayerTabListHeaderFooter", BUNGEE_COMPONENT_TYPE, BUNGEE_COMPONENT_TYPE);
-
-    TabList() {
-      super(Player.class);
-    }
+  static class TabList extends CraftBukkitFacet.TabList {
+    private static final boolean SUPPORTED = hasField(Player.class, "playerListHeader", Component.class) && hasField(Player.class, "playerListFooter", Component.class);
 
     @Override
     public boolean isSupported() {
@@ -102,8 +99,8 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void send(final Player viewer, final BaseComponent @Nullable [] header, final BaseComponent @Nullable [] footer) {
-      viewer.setPlayerListHeaderFooter(header, footer); // TODO: Nullability??
+    public @Nullable Object createMessage(final @NonNull Player viewer, final @NonNull Component message) {
+      return message;
     }
   }
 }
