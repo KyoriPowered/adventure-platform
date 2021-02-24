@@ -25,18 +25,42 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
+
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
+import static net.kyori.adventure.platform.facet.Knob.logError;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findStaticMethod;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasField;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
 
 class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("paper", true);
+  static final Class<?> NATIVE_COMPONENT_CLASS = findClass(String.join(".", "net", "kyori", "adventure", "text", "Component"));
+  private static final Class<?> NATIVE_GSON_COMPONENT_SERIALIZER_CLASS = findClass(String.join(".", "net", "kyori", "adventure", "text", "serializer", "gson", "GsonComponentSerializer"));
+  private static final Class<?> NATIVE_GSON_COMPONENT_SERIALIZER_IMPL_CLASS = findClass(String.join(".", "net", "kyori", "adventure", "text", "serializer", "gson", "GsonComponentSerializerImpl"));
+  private static final MethodHandle NATIVE_GSON_COMPONENT_SERIALIZER_GSON_GETTER = findStaticMethod(NATIVE_GSON_COMPONENT_SERIALIZER_CLASS, "gson", NATIVE_GSON_COMPONENT_SERIALIZER_CLASS);
+  private static final MethodHandle NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD = findNativeDeserializeMethod();
+
+  private static @Nullable MethodHandle findNativeDeserializeMethod() {
+    try {
+      final Method method = NATIVE_GSON_COMPONENT_SERIALIZER_IMPL_CLASS.getDeclaredMethod("deserialize", String.class);
+      method.setAccessible(true);
+      return lookup().unreflect(method);
+    } catch(final NoSuchMethodException | IllegalAccessException | NullPointerException e) {
+      return null;
+    }
+  }
 
   protected PaperFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
@@ -88,12 +112,20 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class TabList extends SpigotFacet.Message<Player> implements Facet.TabList<Player, BaseComponent[]> {
+  static class TabList extends CraftBukkitFacet.TabList {
+    private static final boolean SUPPORTED = hasField(CLASS_CRAFT_PLAYER, "playerListHeader", NATIVE_COMPONENT_CLASS) && hasField(CLASS_CRAFT_PLAYER, "playerListFooter", NATIVE_COMPONENT_CLASS);
+    private static final MethodHandle NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD_BOUND = createBoundNativeDeserializeMethodHandle();
 
-    private static final boolean SUPPORTED = hasMethod(Player.class, "setPlayerTabListHeaderFooter", BUNGEE_COMPONENT_TYPE, BUNGEE_COMPONENT_TYPE);
-
-    TabList() {
-      super(Player.class);
+    private static @Nullable MethodHandle createBoundNativeDeserializeMethodHandle() {
+      if(SUPPORTED) {
+        try {
+          return NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD.bindTo(NATIVE_GSON_COMPONENT_SERIALIZER_GSON_GETTER.invoke());
+        } catch(final Throwable throwable) {
+          logError(throwable, "Failed to access native GsonComponentSerializer");
+          return null;
+        }
+      }
+      return null;
     }
 
     @Override
@@ -102,8 +134,13 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void send(final Player viewer, final BaseComponent @Nullable [] header, final BaseComponent @Nullable [] footer) {
-      viewer.setPlayerListHeaderFooter(header, footer); // TODO: Nullability??
+    public @Nullable Object createMessage(final @NonNull Player viewer, final @NonNull Component message) {
+      try {
+        return NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD_BOUND.invoke(GsonComponentSerializer.gson().serialize(message));
+      } catch(final Throwable throwable) {
+        logError(throwable, "Failed to create native Component message");
+        return null;
+      }
     }
   }
 }

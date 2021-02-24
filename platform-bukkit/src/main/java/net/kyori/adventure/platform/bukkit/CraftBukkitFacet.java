@@ -104,7 +104,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     return super.isSupported() && SUPPORTED;
   }
 
-  private static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
+  static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
   private static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
   private static final @Nullable MethodHandle ENTITY_PLAYER_GET_CONNECTION;
   private static final @Nullable MethodHandle PLAYER_CONNECTION_SEND_PACKET;
@@ -865,7 +865,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static final class TabList extends PacketFacet<Player> implements Facet.TabList<Player, Object> {
+  static class TabList extends PacketFacet<Player> implements Facet.TabList<Player, Object> {
     private static final Class<?> CLIENTBOUND_TAB_LIST_PACKET = findNmsClass("PacketPlayOutPlayerListHeaderFooter");
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR = findConstructor(CLIENTBOUND_TAB_LIST_PACKET);
     // Fields added by spigot -- names stable
@@ -873,10 +873,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_FOOTER = findField(CLASS_CRAFT_PLAYER, "playerListFooter");
 
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = first(
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "adventure$header", PaperFacet.NATIVE_COMPONENT_CLASS)),
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header", CLASS_CHAT_COMPONENT)),
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "a", CLASS_CHAT_COMPONENT))
     );
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = first(
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "adventure$footer", PaperFacet.NATIVE_COMPONENT_CLASS)),
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer", CLASS_CHAT_COMPONENT)),
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "b", CLASS_CHAT_COMPONENT))
     );
