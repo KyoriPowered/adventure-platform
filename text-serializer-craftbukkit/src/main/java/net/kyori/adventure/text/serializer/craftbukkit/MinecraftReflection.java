@@ -47,7 +47,7 @@ public final class MinecraftReflection {
   private MinecraftReflection() {
   }
 
-  private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+  private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
   private static final String PREFIX_NMS = "net.minecraft.server";
   private static final String PREFIX_CRAFTBUKKIT = "org.bukkit.craftbukkit";
   private static final String CRAFT_SERVER = "CraftServer";
@@ -93,7 +93,7 @@ public final class MinecraftReflection {
   }
 
   /**
-   * Gets a handle for a class method.
+   * Gets a handle for a class' public instance method.
    *
    * @param holderClass a class
    * @param methodName a method name
@@ -115,7 +115,7 @@ public final class MinecraftReflection {
   }
 
   /**
-   * Gets a handle for a class method.
+   * Gets a handle for a class' public static method.
    *
    * @param holderClass a class
    * @param methodName a method name
@@ -137,7 +137,7 @@ public final class MinecraftReflection {
   }
 
   /**
-   * Gets whether a class has a method.
+   * Gets whether a class has a field.
    *
    * @param holderClass a class
    * @param name a method name
@@ -178,7 +178,7 @@ public final class MinecraftReflection {
   }
 
   /**
-   * Gets a handle for a class constructor.
+   * Gets a handle for a class' public constructor.
    *
    * @param holderClass a class
    * @param parameterClasses an array of method parameter classes
@@ -420,6 +420,8 @@ public final class MinecraftReflection {
 
   /**
    * Gets the singleton method handle lookup.
+   *
+   * <p>This lookup only has access to public elements.</p>
    *
    * @return the method handle lookup
    */
