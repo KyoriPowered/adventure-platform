@@ -23,13 +23,12 @@
  */
 package net.kyori.adventure.platform.facet;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Facet utilities and logging pipeline.
@@ -40,17 +39,19 @@ public final class Knob {
   private Knob() {
   }
 
-  private static final String NAMESPACE = "net.kyo".concat("ri.adventure"); // Concat is used to trick package relocations
+  private static final String NAMESPACE =
+    "net.kyo".concat("ri.adventure"); // Concat is used to trick package relocations
   private static final boolean DEBUG = isEnabled("debug", false);
   private static final Set<Object> UNSUPPORTED = new CopyOnWriteArraySet<>();
 
   public static volatile Consumer<String> OUT = System.out::println;
-  public static volatile BiConsumer<String, Throwable> ERR = (message, err) -> {
-    System.err.println(message);
-    if(err != null) {
-      err.printStackTrace(System.err);
-    }
-  };
+  public static volatile BiConsumer<String, Throwable> ERR =
+    (message, err) -> {
+      System.err.println(message);
+      if(err != null) {
+        err.printStackTrace(System.err);
+      }
+    };
 
   /**
    * Gets whether a facet should be enabled.
@@ -63,7 +64,8 @@ public final class Knob {
    * @since 4.0.0
    */
   public static boolean isEnabled(final @NonNull String key, final boolean defaultValue) {
-    return System.getProperty(NAMESPACE + "." + key, Boolean.toString(defaultValue)).equalsIgnoreCase("true");
+    return System.getProperty(NAMESPACE + "." + key, Boolean.toString(defaultValue))
+      .equalsIgnoreCase("true");
   }
 
   /**
@@ -74,7 +76,10 @@ public final class Knob {
    * @param arguments an array of arguments
    * @since 4.0.0
    */
-  public static void logError(final @Nullable Throwable error, final @NonNull String format, final @NonNull Object... arguments) {
+  public static void logError(
+    final @Nullable Throwable error,
+    final @NonNull String format,
+    final @NonNull Object... arguments) {
     if(DEBUG) {
       ERR.accept(String.format(format, arguments), error);
     }

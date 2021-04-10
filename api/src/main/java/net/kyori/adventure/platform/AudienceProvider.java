@@ -23,11 +23,12 @@
  */
 package net.kyori.adventure.platform;
 
+import java.util.UUID;
+import java.util.function.ToIntFunction;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.UUID;
 
 /**
  * A provider for creating {@link Audience}s.
@@ -103,8 +104,8 @@ public interface AudienceProvider extends AutoCloseable {
    *
    * <p>The audience is dynamically updated as players join and leave.</p>
    *
-   * <p>World identifiers were introduced in Minecraft 1.16. On older game instances,
-   * worlds will be assigned the {@link Key} {@code minecraft:<world name>}</p>
+   * <p>World identifiers were introduced in Minecraft 1.16. On older game instances, worlds will be
+   * assigned the {@link Key} {@code minecraft:<world name>}</p>
    *
    * @param world identifier for a world
    * @return the world's audience
@@ -130,4 +131,45 @@ public interface AudienceProvider extends AutoCloseable {
    */
   @Override
   void close();
+
+  /**
+   * A builder for {@link AudienceProvider}.
+   *
+   * @since 4.5.0
+   */
+  interface Builder<P extends AudienceProvider, B extends Builder<P, B>> {
+    /**
+     * Sets the component renderer for the provider.
+     *
+     * @param componentRenderer a component renderer
+     * @return this builder
+     * @since 4.5.0
+     */
+    @NonNull B componentRenderer(final @NonNull ComponentRenderer<AudienceIdentity> componentRenderer);
+
+    /**
+     * Sets the partition function for the provider.
+     *
+     * <p>Determines how to group audiences together, for optimization purposes. This will depend on
+     * the logic of {@link #componentRenderer(ComponentRenderer)}. For example, if the renderer only
+     * checks the audience's locale, then the partition function should return the hashCode of the
+     * locale.</p>
+     *
+     * <p>When in doubt, do not set this since the default partition will always work.</p>
+     *
+     * @param partitionFunction a partition function
+     * @return this builder
+     * @since 4.5.0
+     */
+    @NonNull B partitionBy(final @NonNull ToIntFunction<AudienceIdentity> partitionFunction);
+
+    /**
+     * Builds the provider.
+     *
+     * @return the built provider
+     * @since 4.5.0
+     */
+    @NonNull
+    P build();
+  }
 }

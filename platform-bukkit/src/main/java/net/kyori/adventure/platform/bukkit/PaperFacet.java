@@ -23,6 +23,8 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
@@ -32,9 +34,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Method;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logError;
@@ -84,7 +83,7 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public com.destroystokyo.paper.@NonNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
+    public com.destroystokyo.paper.@NonNull Title createTitle(final BaseComponent @Nullable [] title, final BaseComponent @Nullable [] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       final com.destroystokyo.paper.Title.Builder builder = com.destroystokyo.paper.Title.builder();
 
       if(title != null) builder.title(title);

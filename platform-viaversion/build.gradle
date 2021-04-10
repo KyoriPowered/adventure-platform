@@ -1,5 +1,3 @@
-import org.gradle.api.publish.maven.MavenPublication
-
 dependencies {
   compileOnlyApi 'us.myles:viaversion-common:3.0.0'
   implementation project(':adventure-platform-facet')

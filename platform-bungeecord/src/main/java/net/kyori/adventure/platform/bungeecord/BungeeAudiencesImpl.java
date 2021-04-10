@@ -24,30 +24,30 @@
 package net.kyori.adventure.platform.bungeecord;
 
 import com.google.gson.Gson;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.ToIntFunction;
+import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.key.Key;
+import net.kyori.adventure.platform.AudienceIdentity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.event.SettingsChangedEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Level;
 
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logError;
@@ -73,22 +73,25 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
 
   private static final Map<String, BungeeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
-  static BungeeAudiences instanceFor(final @NonNull Plugin plugin) {
-    requireNonNull(plugin, "plugin");
-    return INSTANCES.computeIfAbsent(plugin.getDescription().getName(), name -> new BungeeAudiencesImpl(plugin));
+  static @NonNull BungeeAudiences instanceFor(final @NonNull Plugin plugin) {
+    return builder(plugin).build();
+  }
+
+  static @NonNull Builder builder(final @NonNull Plugin plugin) {
+    return new Builder(plugin);
   }
 
   private final Plugin plugin;
   private final Listener listener;
 
-  BungeeAudiencesImpl(final Plugin plugin) {
+  BungeeAudiencesImpl(final Plugin plugin, final @NonNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NonNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    super(componentRenderer, partitionFunction);
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
     this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);
 
     final CommandSender console = this.plugin.getProxy().getConsole();
     this.addViewer(console);
-    this.changeViewer(console, Locale.getDefault());
 
     for(final ProxiedPlayer player : this.plugin.getProxy().getPlayers()) {
       this.addViewer(player);
@@ -100,7 +103,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   public Audience sender(final @NonNull CommandSender sender) {
     if(sender instanceof ProxiedPlayer) {
       return this.player((ProxiedPlayer) sender);
-    } else if(this.isConsole(sender)) {
+    } else if(ProxyServer.getInstance().getConsole().equals(sender)) {
       return this.console();
     }
     return this.createAudience(Collections.singletonList(sender));
@@ -113,46 +116,54 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   }
 
   @Override
-  protected @Nullable UUID hasId(final @NonNull CommandSender viewer) {
-    if(viewer instanceof ProxiedPlayer) {
-      return ((ProxiedPlayer) viewer).getUniqueId();
-    }
-    return null;
-  }
-
-  @Override
-  protected boolean isConsole(final @NonNull CommandSender viewer) {
-    return ProxyServer.getInstance().getConsole().equals(viewer);
-  }
-
-  @Override
-  protected boolean hasPermission(final @NonNull CommandSender viewer, final @NonNull String permission) {
-    return viewer.hasPermission(permission);
-  }
-
-  @Override
-  protected boolean isInWorld(final @NonNull CommandSender viewer, final @NonNull Key world) {
-    return false;
-  }
-
-  @Override
-  protected boolean isOnServer(final @NonNull CommandSender viewer, final @NonNull String server) {
-    if(viewer instanceof ProxiedPlayer) {
-      return ((ProxiedPlayer) viewer).getServer().getInfo().getName().equals(server);
-    }
-    return false;
+  protected @NonNull AudienceIdentity createIdentity(final @NonNull CommandSender viewer) {
+    return new BungeeIdentity(viewer);
   }
 
   @NonNull
   @Override
   protected BungeeAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
-    return new BungeeAudience(viewers);
+    return new BungeeAudience(this, viewers);
   }
 
   @Override
   public void close() {
     this.plugin.getProxy().getPluginManager().unregisterListener(this.listener);
     super.close();
+  }
+
+  static final class Builder implements BungeeAudiences.Builder {
+    private final @NonNull Plugin plugin;
+    private @MonotonicNonNull ComponentRenderer<AudienceIdentity> componentRenderer;
+    private @MonotonicNonNull ToIntFunction<AudienceIdentity> partitionFunction;
+
+    Builder(final @NonNull Plugin plugin) {
+      this.plugin = requireNonNull(plugin, "plugin");
+      this.componentRenderer(new ComponentRenderer<AudienceIdentity>() {
+        @Override
+        public @NonNull Component render(final @NonNull Component component, final @NonNull AudienceIdentity context) {
+          return GlobalTranslator.render(component, context.locale());
+        }
+      });
+      this.partitionBy(context -> context.locale().hashCode());
+    }
+
+    @Override
+    public @NonNull Builder componentRenderer(final @NonNull ComponentRenderer<AudienceIdentity> componentRenderer) {
+      this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+      return this;
+    }
+
+    @Override
+    public @NonNull Builder partitionBy(final @NonNull ToIntFunction<AudienceIdentity> partitionFunction) {
+      this.partitionFunction = requireNonNull(partitionFunction, "partition function");
+      return this;
+    }
+
+    @Override
+    public @NonNull BungeeAudiences build() {
+      return INSTANCES.computeIfAbsent(this.plugin.getDescription().getName(), name -> new BungeeAudiencesImpl(this.plugin, this.componentRenderer, this.partitionFunction));
+    }
   }
 
   public final class Listener implements net.md_5.bungee.api.plugin.Listener {
@@ -164,11 +175,6 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
     public void onDisconnect(final PlayerDisconnectEvent event) {
       BungeeAudiencesImpl.this.removeViewer(event.getPlayer());
-    }
-
-    @EventHandler(priority = Byte.MAX_VALUE /* after EventPriority.HIGHEST */)
-    public void onSettingsChanged(final SettingsChangedEvent event) {
-      BungeeAudiencesImpl.this.changeViewer(event.getPlayer(), event.getPlayer().getLocale());
     }
   }
 }

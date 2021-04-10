@@ -23,14 +23,13 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.function.Predicate;
 
 /**
  * An audience provider for {@link org.bukkit.Bukkit}.
@@ -50,6 +49,19 @@ public interface BukkitAudiences extends AudienceProvider {
    */
   static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
     return BukkitAudiencesImpl.instanceFor(plugin);
+  }
+
+  /**
+   * Creates an audience provider builder for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin
+   * @return an audience provider
+   * @since 4.5.0
+   */
+  static @NonNull Builder builder(final @NonNull Plugin plugin) {
+    return BukkitAudiencesImpl.builder(plugin);
   }
 
   /**
@@ -78,5 +90,13 @@ public interface BukkitAudiences extends AudienceProvider {
    * @since 4.0.0
    */
   @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
+
+  /**
+   * A builder for {@link BukkitAudiences}.
+   *
+   * @since 4.5.0
+   */
+  interface Builder extends AudienceProvider.Builder<BukkitAudiences, Builder> {
+  }
 }
 

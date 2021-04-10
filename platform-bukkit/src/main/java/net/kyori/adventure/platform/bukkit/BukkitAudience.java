@@ -23,21 +23,19 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.util.Collection;
+import java.util.function.Function;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
+import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.viaversion.ViaFacet;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.data.UserConnection;
-
-import java.util.Collection;
-import java.util.Locale;
-import java.util.function.Function;
 
 final class BukkitAudience extends FacetAudience<CommandSender> {
   static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
@@ -81,8 +79,8 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
 
   private final @NonNull Plugin plugin;
 
-  BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
-    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
+  BukkitAudience(final @NonNull Plugin plugin, final FacetAudienceProvider<?, ?> provider, final @NonNull Collection<CommandSender> viewers) {
+    super(provider, viewers, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
     this.plugin = plugin;
   }
 

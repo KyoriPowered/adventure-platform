@@ -23,13 +23,6 @@
  */
 package net.kyori.adventure.platform.facet;
 
-import net.kyori.adventure.audience.MessageType;
-import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.sound.SoundStop;
-import net.kyori.adventure.text.Component;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Collection;
@@ -38,6 +31,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.sound.SoundStop;
+import net.kyori.adventure.text.Component;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.platform.facet.Knob.logMessage;
@@ -60,7 +59,8 @@ public interface Facet<V> {
    * @since 4.0.0
    */
   @SafeVarargs
-  static <V, F extends Facet<? extends V>> @NonNull Collection<F> of(final @NonNull Supplier<F>... suppliers) {
+  static <V, F extends Facet<? extends V>> @NonNull Collection<F> of(
+    final @NonNull Supplier<F>... suppliers) {
     final List<F> facets = new LinkedList<>();
     for(final Supplier<F> supplier : suppliers) {
       final F facet;
@@ -93,7 +93,8 @@ public interface Facet<V> {
    * @return a facet or {@code null} if none are applicable
    * @since 4.0.0
    */
-  static <V, F extends Facet<V>> @Nullable F of(final @Nullable Collection<F> facets, final @Nullable V viewer) {
+  static <V, F extends Facet<V>> @Nullable F of(
+    final @Nullable Collection<F> facets, final @Nullable V viewer) {
     if(facets == null || viewer == null) return null;
     for(final F facet : facets) {
       try {
@@ -154,7 +155,8 @@ public interface Facet<V> {
      * @return a message or {@code null}
      * @since 4.0.0
      */
-    @Nullable M createMessage(final @NonNull V viewer, final @NonNull Component message);
+    @Nullable
+    M createMessage(final @NonNull V viewer, final @NonNull Component message);
   }
 
   /**
@@ -174,7 +176,11 @@ public interface Facet<V> {
      * @param type a message type
      * @since 4.0.0
      */
-    void sendMessage(final @NonNull V viewer, final @NonNull Identity source, final @NonNull M message, final @NonNull MessageType type);
+    void sendMessage(
+      final @NonNull V viewer,
+      final @NonNull Identity source,
+      final @NonNull M message,
+      final @NonNull MessageType type);
   }
 
   /**
@@ -248,7 +254,13 @@ public interface Facet<V> {
      * @return a title or {@code null}
      * @since 4.0.0
      */
-    @Nullable T createTitle(final @Nullable M title, final @Nullable M subTitle, final int inTicks, final int stayTicks, final int outTicks);
+    @Nullable
+    T createTitle(
+      final @Nullable M title,
+      final @Nullable M subTitle,
+      final int inTicks,
+      final int stayTicks,
+      final int outTicks);
 
     /**
      * Shows a title.
@@ -329,7 +341,8 @@ public interface Facet<V> {
      * @return a position or {@code null} if cannot be found
      * @since 4.0.0
      */
-    @Nullable P createPosition(final @NonNull V viewer);
+    @Nullable
+    P createPosition(final @NonNull V viewer);
 
     /**
      * Creates a position.
@@ -340,7 +353,8 @@ public interface Facet<V> {
      * @return a position
      * @since 4.0.0
      */
-    @NonNull P createPosition(final double x, final double y, final double z);
+    @NonNull
+    P createPosition(final double x, final double y, final double z);
   }
 
   /**
@@ -359,7 +373,10 @@ public interface Facet<V> {
      * @param position a position
      * @since 4.0.0
      */
-    void playSound(final @NonNull V viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull P position);
+    void playSound(
+      final @NonNull V viewer,
+      final net.kyori.adventure.sound.@NonNull Sound sound,
+      final @NonNull P position);
 
     /**
      * Stops a sound.
@@ -389,7 +406,8 @@ public interface Facet<V> {
      * @return a book or {@code null}
      * @since 4.0.0
      */
-    @Nullable B createBook(final @NonNull M title, final @NonNull M author, final @NonNull Iterable<M> pages);
+    @Nullable
+    B createBook(final @NonNull M title, final @NonNull M author, final @NonNull Iterable<M> pages);
 
     /**
      * Opens a book.
@@ -426,7 +444,8 @@ public interface Facet<V> {
        * @return a boss bar
        * @since 4.0.0
        */
-      @NonNull B createBossBar(final @NonNull Collection<V> viewer);
+      @NonNull
+      B createBossBar(final @NonNull Collection<V> viewer);
     }
 
     /**
@@ -549,7 +568,10 @@ public interface Facet<V> {
      * @return an ordinal
      * @since 4.0.0
      */
-    default byte createFlag(final byte flagBit, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+    default byte createFlag(
+      final byte flagBit,
+      final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded,
+      final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
       byte bit = flagBit;
       for(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag : flagsAdded) {
         if(flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN) {
@@ -592,12 +614,18 @@ public interface Facet<V> {
     int INVULNERABLE_TICKS = 890;
 
     @Override
-    default void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldProgress, final float newProgress) {
+    default void bossBarProgressChanged(
+      final net.kyori.adventure.bossbar.@NonNull BossBar bar,
+      final float oldProgress,
+      final float newProgress) {
       this.health(newProgress);
     }
 
     @Override
-    default void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+    default void bossBarNameChanged(
+      final net.kyori.adventure.bossbar.@NonNull BossBar bar,
+      final @NonNull Component oldName,
+      final @NonNull Component newName) {
       this.name(newName);
     }
 

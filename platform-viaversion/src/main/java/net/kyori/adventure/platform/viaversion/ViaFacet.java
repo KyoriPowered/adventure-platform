@@ -23,6 +23,13 @@
  */
 package net.kyori.adventure.platform.viaversion;
 
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
@@ -39,17 +46,9 @@ import us.myles.ViaVersion.api.protocol.ProtocolRegistry;
 import us.myles.ViaVersion.api.type.Type;
 import us.myles.ViaVersion.protocols.base.ProtocolInfo;
 
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import static net.kyori.adventure.platform.facet.Knob.logError;
-import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson;
 import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.colorDownsamplingGson;
+import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson;
 
 // Non-API
 @SuppressWarnings({"checkstyle:FilteringWriteTag", "checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})

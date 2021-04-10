@@ -23,6 +23,9 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Function;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
@@ -44,10 +47,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.Via;
 import us.myles.ViaVersion.api.data.UserConnection;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Function;
-
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
@@ -64,9 +63,8 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       super(viewerClass);
     }
 
-    @NonNull
     @Override
-    public String createMessage(final @NonNull V viewer, final @NonNull Component message) {
+    public @NonNull String createMessage(final @NonNull V viewer, final @NonNull Component message) {
       return legacy().serialize(message);
     }
   }
@@ -87,15 +85,13 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       super(Player.class);
     }
 
-    @NonNull
     @Override
-    public Vector createPosition(final @NonNull Player viewer) {
+    public @NonNull Vector createPosition(final @NonNull Player viewer) {
       return viewer.getLocation().toVector();
     }
 
-    @NonNull
     @Override
-    public Vector createPosition(final double x, final double y, final double z) {
+    public @NonNull Vector createPosition(final double x, final double y, final double z) {
       return new Vector(x, y, z);
     }
   }

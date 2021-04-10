@@ -23,12 +23,11 @@
  */
 package net.kyori.adventure.text.serializer.craftbukkit;
 
+import com.google.common.annotations.Beta;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-
-import com.google.common.annotations.Beta;
 import org.bukkit.Bukkit;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

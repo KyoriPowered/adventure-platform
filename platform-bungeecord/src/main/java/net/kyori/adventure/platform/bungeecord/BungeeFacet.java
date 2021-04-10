@@ -23,6 +23,10 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
@@ -38,14 +42,9 @@ import net.md_5.bungee.chat.ComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.get;
+import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
 
 class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   static final BaseComponent[] EMPTY_COMPONENT_ARRAY = new BaseComponent[0];
@@ -65,12 +64,12 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public BaseComponent @NonNull[] createMessage(final @NonNull CommandSender viewer, final @NonNull Component message) {
+    public BaseComponent@NonNull[] createMessage(final @NonNull CommandSender viewer, final @NonNull Component message) {
       return legacy().serialize(message);
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final BaseComponent@NonNull[] message, final @NonNull MessageType type) {
       viewer.sendMessage(message);
     }
   }
@@ -81,7 +80,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public BaseComponent @NonNull[] createMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Component message) {
+    public BaseComponent@NonNull[] createMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Component message) {
       if(viewer.getPendingConnection().getVersion() >= PROTOCOL_HEX_COLOR) {
         return get().serialize(message);
       } else {
@@ -102,7 +101,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Identity source, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Identity source, final BaseComponent@NonNull[] message, final @NonNull MessageType type) {
       final ChatMessageType chat = this.createType(type);
       if(chat != null) {
         viewer.sendMessage(chat, message);
@@ -112,7 +111,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
 
   static class ActionBar extends Message implements Facet.ActionBar<ProxiedPlayer, BaseComponent[]> {
     @Override
-    public void sendMessage(final @NonNull ProxiedPlayer viewer, final BaseComponent @NonNull[] message) {
+    public void sendMessage(final @NonNull ProxiedPlayer viewer, final BaseComponent@NonNull[] message) {
       viewer.sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }
@@ -122,7 +121,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     private static final net.md_5.bungee.api.Title RESET = ProxyServer.getInstance().createTitle().reset();
 
     @Override
-    public net.md_5.bungee.api.@NonNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
+    public net.md_5.bungee.api.@NonNull Title createTitle(final BaseComponent@Nullable[] title, final BaseComponent@Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       final net.md_5.bungee.api.Title builder = ProxyServer.getInstance().createTitle();
 
       if(title != null) builder.title(title);
