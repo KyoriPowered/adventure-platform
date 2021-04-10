@@ -29,12 +29,10 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.pointer.Pointers;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -44,6 +42,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
+import net.kyori.adventure.platform.AudienceIdentity;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
 
 import static java.util.Objects.requireNonNull;
 
@@ -54,7 +55,11 @@ import static java.util.Objects.requireNonNull;
  * @param <A> the audience type
  * @since 4.0.0
  */
-public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> implements AudienceProvider, ForwardingAudience {
+public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
+  implements AudienceProvider, ForwardingAudience {
+  protected final ComponentRenderer<AudienceIdentity> componentRenderer;
+  protected final ToIntFunction<AudienceIdentity> partitionFunction;
+
   private final Audience console;
   private final Audience player;
   private final Map<V, A> viewers;
@@ -63,12 +68,9 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   private final A empty;
   private volatile boolean closed;
 
-  /**
-   * Create a new empty provider.
-   *
-   * @since 4.0.0
-   */
-  protected FacetAudienceProvider() {
+  protected FacetAudienceProvider(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+    this.partitionFunction = requireNonNull(partitionFunction, "partition function");
     this.viewers = new ConcurrentHashMap<>();
     this.players = new ConcurrentHashMap<>();
     this.consoles = new CopyOnWriteArraySet<>();
@@ -101,12 +103,14 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    */
   public void addViewer(final @NotNull V viewer) {
     if(this.closed) return;
-    final A audience = this.viewers.computeIfAbsent(requireNonNull(viewer, "viewer"),
-      v -> this.createAudience(Collections.singletonList(v)));
-    final UUID playerId = this.hasId(viewer);
-    if(playerId != null) {
-      this.players.putIfAbsent(playerId, audience);
-    } else if(this.isConsole(viewer)) {
+    final AudienceIdentity identity = this.createIdentity(viewer);
+    final A audience =
+      this.viewers.computeIfAbsent(
+        requireNonNull(viewer, "viewer"),
+        v -> this.createAudience(Collections.singletonList(v)));
+    if(identity.player()) {
+      this.players.putIfAbsent(identity.uuid(), audience);
+    } else if(identity.console()) {
       this.consoles.add(audience);
     }
   }
@@ -120,71 +124,37 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   public void removeViewer(final @NotNull V viewer) {
     final A audience = this.viewers.remove(viewer);
     if(audience == null) return;
-    final UUID playerId = this.hasId(viewer);
-    if(playerId != null) {
-      this.players.remove(playerId);
-    } else if(this.isConsole(viewer)) {
+    final AudienceIdentity identity = audience.identity();
+    if(identity.player()) {
+      this.players.remove(identity.uuid());
+    } else if(identity.console()) {
       this.consoles.remove(audience);
     }
     audience.close();
   }
 
   /**
-   * Changes a viewer's locale.
+   * Refreshes a viewer's metadata.
+   *
+   * <p>Should be called after a viewer changes their locale, world, server, etc.</p>
    *
    * @param viewer a viewer
-   * @param locale a locale
-   * @since 4.0.0
+   * @since 4.5.0
    */
-  public void changeViewer(final @NotNull V viewer, final @NotNull Locale locale) {
+  public void refreshViewer(final @NotNull V viewer) {
     final A audience = this.viewers.get(viewer);
     if(audience != null) {
-      audience.changeLocale(locale);
+      audience.refresh();
     }
   }
 
   /**
-   * Gets the {@link UUID} of a viewer, if they are a player.
+   * Creates an audience identity for a viewer.
    *
    * @param viewer a viewer
-   * @return a player id or {@code null} if not a player
+   * @return an audience identity
    */
-  protected abstract @Nullable UUID hasId(final @NotNull V viewer);
-
-  /**
-   * Gets whether a viewer is considered console.
-   *
-   * @param viewer a viewer
-   * @return if the viewer is console
-   */
-  protected abstract boolean isConsole(final @NotNull V viewer);
-
-  /**
-   * Gets whether a viewer has permission.
-   *
-   * @param viewer a viewer
-   * @param permission a permission node
-   * @return if the viewer has permission
-   */
-  protected abstract boolean hasPermission(final @NotNull V viewer, final @NotNull String permission);
-
-  /**
-   * Gets whether a viewer is in a world.
-   *
-   * @param viewer a viewer
-   * @param world a world name
-   * @return if the viewer is in the world
-   */
-  protected abstract boolean isInWorld(final @NotNull V viewer, final @NotNull Key world);
-
-  /**
-   * Gets whether a viewer is on a server.
-   *
-   * @param viewer a viewer
-   * @param server a server name
-   * @return if the viewer is on the server
-   */
-  protected abstract boolean isOnServer(final @NotNull V viewer, final @NotNull String server);
+  protected abstract @NotNull AudienceIdentity createIdentity(final @NotNull V viewer);
 
   /**
    * Creates an audience for a collection of viewers.
@@ -227,22 +197,32 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    * @since 4.0.0
    */
   public @NotNull Audience filter(final @NotNull Predicate<V> predicate) {
-    return Audience.audience(filter(this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
+    return Audience.audience(
+      filter(
+        this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
+  }
+
+  private @NotNull Audience filterIdentity(final @NotNull Predicate<AudienceIdentity> predicate) {
+    return Audience.audience(
+      filter(
+        this.viewers.entrySet(),
+        entry -> predicate.test(entry.getValue().identity()),
+        Map.Entry::getValue));
   }
 
   @Override
   public @NotNull Audience permission(final @NotNull String permission) {
-    return this.filter(viewer -> this.hasPermission(viewer, permission));
+    return this.filterIdentity(identity -> identity.permission(permission));
   }
 
   @Override
   public @NotNull Audience world(final @NotNull Key world) {
-    return this.filter(viewer -> this.isInWorld(viewer, world));
+    return this.filterIdentity(identity -> world.value().equals(identity.world()));
   }
 
   @Override
   public @NotNull Audience server(final @NotNull String serverName) {
-    return this.filter(viewer -> this.isOnServer(viewer, serverName));
+    return this.filterIdentity(identity -> serverName.equals(identity.server()));
   }
 
   @Override
@@ -256,12 +236,11 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   /**
    * Return a live filtered view of the input {@link Iterable}.
    *
-   * <p>Only elements that match {@code filter} will be returned
-   * by {@linkplain Iterator Iterators} provided.</p>
+   * <p>Only elements that match {@code filter} will be returned by {@linkplain Iterator Iterators}
+   * provided.</p>
    *
-   * <p>Because this is a <em>live</em> view, any changes to the state of
-   * the parent {@linkplain Iterable} will be reflected in iterations over
-   * the return value.</p>
+   * <p>Because this is a <em>live</em> view, any changes to the state of the parent
+   * {@linkplain Iterable} will be reflected in iterations over the return value.</p>
    *
    * @param input The source iterator
    * @param filter predicate to filter on

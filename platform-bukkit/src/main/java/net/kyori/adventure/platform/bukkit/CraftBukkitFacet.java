@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.bukkit;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -84,9 +83,9 @@ import static java.lang.invoke.MethodType.methodType;
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
+import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findConstructor;
-import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findCraftClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findEnum;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findField;

@@ -40,17 +40,19 @@ public final class Knob {
   private Knob() {
   }
 
-  private static final String NAMESPACE = "net.kyo".concat("ri.adventure"); // Concat is used to trick package relocations
+  private static final String NAMESPACE =
+    "net.kyo".concat("ri.adventure"); // Concat is used to trick package relocations
   private static final boolean DEBUG = isEnabled("debug", false);
   private static final Set<Object> UNSUPPORTED = new CopyOnWriteArraySet<>();
 
   public static volatile Consumer<String> OUT = System.out::println;
-  public static volatile BiConsumer<String, Throwable> ERR = (message, err) -> {
-    System.err.println(message);
-    if(err != null) {
-      err.printStackTrace(System.err);
-    }
-  };
+  public static volatile BiConsumer<String, Throwable> ERR =
+    (message, err) -> {
+      System.err.println(message);
+      if(err != null) {
+        err.printStackTrace(System.err);
+      }
+    };
 
   /**
    * Gets whether a facet should be enabled.
@@ -63,7 +65,8 @@ public final class Knob {
    * @since 4.0.0
    */
   public static boolean isEnabled(final @NotNull String key, final boolean defaultValue) {
-    return System.getProperty(NAMESPACE + "." + key, Boolean.toString(defaultValue)).equalsIgnoreCase("true");
+    return System.getProperty(NAMESPACE + "." + key, Boolean.toString(defaultValue))
+      .equalsIgnoreCase("true");
   }
 
   /**

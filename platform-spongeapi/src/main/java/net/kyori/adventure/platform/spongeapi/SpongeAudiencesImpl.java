@@ -23,12 +23,22 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.ToIntFunction;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.platform.AudienceIdentity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
@@ -41,23 +51,12 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.EventManager;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.entity.living.humanoid.player.PlayerChangeClientSettingsEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.channel.MessageReceiver;
-import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.World;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
@@ -75,7 +74,11 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   static SpongeAudiences instanceFor(final @NotNull PluginContainer plugin, final @NotNull Game game) {
     requireNonNull(plugin, "plugin");
     requireNonNull(game, "game");
-    return INSTANCES.computeIfAbsent(plugin.getId(), id -> new SpongeAudiencesImpl(plugin, game));
+    return builder(plugin, game).build();
+  }
+
+  static Builder builder(final @NotNull PluginContainer plugin, final @NotNull Game game) {
+    return new Builder(plugin, game);
   }
 
   private final Game game;
@@ -83,7 +86,8 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final EventListener eventListener;
 
   @Inject
-  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game) {
+  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    super(componentRenderer, partitionFunction);
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
@@ -111,7 +115,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     } else if(receiver instanceof CommandBlock) {
       return Audience.empty();
     }
-    return new SpongeAudience(Collections.singletonList(receiver));
+    return new SpongeAudience(this, Collections.singletonList(receiver));
   }
 
   @NotNull
@@ -121,49 +125,55 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   }
 
   @Override
-  protected @Nullable UUID hasId(final @NotNull MessageReceiver viewer) {
-    if(viewer instanceof Player) {
-      return ((Player) viewer).getUniqueId();
-    }
-    return null;
+  protected @NotNull AudienceIdentity createIdentity(final @NotNull MessageReceiver viewer) {
+    return new SpongeIdentity(viewer);
   }
 
-  @Override
-  protected boolean isConsole(final @NotNull MessageReceiver viewer) {
-    return viewer instanceof ConsoleSource;
-  }
-
-  @Override
-  protected boolean hasPermission(final @NotNull MessageReceiver viewer, final @NotNull String permission) {
-    if(viewer instanceof Subject) {
-      return ((Subject) viewer).hasPermission(permission);
-    }
-    return false;
-  }
-
-  @Override
-  protected boolean isInWorld(final @NotNull MessageReceiver viewer, final @NotNull Key world) {
-    if(viewer instanceof Locatable) {
-      return ((Locatable) viewer).getWorld().getName().equals(world.value());
-    }
-    return false;
-  }
-
-  @Override
-  protected boolean isOnServer(final @NotNull MessageReceiver viewer, final @NotNull String server) {
-    return false;
-  }
-
-  @NotNull
-  @Override
   protected SpongeAudience createAudience(final @NotNull Collection<MessageReceiver> viewers) {
-    return new SpongeAudience(viewers);
+    return new SpongeAudience(this, viewers);
   }
 
   @Override
   public void close() {
     this.eventManager.unregisterListeners(this.eventListener);
     super.close();
+  }
+
+  final static class Builder implements SpongeAudiences.Builder {
+    private final @NotNull PluginContainer plugin;
+    private final @NotNull Game game;
+    private ComponentRenderer<AudienceIdentity> componentRenderer;
+    private ToIntFunction<AudienceIdentity> partitionFunction;
+
+    Builder(final @NotNull PluginContainer plugin, final @NotNull Game game) {
+      super();
+      this.plugin = requireNonNull(plugin, "plugin");
+      this.game = requireNonNull(game, "game");
+      this.componentRenderer(new ComponentRenderer<AudienceIdentity>() {
+        @Override
+        public @NotNull Component render(final @NotNull Component component, final @NotNull AudienceIdentity context) {
+          return GlobalTranslator.render(component, context.locale());
+        }
+      });
+      this.partitionBy(context -> context.locale().hashCode());
+    }
+
+    @Override
+    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer) {
+      this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+      return this;
+    }
+
+    @Override
+    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+      this.partitionFunction = requireNonNull(partitionFunction, "partition function");
+      return this;
+    }
+
+    @Override
+    public @NotNull SpongeAudiences build() {
+      return INSTANCES.computeIfAbsent(this.plugin.getId(), id -> new SpongeAudiencesImpl(this.plugin, this.game, this.componentRenderer, this.partitionFunction));
+    }
   }
 
   public final class EventListener {
@@ -175,11 +185,6 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     @Listener(order = Order.LAST)
     public void onDisconnect(final ClientConnectionEvent.@NotNull Disconnect event) {
       SpongeAudiencesImpl.this.removeViewer(event.getTargetEntity());
-    }
-
-    @Listener(order = Order.LAST)
-    public void onChangeSettings(final @NotNull PlayerChangeClientSettingsEvent event) {
-      SpongeAudiencesImpl.this.changeViewer(event.getTargetEntity(), event.getLocale());
     }
 
     @Listener

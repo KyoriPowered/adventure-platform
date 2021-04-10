@@ -25,10 +25,25 @@ package net.kyori.adventure.platform.bukkit;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.MutableGraph;
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
+import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.key.Key;
+import net.kyori.adventure.platform.AudienceIdentity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -49,19 +64,6 @@ import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
@@ -78,20 +80,23 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
   private static final Map<String, BukkitAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
+  static Builder builder(final @NotNull Plugin plugin) {
+    return new Builder(plugin);
+  }
+
   static BukkitAudiences instanceFor(final @NotNull Plugin plugin) {
-    requireNonNull(plugin, "plugin");
-    return INSTANCES.computeIfAbsent(plugin.getName(), name -> new BukkitAudiencesImpl(plugin));
+    return builder(plugin).build();
   }
 
   private final Plugin plugin;
 
-  BukkitAudiencesImpl(final @NotNull Plugin plugin) {
-    this.plugin = plugin;
+  BukkitAudiencesImpl(final @NotNull Plugin plugin, final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    super(componentRenderer, partitionFunction);
+    this.plugin = requireNonNull(plugin, "plugin");
     this.softDepend("ViaVersion");
 
     final CommandSender console = this.plugin.getServer().getConsoleSender();
     this.addViewer(console);
-    this.changeViewer(console, Locale.getDefault());
 
     for(final Player player : this.plugin.getServer().getOnlinePlayers()) {
       this.addViewer(player);
@@ -101,12 +106,11 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       this.addViewer(event.getPlayer()));
     this.registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event ->
       this.removeViewer(event.getPlayer()));
-    this.registerLocaleEvent(this::changeViewer);
+    this.registerLocaleEvent(EventPriority.MONITOR, (viewer, locale) -> this.refreshViewer(viewer));
   }
 
-  @NotNull
   @Override
-  public Audience sender(final @NotNull CommandSender sender) {
+  public @NotNull Audience sender(final @NotNull CommandSender sender) {
     if(sender instanceof Player) {
       return this.player((Player) sender);
     } else if(sender instanceof ConsoleCommandSender) {
@@ -119,47 +123,53 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
     return this.createAudience(Collections.singletonList(sender));
   }
 
-  @NotNull
   @Override
-  public Audience player(final @NotNull Player player) {
+  public @NotNull Audience player(final @NotNull Player player) {
     return this.player(player.getUniqueId());
   }
 
   @Override
-  protected @Nullable UUID hasId(final @NotNull CommandSender viewer) {
-    if(viewer instanceof Player) {
-      return ((Player) viewer).getUniqueId();
+  protected @NotNull AudienceIdentity createIdentity(final @NotNull CommandSender viewer) {
+    return new BukkitIdentity(viewer);
+  }
+
+  @Override
+  protected @NotNull BukkitAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
+    return new BukkitAudience(this.plugin, this, viewers);
+  }
+
+  static final class Builder implements BukkitAudiences.Builder {
+    private final @NotNull Plugin plugin;
+    private ComponentRenderer<AudienceIdentity> componentRenderer;
+    private ToIntFunction<AudienceIdentity> partitionFunction;
+
+    Builder(final @NotNull Plugin plugin) {
+      this.plugin = requireNonNull(plugin, "plugin");
+      this.componentRenderer(new ComponentRenderer<AudienceIdentity>() {
+        @Override
+        public @NotNull Component render(final @NotNull Component component, final @NotNull AudienceIdentity context) {
+          return GlobalTranslator.render(component, context.locale());
+        }
+      });
+      this.partitionBy(context -> context.locale().hashCode());
     }
-    return null;
-  }
 
-  @Override
-  protected boolean isConsole(final @NotNull CommandSender viewer) {
-    return viewer instanceof ConsoleCommandSender;
-  }
-
-  @Override
-  protected boolean hasPermission(final @NotNull CommandSender viewer, final @NotNull String permission) {
-    return viewer.hasPermission(permission);
-  }
-
-  @Override
-  protected boolean isInWorld(final @NotNull CommandSender viewer, final @NotNull Key world) {
-    if(viewer instanceof Player) {
-      return ((Player) viewer).getWorld().getName().equals(world.value());
+    @Override
+    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer) {
+      this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+      return this;
     }
-    return false;
-  }
 
-  @Override
-  protected boolean isOnServer(final @NotNull CommandSender viewer, final @NotNull String server) {
-    return false;
-  }
+    @Override
+    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+      this.partitionFunction = requireNonNull(partitionFunction, "partition function");
+      return this;
+    }
 
-  @NotNull
-  @Override
-  protected BukkitAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
-    return new BukkitAudience(this.plugin, viewers, null);
+    @Override
+    public @NotNull BukkitAudiences build() {
+      return INSTANCES.computeIfAbsent(this.plugin.getName(), name -> new BukkitAudiencesImpl(this.plugin, this.componentRenderer, this.partitionFunction));
+    }
   }
 
   /**
@@ -204,10 +214,10 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
    *
    * <p>Cancelled events will be ignored.</p>
    *
-   * @param type an event type
+   * @param type     an event type
    * @param priority a listener priority
    * @param callback a callback
-   * @param <T> an event type
+   * @param <T>      an event type
    */
   @SuppressWarnings("unchecked")
   private <T extends Event> void registerEvent(final @NotNull Class<T> type, final @NotNull EventPriority priority, final @NotNull Consumer<T> callback) {
@@ -221,9 +231,10 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
    * <p>Bukkit has history of multiple versions of this event, so some
    * reflection work is needed to detect the right one.</p>
    *
+   * @param priority a priority
    * @param callback a callback
    */
-  private void registerLocaleEvent(final @NotNull BiConsumer<Player, Locale> callback) {
+  private void registerLocaleEvent(final EventPriority priority, final @NotNull BiConsumer<Player, Locale> callback) {
     Class<?> eventClass = findClass("org.bukkit.event.player.PlayerLocaleChangeEvent");
     if(eventClass == null) {
       eventClass = findClass("com.destroystokyo.paper.event.player.PlayerLocaleChangeEvent");
@@ -238,7 +249,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       final Class<? extends PlayerEvent> localeEvent = (Class<? extends PlayerEvent>) eventClass;
       final MethodHandle getLocale = getMethod;
 
-      this.registerEvent(localeEvent, EventPriority.MONITOR, event -> {
+      this.registerEvent(localeEvent, priority, event -> {
         final Player player = event.getPlayer();
         final String locale;
         try {
@@ -247,7 +258,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
           logError(error, "Failed to accept %s: %s", localeEvent.getName(), player);
           return;
         }
-        callback.accept(player, toLocale(locale));
+        callback.accept(player, BukkitAudiencesImpl.toLocale(locale));
       });
     }
   }

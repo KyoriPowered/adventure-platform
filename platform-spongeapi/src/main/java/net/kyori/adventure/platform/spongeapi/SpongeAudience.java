@@ -23,15 +23,15 @@
  */
 package net.kyori.adventure.platform.spongeapi;
 
+import java.util.Collection;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
+import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
-
-import java.util.Collection;
 
 final class SpongeAudience extends FacetAudience<MessageReceiver> {
   // private static final Function<Player, UserConnection> VIA = new SpongeFacet.ViaHook();
@@ -62,7 +62,7 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
     SpongeFacet.IdentifiablePointers::new
   );
 
-  SpongeAudience(final @NotNull Collection<MessageReceiver> viewers) {
-    super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, null, BOOK, BOSS_BAR, TAB_LIST, POINTERS);
+  SpongeAudience(final FacetAudienceProvider<?, ?> provider, final @NotNull Collection<MessageReceiver> viewers) {
+    super(provider, viewers, CHAT, ACTION_BAR, TITLE, SOUND, null, BOOK, BOSS_BAR, TAB_LIST, POINTERS);
   }
 }

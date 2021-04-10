@@ -71,9 +71,8 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
       super(viewerClass);
     }
 
-    @NotNull
     @Override
-    public BaseComponent @NotNull[] createMessage(final @NotNull V viewer, final @NotNull Component message) {
+    public @NotNull BaseComponent@NotNull[] createMessage(final @NotNull V viewer, final @NotNull Component message) {
       return SERIALIZER.serialize(message);
     }
   }
@@ -149,9 +148,8 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
       return super.isSupported() && SUPPORTED;
     }
 
-    @NotNull
     @Override
-    public ItemStack createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<BaseComponent[]> pages) {
+    public @NotNull ItemStack createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<BaseComponent[]> pages) {
       final ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
       final ItemMeta meta = book.getItemMeta();
       if(meta instanceof BookMeta) {
