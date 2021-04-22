@@ -32,10 +32,10 @@ import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import us.myles.ViaVersion.api.PacketWrapper;
+import us.myles.ViaVersion.api.Via;
 import us.myles.ViaVersion.api.data.UserConnection;
 import us.myles.ViaVersion.api.protocol.ClientboundPacketType;
 import us.myles.ViaVersion.api.protocol.Protocol;
-import us.myles.ViaVersion.api.protocol.ProtocolRegistry;
 import us.myles.ViaVersion.api.type.Type;
 import us.myles.ViaVersion.protocols.base.ProtocolInfo;
 
@@ -60,7 +60,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   static {
     boolean supported = false;
     try {
-      Class.forName(PACKAGE + ".api.protocol.ProtocolRegistry");
+      Class.forName(PACKAGE + ".ViaManager");
       supported = true;
     } catch(final Throwable error) {
       // Silently fail, ViaVersion is not loaded
@@ -88,7 +88,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   @Override
   public boolean isApplicable(final @NonNull V viewer) {
     return super.isApplicable(viewer)
-      && this.minProtocol > ProtocolRegistry.SERVER_PROTOCOL
+      && this.minProtocol > Via.getAPI().getServerVersion().lowestSupportedVersion()
       && this.findProtocol(viewer) >= this.minProtocol;
   }
 
