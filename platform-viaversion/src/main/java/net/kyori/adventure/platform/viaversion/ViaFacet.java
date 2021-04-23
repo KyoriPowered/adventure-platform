@@ -60,10 +60,20 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   static {
     boolean supported = false;
     try {
+      // Check if the ViaVersion API is present
       Class.forName(PACKAGE + ".ViaManager");
       supported = true;
+
+      try {
+        // Check if the ViaVersion API is the 3.x version
+        // If it is, our integration will not be compatible. (we target 4.x)
+        Class.forName(PACKAGE + ".api.protocol.ProtocolRegistry");
+        supported = false;
+      } catch(final Throwable error) {
+        // ignore
+      }
     } catch(final Throwable error) {
-      // Silently fail, ViaVersion is not loaded
+      // ignore
     }
     SUPPORTED = supported && Knob.isEnabled("viaversion", true);
   }

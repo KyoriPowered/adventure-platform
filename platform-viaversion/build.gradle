@@ -1,7 +1,7 @@
 import org.gradle.api.publish.maven.MavenPublication
 
 dependencies {
-  compileOnlyApi 'us.myles:viaversion-common:3.3.0-21w15a'
+  compileOnlyApi 'us.myles:viaversion-api:4.0.0-21w16a'
   implementation project(':adventure-platform-facet')
   implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
