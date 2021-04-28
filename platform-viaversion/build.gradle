@@ -1,7 +1,7 @@
 import org.gradle.api.publish.maven.MavenPublication
 
 dependencies {
-  compileOnlyApi 'us.myles:viaversion-api:4.0.0-21w16a'
+  compileOnlyApi 'com.viaversion:viaversion-api:4.0.0-21w19a'
   implementation project(':adventure-platform-facet')
   implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
@@ -15,7 +15,7 @@ publishing {
       // Apply dependency hack for maven consumers
       pom.withXml() {
         asNode().dependencies.'*'.findAll() {
-          it.groupId.text() == 'us.myles'
+          it.groupId.text() == 'com.viaversion'
         }.each() {
           it.scope*.value = 'provided'
         }

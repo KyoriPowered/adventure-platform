@@ -23,6 +23,8 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.connection.UserConnection;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
@@ -41,8 +43,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import us.myles.ViaVersion.api.Via;
-import us.myles.ViaVersion.api.data.UserConnection;
 
 import java.util.Collection;
 import java.util.Set;

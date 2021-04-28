@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import com.viaversion.viaversion.api.connection.UserConnection;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
@@ -33,7 +34,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import us.myles.ViaVersion.api.data.UserConnection;
 
 import java.util.Collection;
 import java.util.Locale;
