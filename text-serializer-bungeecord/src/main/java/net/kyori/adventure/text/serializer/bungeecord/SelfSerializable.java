@@ -49,23 +49,35 @@ interface SelfSerializable {
    */
   class AdapterFactory implements TypeAdapterFactory {
 
+    static {
+      SelfSerializableTypeAdapter.class.getName(); // pre-load class
+    }
+
     @Override
     public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
       if(!SelfSerializable.class.isAssignableFrom(type.getRawType())) {
         return null;
       }
 
-      return new TypeAdapter<T>() {
-        @Override
-        public void write(final JsonWriter out, final T value) throws IOException {
-          ((SelfSerializable) value).write(out);
-        }
+      return new SelfSerializableTypeAdapter<>(type);
+    }
 
-        @Override
-        public T read(final JsonReader in) {
-          throw new UnsupportedOperationException("Cannot load values of type " + type.getRawType());
-        }
-      };
+    static class SelfSerializableTypeAdapter<T> extends TypeAdapter<T> {
+      private final TypeToken<T> type;
+
+      SelfSerializableTypeAdapter(final TypeToken<T> type) {
+        this.type = type;
+      }
+
+      @Override
+      public void write(final JsonWriter out, final T value) throws IOException {
+        ((SelfSerializable) value).write(out);
+      }
+
+      @Override
+      public T read(final JsonReader in) {
+        throw new UnsupportedOperationException("Cannot load values of type " + this.type.getType().getTypeName());
+      }
     }
   }
 }
