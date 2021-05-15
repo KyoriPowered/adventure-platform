@@ -1,12 +1,12 @@
 buildscript {
   ext {
-    indraVersion = '1.2.1'
+    indraVersion = '2.0.4'
   }
 }
 
 plugins {
   id 'net.kyori.indra' version "$indraVersion" apply false
-  id 'net.kyori.indra.publishing.sonatype' version "$indraVersion" apply false
+  id 'net.kyori.indra.publishing.sonatype' version "$indraVersion"
   id 'net.kyori.indra.license-header' version "$indraVersion" apply false
 }
 
@@ -35,7 +35,7 @@ class BukkitAnnotationsRule implements ComponentMetadataRule {
 
 subprojects {
   apply plugin: 'net.kyori.indra'
-  apply plugin: 'net.kyori.indra.publishing.sonatype'
+  apply plugin: 'net.kyori.indra.publishing'
   apply plugin: 'net.kyori.indra.checkstyle'
   apply plugin: 'net.kyori.indra.license-header'
 
@@ -57,17 +57,17 @@ subprojects {
       withModule("com.destroystokyo.paper:paper-api", BukkitAnnotationsRule)
     }
     checkstyle 'ca.stellardrift:stylecheck:0.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
   }
 
   indra {
     javaVersions {
-      testWith(8, 11, 15)
+      testWith(8, 11, 16)
     }
 
     github("KyoriPowered", "adventure-platform") {
-      ci = true
+      ci(true)
     }
     mitLicense()
 
