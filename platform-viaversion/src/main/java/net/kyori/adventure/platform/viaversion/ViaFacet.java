@@ -23,6 +23,12 @@
  */
 package net.kyori.adventure.platform.viaversion;
 
+import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.connection.UserConnection;
+import com.viaversion.viaversion.api.protocol.Protocol;
+import com.viaversion.viaversion.api.protocol.packet.ClientboundPacketType;
+import com.viaversion.viaversion.api.protocol.packet.PacketWrapper;
+import com.viaversion.viaversion.api.type.Type;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
@@ -31,13 +37,6 @@ import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import us.myles.ViaVersion.api.PacketWrapper;
-import us.myles.ViaVersion.api.Via;
-import us.myles.ViaVersion.api.data.UserConnection;
-import us.myles.ViaVersion.api.protocol.ClientboundPacketType;
-import us.myles.ViaVersion.api.protocol.Protocol;
-import us.myles.ViaVersion.api.type.Type;
-import us.myles.ViaVersion.protocols.base.ProtocolInfo;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -54,24 +53,15 @@ import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.c
 // Non-API
 @SuppressWarnings({"checkstyle:FilteringWriteTag", "checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})
 public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String> {
-  private static final String PACKAGE = "us.myles.ViaVersion";
+  private static final String PACKAGE = "com.viaversion.viaversion";
   private static final boolean SUPPORTED;
 
   static {
     boolean supported = false;
     try {
       // Check if the ViaVersion API is present
-      Class.forName(PACKAGE + ".ViaManager");
+      Class.forName(PACKAGE + ".api.ViaManager");
       supported = true;
-
-      try {
-        // Check if the ViaVersion API is the 3.x version
-        // If it is, our integration will not be compatible. (we target 4.x)
-        Class.forName(PACKAGE + ".api.protocol.ProtocolRegistry");
-        supported = false;
-      } catch(final Throwable error) {
-        // ignore
-      }
     } catch(final Throwable error) {
       // ignore
     }
@@ -109,10 +99,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   public int findProtocol(final @NonNull V viewer) {
     final UserConnection connection = this.findConnection(viewer);
     if(connection != null) {
-      final ProtocolInfo info = connection.getProtocolInfo();
-      if(info != null) {
-        return info.getProtocolVersion();
-      }
+      return connection.getProtocolInfo().getProtocolVersion();
     }
     return -1;
   }
@@ -147,8 +134,8 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
         protocolClass = (Class<? extends Protocol<?, ?, ?, ?>>) Class.forName(protocolClassName);
         packetClass = (Class<? extends ClientboundPacketType>) Class.forName(packetClassName);
         for(final ClientboundPacketType type : packetClass.getEnumConstants()) {
-          if(type.name().equals(packetName)) {
-            packetId = type.ordinal();
+          if(type.getName().equals(packetName)) {
+            packetId = type.getId();
             break;
           }
         }
@@ -170,7 +157,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     public PacketWrapper createPacket(final @NonNull V viewer) {
-      return new PacketWrapper(this.packetId, null, this.findConnection(viewer));
+      return PacketWrapper.create(this.packetId, null, this.findConnection(viewer));
     }
 
     public void sendPacket(final @NonNull PacketWrapper packet) {
