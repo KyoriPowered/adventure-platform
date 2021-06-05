@@ -89,14 +89,16 @@ import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSer
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findCraftClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findEnum;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findField;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findGetterOf;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMcClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMcClassName;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMethod;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClassName;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findSetterOf;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findStaticMethod;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needField;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.needNmsClass;
 
 class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   protected CraftBukkitFacet(final @Nullable Class<? extends V> viewerClass) {
@@ -108,7 +110,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     return super.isSupported() && SUPPORTED;
   }
 
-  private static final Class<?> CLASS_NMS_ENTITY = findNmsClass("Entity");
+  private static final Class<?> CLASS_NMS_ENTITY = findClass(
+    findNmsClassName("Entity"),
+    findMcClassName("world.entity.Entity")
+  );
   private static final Class<?> CLASS_CRAFT_ENTITY = findCraftClass("entity.CraftEntity");
   private static final MethodHandle CRAFT_ENTITY_GET_HANDLE = findMethod(CLASS_CRAFT_ENTITY, "getHandle", CLASS_NMS_ENTITY);
   static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
@@ -118,7 +123,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static {
     final Class<?> craftPlayerClass = findCraftClass("entity.CraftPlayer");
-    final Class<?> packetClass = findNmsClass("Packet");
+    final Class<?> packetClass = findClass(
+      findNmsClassName("Packet"),
+      findMcClassName("network.protocol.Packet")
+    );
 
     MethodHandle craftPlayerGetHandle = null;
     MethodHandle entityPlayerGetConnection = null;
@@ -128,10 +136,28 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         final Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
         final Class<?> entityPlayerClass = getHandleMethod.getReturnType();
         craftPlayerGetHandle = lookup().unreflect(getHandleMethod);
-        final Field playerConnectionField = entityPlayerClass.getField("playerConnection");
-        entityPlayerGetConnection = lookup().unreflectGetter(playerConnectionField);
-        final Class<?> playerConnectionClass = playerConnectionField.getType();
-        playerConnectionSendPacket = lookup().findVirtual(playerConnectionClass, "sendPacket", methodType(void.class, packetClass));
+        final Field playerConnectionField = findField(entityPlayerClass, "playerConnection", "connection");
+        Class<?> playerConnectionClass = null;
+        if(playerConnectionField != null) { // fields are named
+          entityPlayerGetConnection = lookup().unreflectGetter(playerConnectionField);
+          playerConnectionClass = playerConnectionField.getType();
+        } else { // fields are obf, let's discover the field by type
+          final Class<?> serverGamePacketListenerImpl = findClass(
+            findNmsClassName("PlayerConnection"),
+            findMcClassName("server.network.PlayerConnection"),
+            findMcClassName("server.network.ServerGamePacketListenerImpl")
+          );
+          for(final Field field : entityPlayerClass.getDeclaredFields()) {
+            final int modifiers = field.getModifiers();
+            if(Modifier.isPublic(modifiers) && !Modifier.isFinal(modifiers)) {
+              if(serverGamePacketListenerImpl == null || field.getType().equals(serverGamePacketListenerImpl)) {
+                entityPlayerGetConnection = lookup().unreflectGetter(field);
+                playerConnectionClass = field.getType();
+              }
+            }
+          }
+        }
+        playerConnectionSendPacket = findMethod(playerConnectionClass, new String[]{"sendPacket", "send"}, void.class, packetClass);
       } catch(final Throwable error) {
         logError(error, "Failed to initialize CraftBukkit sendPacket");
       }
@@ -178,8 +204,16 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = findNmsClass("IChatBaseComponent");
-  private static final @Nullable Class<?> CLASS_MESSAGE_TYPE = findNmsClass("ChatMessageType");
+  private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = findClass(
+    findNmsClassName("IChatBaseComponent"),
+    findMcClassName("network.chat.IChatBaseComponent"),
+    findMcClassName("network.chat.Component")
+  );
+  private static final @Nullable Class<?> CLASS_MESSAGE_TYPE = findClass(
+    findNmsClassName("ChatMessageType"),
+    findMcClassName("network.chat.ChatMessageType"),
+    findMcClassName("network.chat.ChatType")
+  );
   private static final @Nullable Object MESSAGE_TYPE_CHAT = findEnum(CLASS_MESSAGE_TYPE, "CHAT", 0);
   private static final @Nullable Object MESSAGE_TYPE_SYSTEM = findEnum(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
   private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = findEnum(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
@@ -193,8 +227,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     try {
       if(CLASS_CHAT_COMPONENT != null) {
-        final Class<?> chatPacketClass = needNmsClass("PacketPlayOutChat");
-        // PacketPlayOutChat constructor changed for 1.16
+        final Class<?> chatPacketClass = needClass(
+          findNmsClassName("PacketPlayOutChat"),
+          findMcClassName("network.protocol.game.PacketPlayOutChat"),
+          findMcClassName("network.protocol.game.ClientboundChatPacket")
+        );
+        // ClientboundChatPacket constructor changed for 1.16
         chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
         if(chatPacketConstructor == null) {
           if(CLASS_MESSAGE_TYPE != null) {
@@ -210,7 +248,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         }
       }
     } catch(final Throwable error) {
-      logError(error, "Failed to initialize PacketPlayOutChat constructor");
+      logError(error, "Failed to initialize ClientboundChatPacket constructor");
     }
 
     CHAT_PACKET_CONSTRUCTOR = chatPacketConstructor;
@@ -234,8 +272,14 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  private static final @Nullable Class<?> CLASS_TITLE_PACKET = findNmsClass("PacketPlayOutTitle");
-  private static final @Nullable Class<?> CLASS_TITLE_ACTION = findNmsClass("PacketPlayOutTitle$EnumTitleAction"); // welcome to spigot, where we can't name classes? i guess?
+  private static final @Nullable Class<?> CLASS_TITLE_PACKET = findClass(
+    findNmsClassName("PacketPlayOutTitle"),
+    findMcClassName("network.protocol.game.PacketPlayOutTitle")
+  );
+  private static final @Nullable Class<?> CLASS_TITLE_ACTION = findClass(
+    findNmsClassName("PacketPlayOutTitle$EnumTitleAction"), // welcome to spigot, where we can't name classes? i guess?
+    findMcClassName("network.protocol.game.PacketPlayOutTitle$EnumTitleAction")
+  );
   private static final MethodHandle CONSTRUCTOR_TITLE_MESSAGE = findConstructor(CLASS_TITLE_PACKET, CLASS_TITLE_ACTION, CLASS_CHAT_COMPONENT); // (EnumTitleAction, IChatBaseComponent)
   private static final @Nullable MethodHandle CONSTRUCTOR_TITLE_TIMES = findConstructor(CLASS_TITLE_PACKET, int.class, int.class, int.class);
   private static final @Nullable Object TITLE_ACTION_TITLE = findEnum(CLASS_TITLE_ACTION, "TITLE", 0);
@@ -243,6 +287,27 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   private static final @Nullable Object TITLE_ACTION_ACTIONBAR = findEnum(CLASS_TITLE_ACTION, "ACTIONBAR");
   private static final @Nullable Object TITLE_ACTION_CLEAR = findEnum(CLASS_TITLE_ACTION, "CLEAR");
   private static final @Nullable Object TITLE_ACTION_RESET = findEnum(CLASS_TITLE_ACTION, "RESET");
+
+  static class ActionBar_1_17 extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
+    private static final @Nullable Class<?> CLASS_SET_ACTION_BAR_TEXT_PACKET = findMcClass("network.protocol.game.ClientboundSetActionBarTextPacket");
+    private static final @Nullable MethodHandle CONSTRUCTOR_ACTION_BAR = findConstructor(CLASS_SET_ACTION_BAR_TEXT_PACKET, CLASS_CHAT_COMPONENT);
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && CONSTRUCTOR_ACTION_BAR != null;
+    }
+
+    @Nullable
+    @Override
+    public Object createMessage(final @NotNull Player viewer, final @NotNull Component message) {
+      try {
+        return CONSTRUCTOR_ACTION_BAR.invoke(super.createMessage(viewer, message));
+      } catch(final Throwable error) {
+        logError(error, "Failed to invoke PacketPlayOutTitle constructor: %s", message);
+        return null;
+      }
+    }
+  }
 
   static class ActionBar extends PacketFacet<Player> implements Facet.ActionBar<Player, Object> {
     @Override
@@ -283,20 +348,45 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class EntitySound extends PacketFacet<Player> implements Facet.EntitySound<Player, Object> {
-    private static final Class<?> CLASS_CLIENTBOUND_ENTITY_SOUND = findNmsClass("PacketPlayOutEntitySound");
-    private static final Class<?> CLASS_ENTITY = findNmsClass("Entity");
-    private static final Class<?> CLASS_REGISTRY = findNmsClass("IRegistry");
-    private static final Class<?> CLASS_RESOURCE_LOCATION = findNmsClass("MinecraftKey");
-    private static final Class<?> CLASS_SOUND_EFFECT = findNmsClass("SoundEffect");
-    private static final Class<?> CLASS_SOUND_SOURCE = findNmsClass("SoundCategory");
+    private static final Class<?> CLASS_CLIENTBOUND_ENTITY_SOUND = findClass(
+      findNmsClassName("PacketPlayOutEntitySound"),
+      findMcClassName("network.protocol.game.PacketPlayOutEntitySound"),
+      findMcClassName("network.protocol.game.ClientboundEntitySoundPacket")
+    );
+    private static final Class<?> CLASS_REGISTRY = findClass(
+      findNmsClassName("IRegistry"),
+      findMcClassName("core.IRegistry"),
+      findMcClassName("core.Registry")
+    );
+    private static final Class<?> CLASS_WRITABLE_REGISTRY = findClass(
+      findNmsClassName("IRegistryWritable"),
+      findMcClassName("core.IRegistryWritable"),
+      findMcClassName("core.WritableRegistry")
+    );
+    private static final Class<?> CLASS_RESOURCE_LOCATION = findClass(
+      findNmsClassName("MinecraftKey"),
+      findMcClassName("resources.MinecraftKey"),
+      findMcClassName("resources.ResourceLocation")
+    );
+    private static final Class<?> CLASS_SOUND_EFFECT = findClass(
+      findNmsClassName("SoundEffect"),
+      findMcClassName("sounds.SoundEffect"),
+      findMcClassName("sounds.SoundEvent")
+    );
+    private static final Class<?> CLASS_SOUND_SOURCE = findClass(
+      findNmsClassName("SoundCategory"),
+      findMcClassName("sounds.SoundCategory"),
+      findMcClassName("sounds.SoundSource")
+    );
 
-    private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_ENTITY, float.class, float.class);
+    private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class);
     private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
-    private static final MethodHandle REGISTRY_SOUND_EVENT = findGetterOf(findField(CLASS_REGISTRY, "SOUND_EVENT"));
     private static final MethodHandle REGISTRY_GET_OPTIONAL = findMethod(CLASS_REGISTRY, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
     private static final MethodHandle SOUND_SOURCE_GET_NAME;
+    private static final Object REGISTRY_SOUND_EVENT;
 
     static {
+      Object registrySoundEvent = null;
       MethodHandle soundSourceGetName = null;
       if(CLASS_SOUND_SOURCE != null) {
         for(final Method method : CLASS_SOUND_SOURCE.getDeclaredMethods()) {
@@ -315,6 +405,39 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           }
         }
       }
+      if(CLASS_REGISTRY != null) {
+        // we don't have always field names, so:
+        // first: try to find SOUND_EVENT field
+        try {
+          final Field soundEventField = findField(CLASS_REGISTRY, "SOUND_EVENT");
+          if(soundEventField != null) {
+            registrySoundEvent = soundEventField.get(null);
+          } else {
+            // then, if not found:
+            // iterate through fields, find the `protected static final` field
+            // it's IRegistryWritable, the registry root
+            // then we'll getOptional(NEW_RESOURCE_LOCATION.invoke("minecraft", "sound_event"))
+            Object rootRegistry = null;
+            for(final Field field : CLASS_REGISTRY.getDeclaredFields()) {
+              final int mask = Modifier.PROTECTED | Modifier.STATIC | Modifier.FINAL;
+              if((field.getModifiers() & mask) == mask
+                && field.getType().equals(CLASS_WRITABLE_REGISTRY)) {
+                // we've found the root registry
+                field.setAccessible(true);
+                rootRegistry = field.get(null);
+                break;
+              }
+            }
+
+            if(rootRegistry != null) {
+              registrySoundEvent = ((Optional<?>) REGISTRY_GET_OPTIONAL.invoke(rootRegistry, NEW_RESOURCE_LOCATION.invoke("minecraft", "sound_event"))).orElse(null);
+            }
+          }
+        } catch(final Throwable thr) {
+          logError(thr, "Failed to initialize EntitySound CraftBukkit facet");
+        }
+      }
+      REGISTRY_SOUND_EVENT = registrySoundEvent;
       SOUND_SOURCE_GET_NAME = soundSourceGetName;
     }
 
@@ -351,7 +474,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         final Object soundCategory = this.toVanilla(sound.source());
         if(soundCategory == null) return null;
         final Object nameRl = NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
-        final java.util.Optional<?> event = (Optional<?>) REGISTRY_GET_OPTIONAL.invoke(REGISTRY_SOUND_EVENT.invoke(), nameRl);
+        final java.util.Optional<?> event = (Optional<?>) REGISTRY_GET_OPTIONAL.invoke(REGISTRY_SOUND_EVENT, nameRl);
         if(event.isPresent()) {
           return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch());
         }
@@ -380,6 +503,76 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void playSound(final @NotNull Player viewer, final Object message) {
       this.sendPacket(viewer, message);
+    }
+  }
+
+  static class Title_1_17 extends PacketFacet<Player> implements Facet.Title<Player, Object, List<?>> {
+
+    private static final Class<?> PACKET_SET_TITLE = findMcClass("network.protocol.game.ClientboundSetTitleTextPacket");
+    private static final Class<?> PACKET_SET_SUBTITLE = findMcClass("network.protocol.game.ClientboundSetSubtitleTextPacket");
+    private static final Class<?> PACKET_SET_TITLE_ANIMATION = findMcClass("network.protocol.game.ClientboundSetTitlesAnimationPacket");
+    private static final Class<?> PACKET_CLEAR_TITLES = findMcClass("network.protocol.game.ClientboundClearTitlesPacket");
+
+    private static final MethodHandle CONSTRUCTOR_SET_TITLE = findConstructor(PACKET_SET_TITLE, CLASS_CHAT_COMPONENT);
+    private static final MethodHandle CONSTRUCTOR_SET_SUBTITLE = findConstructor(PACKET_SET_SUBTITLE, CLASS_CHAT_COMPONENT);
+    private static final MethodHandle CONSTRUCTOR_SET_TITLE_ANIMATION = findConstructor(PACKET_SET_TITLE_ANIMATION, int.class, int.class, int.class);
+    private static final MethodHandle CONSTRUCTOR_CLEAR_TITLES = findConstructor(PACKET_CLEAR_TITLES, boolean.class);
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && CONSTRUCTOR_SET_TITLE != null && CONSTRUCTOR_SET_SUBTITLE != null && CONSTRUCTOR_SET_TITLE_ANIMATION != null && CONSTRUCTOR_CLEAR_TITLES != null;
+    }
+
+    @Override
+    public @Nullable List<?> createTitle(final @Nullable Object title, final @Nullable Object subTitle, final int inTicks, final int stayTicks, final int outTicks) {
+      final List<Object> packets = new LinkedList<>();
+      try {
+        if(subTitle != null) {
+          packets.add(CONSTRUCTOR_SET_SUBTITLE.invoke(subTitle));
+        }
+        if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
+          packets.add(CONSTRUCTOR_SET_TITLE_ANIMATION.invoke(inTicks, stayTicks, outTicks));
+        }
+        if(title != null) {
+          packets.add(CONSTRUCTOR_SET_TITLE.invoke(title));
+        }
+      } catch(final Throwable error) {
+        logError(error, "Failed to invoke title packet constructors");
+      }
+      return packets;
+    }
+
+    @Override
+    public void showTitle(final @NotNull Player viewer, final @NotNull List<?> packets) {
+      for(final Object packet : packets) {
+        this.sendMessage(viewer, packet);
+      }
+    }
+
+    @Override
+    public void clearTitle(final @NotNull Player viewer) {
+      try {
+        if(CONSTRUCTOR_CLEAR_TITLES != null) {
+          this.sendPacket(viewer, CONSTRUCTOR_CLEAR_TITLES.invoke(false));
+        } else {
+          viewer.sendTitle("", "", -1, -1, -1);
+        }
+      } catch(final Throwable error) {
+        logError(error, "Failed to clear title");
+      }
+    }
+
+    @Override
+    public void resetTitle(final @NotNull Player viewer) {
+      try {
+        if(CONSTRUCTOR_CLEAR_TITLES != null) {
+          this.sendPacket(viewer, CONSTRUCTOR_CLEAR_TITLES.invoke(true));
+        } else {
+          viewer.resetTitle();
+        }
+      } catch(final Throwable error) {
+        logError(error, "Failed to clear title");
+      }
     }
   }
 
@@ -502,8 +695,16 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         .build();
     }
 
-    private static final Class<?> CLASS_NBT_TAG_COMPOUND = findNmsClass("NBTTagCompound");
-    private static final Class<?> CLASS_NBT_IO = findNmsClass("NBTCompressedStreamTools");
+    private static final Class<?> CLASS_NBT_TAG_COMPOUND = findClass(
+      findNmsClassName("NBTTagCompound"),
+      findMcClassName("nbt.CompoundTag"),
+      findMcClassName("nbt.NBTTagCompound")
+    );
+    private static final Class<?> CLASS_NBT_IO = findClass(
+      findNmsClassName("NBTCompressedStreamTools"),
+      findMcClassName("nbt.NbtIo"),
+      findMcClassName("nbt.NBTCompressedStreamTools")
+    );
     private static final MethodHandle NBT_IO_DESERIALIZE;
 
     static {
@@ -548,7 +749,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     private static final Class<?> CLASS_CRAFT_ITEMSTACK = findCraftClass("inventory.CraftItemStack");
-    private static final Class<?> CLASS_MC_ITEMSTACK = findNmsClass("ItemStack");
+    private static final Class<?> CLASS_MC_ITEMSTACK = findClass(
+      findNmsClassName("ItemStack"),
+      findMcClassName("world.item.ItemStack")
+    );
 
     private static final MethodHandle MC_ITEMSTACK_SET_TAG = findMethod(CLASS_MC_ITEMSTACK, "setTag", void.class, CLASS_NBT_TAG_COMPOUND);
     private static final MethodHandle MC_ITEMSTACK_GET_TAG = findMethod(CLASS_MC_ITEMSTACK, "getTag", CLASS_NBT_TAG_COMPOUND);
@@ -574,9 +778,17 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static final class BookPost1_13 extends AbstractBook {
-    private static final Class<?> CLASS_ENUM_HAND = findNmsClass("EnumHand");
+    private static final Class<?> CLASS_ENUM_HAND = findClass(
+      findNmsClassName("EnumHand"),
+      findMcClassName("world.EnumHand"),
+      findMcClassName("world.InteractionHand")
+    );
     private static final Object HAND_MAIN = findEnum(CLASS_ENUM_HAND, "MAIN_HAND", 0);
-    private static final Class<?> PACKET_OPEN_BOOK = findNmsClass("PacketPlayOutOpenBook");
+    private static final Class<?> PACKET_OPEN_BOOK = findClass(
+      findNmsClassName("PacketPlayOutOpenBook"),
+      findMcClassName("network.protocol.game.PacketPlayOutOpenBook"),
+      findMcClassName("network.protocol.game.ClientboundOpenBookPacket")
+    );
     private static final MethodHandle NEW_PACKET_OPEN_BOOK = findConstructor(PACKET_OPEN_BOOK, CLASS_ENUM_HAND);
 
     @Override
@@ -652,7 +864,11 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static final class BossBar extends BukkitFacet.BossBar {
     private static final Class<?> CLASS_CRAFT_BOSS_BAR = findCraftClass("boss.CraftBossBar");
-    private static final Class<?> CLASS_BOSS_BAR_ACTION = findNmsClass("PacketPlayOutBoss$Action");
+    private static final Class<?> CLASS_BOSS_BAR_ACTION = findClass(
+      findNmsClassName("PacketPlayOutBoss$Action"),
+      findMcClassName("network.protocol.game.PacketPlayOutBoss$Action"),
+      findMcClassName("network.protocol.game.ClientboundBossEventPacket$Operation")
+    );
     private static final Object BOSS_BAR_ACTION_TITLE = findEnum(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
     private static final MethodHandle CRAFT_BOSS_BAR_HANDLE;
     private static final MethodHandle NMS_BOSS_BATTLE_SET_NAME;
@@ -668,7 +884,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           final Field craftBossBarHandleField = needField(CLASS_CRAFT_BOSS_BAR, "handle");
           craftBossBarHandle = lookup().unreflectGetter(craftBossBarHandleField);
           final Class<?> nmsBossBattleType = craftBossBarHandleField.getType();
-          nmsBossBattleSetName = lookup().findSetter(nmsBossBattleType, "title", CLASS_CHAT_COMPONENT);
+          for(final Field field : nmsBossBattleType.getFields()) {
+            if(field.getType().equals(CLASS_CHAT_COMPONENT)) {
+              nmsBossBattleSetName = lookup().unreflectSetter(field);
+              break;
+            }
+          }
           nmsBossBattleSendUpdate = lookup().findVirtual(nmsBossBattleType, "sendUpdate", methodType(void.class, CLASS_BOSS_BAR_ACTION));
         } catch(final Throwable error) {
           logError(error, "Failed to initialize CraftBossBar constructor");
@@ -971,21 +1192,24 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class TabList extends PacketFacet<Player> implements Facet.TabList<Player, Object> {
-    private static final Class<?> CLIENTBOUND_TAB_LIST_PACKET = findNmsClass("PacketPlayOutPlayerListHeaderFooter");
-    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR = findConstructor(CLIENTBOUND_TAB_LIST_PACKET);
+    private static final Class<?> CLIENTBOUND_TAB_LIST_PACKET = findClass(
+      findNmsClassName("PacketPlayOutPlayerListHeaderFooter"),
+      findMcClassName("network.protocol.game.PacketPlayOutPlayerListHeaderFooter"),
+      findMcClassName("network.protocol.game.ClientboundTabListPacket")
+    );
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17 = findConstructor(CLIENTBOUND_TAB_LIST_PACKET);
+    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR = findConstructor(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, CLASS_CHAT_COMPONENT);
     // Fields added by spigot -- names stable
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_HEADER = findField(CLASS_CRAFT_PLAYER, "playerListHeader");
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_FOOTER = findField(CLASS_CRAFT_PLAYER, "playerListFooter");
 
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = first(
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "adventure$header", PaperFacet.NATIVE_COMPONENT_CLASS)),
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "header", CLASS_CHAT_COMPONENT)),
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "a", CLASS_CHAT_COMPONENT))
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, PaperFacet.NATIVE_COMPONENT_CLASS, "adventure$header")),
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, "header", "a"))
     );
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = first(
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "adventure$footer", PaperFacet.NATIVE_COMPONENT_CLASS)),
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "footer", CLASS_CHAT_COMPONENT)),
-      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, "b", CLASS_CHAT_COMPONENT))
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, PaperFacet.NATIVE_COMPONENT_CLASS, "adventure$footer")),
+      findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, "footer", "b"))
     );
 
     private static MethodHandle first(final MethodHandle... handles) {
@@ -1000,13 +1224,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public boolean isSupported() {
-      return CLIENTBOUND_TAB_LIST_PACKET_CTOR != null && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null && super.isSupported();
+      return (CLIENTBOUND_TAB_LIST_PACKET_CTOR != null || CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17 != null) && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null && super.isSupported();
     }
 
     @Override
     public void send(final Player viewer, @Nullable Object header, @Nullable Object footer) {
       try {
-        final Object packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke();
         if(CRAFT_PLAYER_TAB_LIST_HEADER != null && CRAFT_PLAYER_TAB_LIST_FOOTER != null) {
           if(header == null) {
             header = CRAFT_PLAYER_TAB_LIST_HEADER.get(viewer);
@@ -1021,8 +1244,18 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           }
         }
 
-        CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
-        CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER.invoke(packet, footer == null ? this.createMessage(viewer, Component.empty()) : footer);
+        final Object packet;
+        if(CLIENTBOUND_TAB_LIST_PACKET_CTOR != null) {
+          packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(
+            header == null ? this.createMessage(viewer, Component.empty()) : header,
+            footer == null ? this.createMessage(viewer, Component.empty()) : footer
+          );
+        } else {
+          packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17.invoke();
+          CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
+          CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER.invoke(packet, footer == null ? this.createMessage(viewer, Component.empty()) : footer);
+        }
+
         this.sendPacket(viewer, packet);
       } catch(final Throwable thr) {
         logError(thr, "Failed to send tab list header and footer to %s", viewer);

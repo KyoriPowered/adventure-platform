@@ -52,11 +52,13 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
     () -> new ViaFacet.ActionBar<>(Player.class, VIA),
     //    () -> new SpigotFacet.ActionBar(),
+    () -> new CraftBukkitFacet.ActionBar_1_17(),
     () -> new CraftBukkitFacet.ActionBar(),
     () -> new CraftBukkitFacet.ActionBarLegacy());
   private static final Collection<Facet.Title<Player, ?, ?>> TITLE = Facet.of(
     () -> new ViaFacet.Title<>(Player.class, VIA),
     // () -> new PaperFacet.Title(),
+    () -> new CraftBukkitFacet.Title_1_17(),
     () -> new CraftBukkitFacet.Title());
   private static final Collection<Facet.Sound<Player, Vector>> SOUND = Facet.of(
     () -> new BukkitFacet.SoundWithCategory(),

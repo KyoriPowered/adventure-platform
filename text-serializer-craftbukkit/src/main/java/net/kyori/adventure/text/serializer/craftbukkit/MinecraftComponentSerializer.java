@@ -42,7 +42,9 @@ import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMcClassName;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClass;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClassName;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
 
 /**
@@ -82,7 +84,11 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
   }
 
   private static final @Nullable Class<?> CLASS_JSON_DESERIALIZER = findClass("com.goo".concat("gle.gson.JsonDeserializer")); // Hide from relocation checkers
-  private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = findNmsClass("IChatBaseComponent");
+  private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = findClass(
+    findNmsClassName("IChatBaseComponent"),
+    findMcClassName("network.chat.IChatBaseComponent"),
+    findMcClassName("network.chat.Component")
+  );
   private static final AtomicReference<RuntimeException> INITIALIZATION_ERROR = new AtomicReference<>(new UnsupportedOperationException());
 
   private static final Object MC_TEXT_GSON;

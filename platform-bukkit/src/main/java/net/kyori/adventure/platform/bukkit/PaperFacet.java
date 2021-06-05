@@ -113,7 +113,7 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class TabList extends CraftBukkitFacet.TabList {
-    private static final boolean SUPPORTED = hasField(CLASS_CRAFT_PLAYER, "playerListHeader", NATIVE_COMPONENT_CLASS) && hasField(CLASS_CRAFT_PLAYER, "playerListFooter", NATIVE_COMPONENT_CLASS);
+    private static final boolean SUPPORTED = hasField(CLASS_CRAFT_PLAYER, NATIVE_COMPONENT_CLASS, "playerListHeader") && hasField(CLASS_CRAFT_PLAYER, NATIVE_COMPONENT_CLASS, "playerListFooter");
     private static final MethodHandle NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD_BOUND = createBoundNativeDeserializeMethodHandle();
 
     private static @Nullable MethodHandle createBoundNativeDeserializeMethodHandle() {

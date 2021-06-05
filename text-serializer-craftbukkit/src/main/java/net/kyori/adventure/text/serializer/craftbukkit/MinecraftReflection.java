@@ -27,9 +27,11 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import com.google.common.annotations.Beta;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +43,7 @@ import static java.util.Objects.requireNonNull;
  * <p>This is not an official API and can break at any time. You've been warned.</p>
  */
 @Beta // Causes users to see "UnstableApiUsage"
+@ApiStatus.Internal
 @SuppressWarnings("FilteringWriteTag") // NON-API, no compatibility information needs tracking
 public final class MinecraftReflection {
   private MinecraftReflection() {
@@ -48,6 +51,7 @@ public final class MinecraftReflection {
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final String PREFIX_NMS = "net.minecraft.server";
+  private static final String PREFIX_MC = "net.minecraft.";
   private static final String PREFIX_CRAFTBUKKIT = "org.bukkit.craftbukkit";
   private static final String CRAFT_SERVER = "CraftServer";
   private static final @Nullable String VERSION;
@@ -67,27 +71,43 @@ public final class MinecraftReflection {
   }
 
   /**
-   * Gets a class by its name.
+   * Gets a class by the first name available.
    *
-   * @param className a class name
+   * @param classNames an array of class names to try in order
    * @return a class or {@code null} if not found
    */
-  public static @Nullable Class<?> findClass(final @NotNull String className) {
-    try {
-      return Class.forName(className);
-    } catch(final ClassNotFoundException e) {
-      return null;
+  public static @Nullable Class<?> findClass(final @Nullable String@NotNull... classNames) {
+    for(final String clazz : classNames) {
+      if(clazz == null) continue;
+
+      try {
+        final Class<?> classObj = Class.forName(clazz);
+        return classObj;
+      } catch(final ClassNotFoundException e) {
+      }
     }
+    return null;
   }
 
   /**
-   * Gets whether a class is loaded.
+   * Gets a {@code net.minecraft} class.
    *
-   * @param className a class name
+   * @param className a class name, without the {@code net.minecraft} prefix
+   * @return a class
+   * @throws NullPointerException if the class was not found
+   */
+  public static @NotNull Class<?> needClass(final @Nullable String@NotNull... className) {
+    return requireNonNull(findClass(className), "Could not find class from candidates" + Arrays.toString(className));
+  }
+
+  /**
+   * Gets whether a class is available.
+   *
+   * @param classNames an array of class names to try in order
    * @return if the class is loaded
    */
-  public static boolean hasClass(final @NotNull String className) {
-    return findClass(className) != null;
+  public static boolean hasClass(final @NotNull String... classNames) {
+    return findClass(classNames) != null;
   }
 
   /**
@@ -100,57 +120,93 @@ public final class MinecraftReflection {
    * @return a method handle or {@code null} if not found
    */
   public static @Nullable MethodHandle findMethod(final @Nullable Class<?> holderClass, final String methodName, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
-    if(holderClass == null || returnClass == null) return null;
-    for(final Class<?> parameterClass : parameterClasses) {
-      if(parameterClass == null) return null;
-    }
-
-    try {
-      return LOOKUP.findVirtual(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
-    } catch(final NoSuchMethodException | IllegalAccessException e) {
-      return null;
-    }
+    return findMethod(holderClass, new String[] {methodName}, returnClass, parameterClasses);
   }
 
   /**
    * Gets a handle for a class method.
    *
    * @param holderClass a class
-   * @param methodName a method name
+   * @param methodNames a method name
    * @param returnClass a method return class
    * @param parameterClasses an array of method parameter classes
    * @return a method handle or {@code null} if not found
    */
-  public static @Nullable MethodHandle findStaticMethod(final @Nullable Class<?> holderClass, final String methodName, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+  public static @Nullable MethodHandle findMethod(final @Nullable Class<?> holderClass, final @Nullable String@NotNull[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
     if(holderClass == null || returnClass == null) return null;
     for(final Class<?> parameterClass : parameterClasses) {
       if(parameterClass == null) return null;
     }
 
-    try {
-      return LOOKUP.findStatic(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
-    } catch(final NoSuchMethodException | IllegalAccessException e) {
-      return null;
+    for(final String methodName : methodNames) {
+      if(methodName == null) continue;
+      try {
+        return LOOKUP.findVirtual(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
+      } catch(final NoSuchMethodException | IllegalAccessException e) {
+      }
     }
+    return null;
+  }
+
+  /**
+   * Gets a handle for a class method.
+   *
+   * @param holderClass a class
+   * @param methodNames a method name
+   * @param returnClass a method return class
+   * @param parameterClasses an array of method parameter classes
+   * @return a method handle or {@code null} if not found
+   */
+  public static @Nullable MethodHandle findStaticMethod(final @Nullable Class<?> holderClass, final String methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+    return findStaticMethod(holderClass, new String[]{methodNames}, returnClass, parameterClasses);
+
+  }
+
+  /**
+   * Gets a handle for a class method.
+   *
+   * @param holderClass a class
+   * @param methodNames a method name
+   * @param returnClass a method return class
+   * @param parameterClasses an array of method parameter classes
+   * @return a method handle or {@code null} if not found
+   */
+  public static @Nullable MethodHandle findStaticMethod(final @Nullable Class<?> holderClass, final String[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+    if(holderClass == null || returnClass == null) return null;
+    for(final Class<?> parameterClass : parameterClasses) {
+      if(parameterClass == null) return null;
+    }
+
+    for(final String methodName : methodNames) {
+      try {
+        return LOOKUP.findStatic(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
+      } catch(final NoSuchMethodException | IllegalAccessException e) {
+      }
+    }
+
+    return null;
   }
 
   /**
    * Gets whether a class has a method.
    *
    * @param holderClass a class
-   * @param name a method name
+   * @param names field name candidates, will be checked in order
    * @param type the field type
    * @return if the method exists
    */
-  public static boolean hasField(final @Nullable Class<?> holderClass, final String name, final Class<?> type) {
+  public static boolean hasField(final @Nullable Class<?> holderClass, final Class<?> type, final String... names) {
     if(holderClass == null) return false;
 
-    try {
-      final Field field = holderClass.getDeclaredField(name);
-      return field.getType() == type;
-    } catch(final NoSuchFieldException e) {
-      return false;
+    for(final String name : names) {
+      try {
+        final Field field = holderClass.getDeclaredField(name);
+        if(field.getType() == type) return true;
+      } catch(final NoSuchFieldException e) {
+        // continue
+      }
     }
+    return false;
   }
 
   /**
@@ -162,17 +218,32 @@ public final class MinecraftReflection {
    * @return if the method exists
    */
   public static boolean hasMethod(final @Nullable Class<?> holderClass, final String methodName, final Class<?>... parameterClasses) {
+    return hasMethod(holderClass, new String[] {methodName}, parameterClasses);
+  }
+
+  /**
+   * Gets whether a class has a method.
+   *
+   * @param holderClass a class
+   * @param methodNames a method name
+   * @param parameterClasses an array of method parameter classes
+   * @return if the method exists
+   */
+  public static boolean hasMethod(final @Nullable Class<?> holderClass, final String[] methodNames, final Class<?>... parameterClasses) {
     if(holderClass == null) return false;
     for(final Class<?> parameterClass : parameterClasses) {
       if(parameterClass == null) return false;
     }
 
-    try {
-      holderClass.getMethod(methodName, parameterClasses);
-      return true;
-    } catch(final NoSuchMethodException e) {
-      return false;
+    for(final String methodName : methodNames) {
+      try {
+        holderClass.getMethod(methodName, parameterClasses);
+        return true;
+      } catch(final NoSuchMethodException e) {
+      }
     }
+
+    return false;
   }
 
   /**
@@ -216,33 +287,38 @@ public final class MinecraftReflection {
    * @param fieldName a field name
    * @return an accessible field
    */
-  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NotNull String fieldName) {
-    return findField(holderClass, fieldName, null);
+  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NotNull String... fieldName) {
+    return findField(holderClass, null, fieldName);
   }
 
   /**
    * Gets a class field if it exists and is of the appropriate type and makes it accessible.
    *
    * @param holderClass a class
-   * @param fieldName a field name
+   * @param expectedType the expected type of the field
+   * @param fieldNames a field name
    * @return an accessible field
    */
-  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NotNull String fieldName, final @Nullable Class<?> expectedType) {
+  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @Nullable Class<?> expectedType, final @NotNull String... fieldNames) {
     if(holderClass == null) return null;
 
-    final Field field;
-    try {
-      field = holderClass.getDeclaredField(fieldName);
-    } catch(final NoSuchFieldException ex) {
-      return null;
+    Field field;
+    for(final String fieldName : fieldNames) {
+      try {
+        field = holderClass.getDeclaredField(fieldName);
+      } catch(final NoSuchFieldException ex) {
+        continue;
+      }
+
+      field.setAccessible(true);
+      if(expectedType != null && !expectedType.isAssignableFrom(field.getType())) {
+        continue;
+      }
+
+      return field;
     }
 
-    field.setAccessible(true);
-    if(expectedType != null && !expectedType.isAssignableFrom(field.getType())) {
-      return null;
-    }
-
-    return field;
+    return null;
   }
 
   /**
@@ -409,6 +485,46 @@ public final class MinecraftReflection {
    */
   public static @NotNull Class<?> needNmsClass(final @NotNull String className) {
     return requireNonNull(findNmsClass(className), "Could not find net.minecraft.server class " + className);
+  }
+
+  /**
+   * Gets a {@code net.minecraft} class name.
+   *
+   * @param className a class name, without the {@code net.minecraft} prefix
+   * @return a class name or {@code null} if not found
+   */
+  public static @Nullable String findMcClassName(final @NotNull String className) {
+    return isCraftBukkit() ? PREFIX_MC + className : null;
+  }
+
+  /**
+   * Get a {@code net.minecraft} class.
+   *
+   * @param classNames a class name, without the {@code net.minecraft} prefix
+   * @return a class name or {@code null} if not found
+   */
+  public static @Nullable Class<?> findMcClass(final @NotNull String... classNames) {
+    for(final String clazz : classNames) {
+      final String nmsClassName = findMcClassName(clazz);
+      if(nmsClassName != null) {
+        final Class<?> candidate = findClass(nmsClassName);
+        if(candidate != null) {
+          return candidate;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Gets a {@code net.minecraft} class.
+   *
+   * @param className a class name, without the {@code net.minecraft} prefix
+   * @return a class
+   * @throws NullPointerException if the class was not found
+   */
+  public static @NotNull Class<?> needMcClass(final @NotNull String... className) {
+    return requireNonNull(findMcClass(className), "Could not find net.minecraft class from candidates" + Arrays.toString(className));
   }
 
   /**
