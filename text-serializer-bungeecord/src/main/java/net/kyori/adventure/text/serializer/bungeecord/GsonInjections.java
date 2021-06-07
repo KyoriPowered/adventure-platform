@@ -62,6 +62,7 @@ final class GsonInjections {
       final Field builderHierarchyFactoriesField = field(GsonBuilder.class, "hierarchyFactories");
 
       final GsonBuilder builder = new GsonBuilder();
+      Annoying.annoying(builder);
       accepter.accept(builder);
 
       final List<TypeAdapterFactory> existingFactories = (List<TypeAdapterFactory>) factoriesField.get(existing);
