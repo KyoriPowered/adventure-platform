@@ -61,6 +61,9 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
   private static final Collection<Facet.Sound<Player, Vector>> SOUND = Facet.of(
     () -> new BukkitFacet.SoundWithCategory(),
     () -> new BukkitFacet.Sound());
+  private static final Collection<Facet.EntitySound<Player, Object>> ENTITY_SOUND = Facet.of(
+    () -> new CraftBukkitFacet.EntitySound()
+  );
   private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(
     //    () -> new SpigotFacet.Book(),
     () -> new CraftBukkitFacet.BookPost1_13(),
@@ -82,7 +85,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
   private final @NonNull Plugin plugin;
 
   BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
-    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, BOOK, BOSS_BAR, TAB_LIST);
+    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, ENTITY_SOUND, BOOK, BOSS_BAR, TAB_LIST);
     this.plugin = plugin;
   }
 

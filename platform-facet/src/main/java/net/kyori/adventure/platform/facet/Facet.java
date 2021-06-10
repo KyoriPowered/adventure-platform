@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.facet;
 
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -369,6 +370,21 @@ public interface Facet<V> {
      * @since 4.0.0
      */
     void stopSound(final @NonNull V viewer, final @NonNull SoundStop sound);
+  }
+
+  /**
+   * Create a sound that follows a certain entity.
+   *
+   * @param <V> viewer type
+   * @param <M> sound packet type
+   * @since 4.0.0
+   */
+  interface EntitySound<V, M> extends Facet<V> {
+    M createForSelf(final V viewer, final net.kyori.adventure.sound.@NonNull Sound sound);
+
+    M createForEmitter(final net.kyori.adventure.sound.@NonNull Sound sound, final net.kyori.adventure.sound.Sound.@NonNull Emitter emitter);
+
+    void playSound(final @NonNull V viewer, final M message);
   }
 
   /**

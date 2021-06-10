@@ -28,6 +28,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -66,6 +67,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   private final Facet.@Nullable ActionBar<V, Object> actionBar;
   private final Facet.@Nullable Title<V, Object, Object> title;
   private final Facet.@Nullable Sound<V, Object> sound;
+  private final Facet.@Nullable EntitySound<V, Object> entitySound;
   private final Facet.@Nullable Book<V, Object, Object> book;
   private final Facet.BossBar.@Nullable Builder<V, Facet.BossBar<V>> bossBar;
   private final @Nullable Map<BossBar, Facet.BossBar<V>> bossBars;
@@ -92,6 +94,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     final @Nullable Collection<? extends Facet.ActionBar> actionBar,
     final @Nullable Collection<? extends Facet.Title> title,
     final @Nullable Collection<? extends Facet.Sound> sound,
+    final @Nullable Collection<? extends Facet.EntitySound> entitySound,
     final @Nullable Collection<? extends Facet.Book> book,
     final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
     final @Nullable Collection<? extends Facet.TabList> tabList
@@ -105,6 +108,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     this.actionBar = Facet.of(actionBar, this.viewer);
     this.title = Facet.of(title, this.viewer);
     this.sound = Facet.of(sound, this.viewer);
+    this.entitySound = Facet.of(entitySound, this.viewer);
     this.book = Facet.of(book, this.viewer);
     this.bossBar = Facet.of(bossBar, this.viewer);
     this.bossBars = this.bossBar == null ? null : Collections.synchronizedMap(new IdentityHashMap<>(4));
@@ -183,6 +187,25 @@ public class FacetAudience<V> implements Audience, Closeable {
       if(position == null) continue;
 
       this.sound.playSound(viewer, original, position);
+    }
+  }
+
+  @Override
+  public void playSound(final @NonNull Sound sound, final Sound.@NonNull Emitter emitter) {
+    if(this.entitySound == null) return;
+    if(emitter == Sound.Emitter.self()) {
+      for(final V viewer : this.viewers) {
+        final Object message = this.entitySound.createForSelf(viewer, sound);
+        if(message == null) continue;
+        this.entitySound.playSound(viewer, message);
+      }
+
+    } else {
+      final Object message = this.entitySound.createForEmitter(sound, emitter);
+      if(message == null) return;
+      for(final V viewer : this.viewers) {
+        this.entitySound.playSound(viewer, message);
+      }
     }
   }
 

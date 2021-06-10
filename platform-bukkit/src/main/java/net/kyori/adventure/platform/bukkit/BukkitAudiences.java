@@ -25,7 +25,9 @@ package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -50,6 +52,17 @@ public interface BukkitAudiences extends AudienceProvider {
    */
   static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
     return BukkitAudiencesImpl.instanceFor(plugin);
+  }
+
+  /**
+   * Represent an entity as an emitter of sound.
+   *
+   * @param entity the entity to represent
+   * @return an emitter
+   * @since 4.0.0
+   */
+  static Sound.@NonNull Emitter asEmitter(final @NonNull Entity entity) {
+    return new BukkitEmitter(entity);
   }
 
   /**

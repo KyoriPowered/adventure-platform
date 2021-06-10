@@ -41,8 +41,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.nbt.BinaryTagIO;
@@ -74,6 +77,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
@@ -86,6 +90,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSer
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findCraftClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findEnum;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findField;
+import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findGetterOf;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMethod;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findSetterOf;
@@ -104,6 +109,9 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     return super.isSupported() && SUPPORTED;
   }
 
+  private static final Class<?> CLASS_NMS_ENTITY = findNmsClass("Entity");
+  private static final Class<?> CLASS_CRAFT_ENTITY = findCraftClass("entity.CraftEntity");
+  private static final MethodHandle CRAFT_ENTITY_GET_HANDLE = findMethod(CLASS_CRAFT_ENTITY, "getHandle", CLASS_NMS_ENTITY);
   static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
   private static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
   private static final @Nullable MethodHandle ENTITY_PLAYER_GET_CONNECTION;
@@ -272,6 +280,107 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         logError(error, "Failed to invoke PacketPlayOutChat constructor: %s", legacyMessage);
         return null;
       }
+    }
+  }
+
+  static class EntitySound extends PacketFacet<Player> implements Facet.EntitySound<Player, Object> {
+    private static final Class<?> CLASS_CLIENTBOUND_ENTITY_SOUND = findNmsClass("PacketPlayOutEntitySound");
+    private static final Class<?> CLASS_ENTITY = findNmsClass("Entity");
+    private static final Class<?> CLASS_REGISTRY = findNmsClass("IRegistry");
+    private static final Class<?> CLASS_RESOURCE_LOCATION = findNmsClass("MinecraftKey");
+    private static final Class<?> CLASS_SOUND_EFFECT = findNmsClass("SoundEffect");
+    private static final Class<?> CLASS_SOUND_SOURCE = findNmsClass("SoundCategory");
+
+    private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_ENTITY, float.class, float.class);
+    private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
+    private static final MethodHandle REGISTRY_SOUND_EVENT = findGetterOf(findField(CLASS_REGISTRY, "SOUND_EVENT"));
+    private static final MethodHandle REGISTRY_GET_OPTIONAL = findMethod(CLASS_REGISTRY, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
+    private static final MethodHandle SOUND_SOURCE_GET_NAME;
+
+    static {
+      MethodHandle soundSourceGetName = null;
+      if(CLASS_SOUND_SOURCE != null) {
+        for(final Method method : CLASS_SOUND_SOURCE.getDeclaredMethods()) {
+          if(
+            method.getReturnType().equals(String.class)
+              && method.getParameterCount() == 0
+              && !"name".equals(method.getName())
+              && Modifier.isPublic(method.getModifiers())
+          ) {
+            try {
+              soundSourceGetName = lookup().unreflect(method);
+            } catch(final IllegalAccessException ex) {
+              // ignored, getName is public
+            }
+            break;
+          }
+        }
+      }
+      SOUND_SOURCE_GET_NAME = soundSourceGetName;
+    }
+
+    private static final Map<String, Object> MC_SOUND_SOURCE_BY_NAME = new ConcurrentHashMap<>();
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && NEW_CLIENTBOUND_ENTITY_SOUND != null && NEW_RESOURCE_LOCATION != null && REGISTRY_SOUND_EVENT != null && REGISTRY_GET_OPTIONAL != null && CRAFT_ENTITY_GET_HANDLE != null && SOUND_SOURCE_GET_NAME != null;
+    }
+
+    @Override
+    public Object createForSelf(final Player viewer, final net.kyori.adventure.sound.@NotNull Sound sound) {
+      return this.createForEntity(sound, viewer);
+    }
+
+    @Override
+    public Object createForEmitter(final net.kyori.adventure.sound.@NotNull Sound sound, final net.kyori.adventure.sound.Sound.@NotNull Emitter emitter) {
+      final Entity entity;
+      if(emitter instanceof BukkitEmitter) {
+        entity = ((BukkitEmitter) emitter).entity;
+      } else if(emitter instanceof Entity) { // how? but just in case
+        entity = (Entity) emitter;
+      } else {
+        return null;
+      }
+      return this.createForEntity(sound, entity);
+    }
+
+    private Object createForEntity(final net.kyori.adventure.sound.Sound sound, final Entity entity) {
+      try {
+        final Object nmsEntity = this.toNativeEntity(entity);
+        if(nmsEntity == null) return null;
+
+        final Object soundCategory = this.toVanilla(sound.source());
+        if(soundCategory == null) return null;
+        final Object nameRl = NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
+        final java.util.Optional<?> event = (Optional<?>) REGISTRY_GET_OPTIONAL.invoke(REGISTRY_SOUND_EVENT.invoke(), nameRl);
+        if(event.isPresent()) {
+          return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch());
+        }
+      } catch(final Throwable error) {
+        logError(error, "Failed to send sound tracking an entity");
+      }
+      return null;
+    }
+
+    private Object toNativeEntity(final Entity entity) throws Throwable {
+      if(!CLASS_CRAFT_ENTITY.isInstance(entity)) return null;
+
+      return CRAFT_ENTITY_GET_HANDLE.invoke(entity);
+    }
+
+    private Object toVanilla(final net.kyori.adventure.sound.Sound.Source source) throws Throwable {
+      if(MC_SOUND_SOURCE_BY_NAME.isEmpty()) {
+        for(final Object enumConstant : CLASS_SOUND_SOURCE.getEnumConstants()) {
+          MC_SOUND_SOURCE_BY_NAME.put((String) SOUND_SOURCE_GET_NAME.invoke(enumConstant), enumConstant);
+        }
+      }
+
+      return MC_SOUND_SOURCE_BY_NAME.get(net.kyori.adventure.sound.Sound.Source.NAMES.key(source));
+    }
+
+    @Override
+    public void playSound(final @NonNull Player viewer, final Object message) {
+      this.sendPacket(viewer, message);
     }
   }
 
@@ -610,13 +719,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static class FakeEntity<E extends Entity> extends PacketFacet<Player> implements Facet.FakeEntity<Player, Location>, Listener {
     private static final Class<? extends World> CLASS_CRAFT_WORLD = findCraftClass("CraftWorld", World.class);
-    private static final Class<?> CLASS_NMS_ENTITY = findNmsClass("Entity");
     private static final Class<?> CLASS_NMS_LIVING_ENTITY = findNmsClass("EntityLiving");
-    private static final Class<?> CLASS_CRAFT_ENTITY = findCraftClass("entity.CraftEntity");
     private static final Class<?> CLASS_DATA_WATCHER = findNmsClass("DataWatcher");
 
     private static final MethodHandle CRAFT_WORLD_CREATE_ENTITY = findMethod(CLASS_CRAFT_WORLD, "createEntity", CLASS_NMS_ENTITY, Location.class, Class.class);
-    private static final MethodHandle CRAFT_ENTITY_GET_HANDLE = findMethod(CLASS_CRAFT_ENTITY, "getHandle", CLASS_NMS_ENTITY);
     private static final MethodHandle NMS_ENTITY_GET_BUKKIT_ENTITY = findMethod(CLASS_NMS_ENTITY, "getBukkitEntity", CLASS_CRAFT_ENTITY);
     private static final MethodHandle NMS_ENTITY_GET_DATA_WATCHER = findMethod(CLASS_NMS_ENTITY, "getDataWatcher", CLASS_DATA_WATCHER);
     private static final MethodHandle NMS_ENTITY_SET_LOCATION = findMethod(CLASS_NMS_ENTITY, "setLocation", void.class, double.class, double.class, double.class, float.class, float.class); // (x, y, z, pitch, yaw) -> void
