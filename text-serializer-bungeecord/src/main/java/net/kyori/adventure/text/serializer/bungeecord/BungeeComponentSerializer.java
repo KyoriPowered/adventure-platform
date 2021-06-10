@@ -32,7 +32,7 @@ import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import static java.util.Objects.requireNonNull;
 
@@ -133,7 +133,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
   }
 
   @Override
-  public @NonNull Component deserialize(final @NonNull BaseComponent@NonNull[] input) {
+  public @NotNull Component deserialize(final @NotNull BaseComponent@NotNull[] input) {
     requireNonNull(input, "input");
 
     if(input.length == 1 && input[0] instanceof AdapterComponent) {
@@ -144,7 +144,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
   }
 
   @Override
-  public @NonNull BaseComponent@NonNull[] serialize(final @NonNull Component component) {
+  public @NotNull BaseComponent@NotNull[] serialize(final @NotNull Component component) {
     requireNonNull(component, "component");
 
     if(SUPPORTED) {
@@ -172,7 +172,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
     }
 
     @Override
-    public @NonNull BaseComponent duplicate() {
+    public @NotNull BaseComponent duplicate() {
       return this;
     }
 

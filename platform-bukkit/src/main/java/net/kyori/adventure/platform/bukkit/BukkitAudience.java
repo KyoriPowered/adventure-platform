@@ -32,8 +32,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Locale;
@@ -82,15 +82,15 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new BukkitFacet.TabList()
   );
 
-  private final @NonNull Plugin plugin;
+  private final @NotNull Plugin plugin;
 
-  BukkitAudience(final @NonNull Plugin plugin, final @NonNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
+  BukkitAudience(final @NotNull Plugin plugin, final @NotNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
     super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, ENTITY_SOUND, BOOK, BOSS_BAR, TAB_LIST);
     this.plugin = plugin;
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
+  public void showBossBar(final @NotNull BossBar bar) {
     // Some boss bar listeners need access to a Plugin to register events.
     // So keep track of the last plugin before each boss bar invocation.
     PLUGIN.set(this.plugin);

@@ -37,8 +37,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
@@ -77,7 +77,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
    * @return a component serializer
    * @since 4.0.0
    */
-  public static @NonNull MinecraftComponentSerializer get() {
+  public static @NotNull MinecraftComponentSerializer get() {
     return INSTANCE;
   }
 
@@ -156,7 +156,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
   private static final boolean SUPPORTED = MC_TEXT_GSON != null || (TEXT_SERIALIZER_DESERIALIZE != null && TEXT_SERIALIZER_SERIALIZE != null);
 
   @Override
-  public @NonNull Component deserialize(final @NonNull Object input) {
+  public @NotNull Component deserialize(final @NotNull Object input) {
     if(!SUPPORTED) throw INITIALIZATION_ERROR.get();
 
     try {
@@ -171,7 +171,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
   }
 
   @Override
-  public @NonNull Object serialize(final @NonNull Component component) {
+  public @NotNull Object serialize(final @NotNull Component component) {
     if(!SUPPORTED) throw INITIALIZATION_ERROR.get();
 
     if(MC_TEXT_GSON != null) {

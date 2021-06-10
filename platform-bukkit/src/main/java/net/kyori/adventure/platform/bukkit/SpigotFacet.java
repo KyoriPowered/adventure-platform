@@ -37,8 +37,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
@@ -72,9 +72,9 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
       super(viewerClass);
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public BaseComponent @NonNull[] createMessage(final @NonNull V viewer, final @NonNull Component message) {
+    public BaseComponent @NotNull[] createMessage(final @NotNull V viewer, final @NotNull Component message) {
       return SERIALIZER.serialize(message);
     }
   }
@@ -92,7 +92,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final BaseComponent @NotNull[] message, final @NotNull MessageType type) {
       viewer.spigot().sendMessage(message);
     }
   }
@@ -110,7 +110,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
       return super.isSupported() && SUPPORTED;
     }
 
-    private @Nullable ChatMessageType createType(final @NonNull MessageType type) {
+    private @Nullable ChatMessageType createType(final @NotNull MessageType type) {
       if(type == MessageType.CHAT) {
         return ChatMessageType.CHAT;
       } else if(type == MessageType.SYSTEM) {
@@ -122,7 +122,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void sendMessage(final @NonNull Player viewer, final @NonNull Identity source, final BaseComponent @NonNull[] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull Player viewer, final @NotNull Identity source, final BaseComponent @NotNull[] message, final @NotNull MessageType type) {
       final ChatMessageType chat = this.createType(type);
       if(chat != null) {
         viewer.spigot().sendMessage(chat, message);
@@ -133,7 +133,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
   static final class ActionBar extends ChatWithType implements Facet.ActionBar<Player, BaseComponent[]> {
     @Override
     @SuppressWarnings("deprecation")
-    public void sendMessage(final @NonNull Player viewer, final BaseComponent @NonNull[] message) {
+    public void sendMessage(final @NotNull Player viewer, final BaseComponent @NotNull[] message) {
       viewer.spigot().sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }
@@ -150,9 +150,9 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
       return super.isSupported() && SUPPORTED;
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public ItemStack createBook(final BaseComponent @NonNull[] title, final BaseComponent @NonNull[] author, final @NonNull Iterable<BaseComponent[]> pages) {
+    public ItemStack createBook(final BaseComponent @NotNull[] title, final BaseComponent @NotNull[] author, final @NotNull Iterable<BaseComponent[]> pages) {
       final ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
       final ItemMeta meta = book.getItemMeta();
       if(meta instanceof BookMeta) {
@@ -168,7 +168,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void openBook(final @NonNull Player viewer, final @NonNull ItemStack book) {
+    public void openBook(final @NotNull Player viewer, final @NotNull ItemStack book) {
       viewer.openBook(book);
     }
   }

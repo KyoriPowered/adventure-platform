@@ -25,7 +25,7 @@ package net.kyori.adventure.platform;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -43,7 +43,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return the players' and console audience
    * @since 4.0.0
    */
-  @NonNull Audience all();
+  @NotNull Audience all();
 
   /**
    * Gets an audience for the server's console.
@@ -51,7 +51,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return the console audience
    * @since 4.0.0
    */
-  @NonNull Audience console();
+  @NotNull Audience console();
 
   /**
    * Gets an audience for all online players.
@@ -61,7 +61,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return the players' audience
    * @since 4.0.0
    */
-  @NonNull Audience players();
+  @NotNull Audience players();
 
   /**
    * Gets an audience for an individual player.
@@ -72,7 +72,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return a player audience
    * @since 4.0.0
    */
-  @NonNull Audience player(final @NonNull UUID playerId);
+  @NotNull Audience player(final @NotNull UUID playerId);
 
   /**
    * Gets or creates an audience containing all viewers with the provided permission.
@@ -83,7 +83,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return a permissible audience
    * @since 4.0.0
    */
-  default @NonNull Audience permission(final @NonNull Key permission) {
+  default @NotNull Audience permission(final @NotNull Key permission) {
     return this.permission(permission.namespace() + '.' + permission.value());
   }
 
@@ -96,7 +96,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return a permissible audience
    * @since 4.0.0
    */
-  @NonNull Audience permission(final @NonNull String permission);
+  @NotNull Audience permission(final @NotNull String permission);
 
   /**
    * Gets an audience for online players in a world, including the server's console.
@@ -110,7 +110,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return the world's audience
    * @since 4.0.0
    */
-  @NonNull Audience world(final @NonNull Key world);
+  @NotNull Audience world(final @NotNull Key world);
 
   /**
    * Gets an audience for online players on a server, including the server's console.
@@ -121,7 +121,7 @@ public interface AudienceProvider extends AutoCloseable {
    * @return a server's audience
    * @since 4.0.0
    */
-  @NonNull Audience server(final @NonNull String serverName);
+  @NotNull Audience server(final @NotNull String serverName);
 
   /**
    * Closes the provider and forces audiences to be empty.

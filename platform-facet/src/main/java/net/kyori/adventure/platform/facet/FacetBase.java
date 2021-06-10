@@ -23,8 +23,8 @@
  */
 package net.kyori.adventure.platform.facet;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A base implementation of a facet that validates viewer type.
@@ -45,7 +45,7 @@ public abstract class FacetBase<V> implements Facet<V> {
   }
 
   @Override
-  public boolean isApplicable(final @NonNull V viewer) {
+  public boolean isApplicable(final @NotNull V viewer) {
     return this.viewerClass != null && this.viewerClass.isInstance(viewer);
   }
 }

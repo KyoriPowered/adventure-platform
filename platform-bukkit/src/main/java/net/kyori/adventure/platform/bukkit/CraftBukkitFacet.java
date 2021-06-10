@@ -75,9 +75,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
@@ -153,7 +152,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       super((Class<V>) CLASS_CRAFT_PLAYER);
     }
 
-    public void sendPacket(final @NonNull Player player, final @Nullable Object packet) {
+    public void sendPacket(final @NotNull Player player, final @Nullable Object packet) {
       if(packet == null) return;
 
       try {
@@ -163,13 +162,13 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       }
     }
 
-    public void sendMessage(final @NonNull V player, final @Nullable Object packet) {
+    public void sendMessage(final @NotNull V player, final @Nullable Object packet) {
       this.sendPacket((Player) player, packet);
     }
 
     @Nullable
     @Override
-    public Object createMessage(final @NonNull V viewer, final @NonNull Component message) {
+    public Object createMessage(final @NotNull V viewer, final @NotNull Component message) {
       try {
         return MinecraftComponentSerializer.get().serialize(message);
       } catch(final Throwable error) {
@@ -225,7 +224,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final @NonNull Object message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final @NotNull Object message, final @NotNull MessageType type) {
       final Object messageType = type == MessageType.CHAT ? MESSAGE_TYPE_CHAT : MESSAGE_TYPE_SYSTEM;
       try {
         this.sendMessage(viewer, CHAT_PACKET_CONSTRUCTOR.invoke(message, messageType, source.uuid()));
@@ -253,7 +252,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Nullable
     @Override
-    public Object createMessage(final @NonNull Player viewer, final @NonNull Component message) {
+    public Object createMessage(final @NotNull Player viewer, final @NotNull Component message) {
       try {
         return CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_ACTIONBAR, super.createMessage(viewer, message));
       } catch(final Throwable error) {
@@ -271,7 +270,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Nullable
     @Override
-    public Object createMessage(final @NonNull Player viewer, final @NonNull Component message) {
+    public Object createMessage(final @NotNull Player viewer, final @NotNull Component message) {
       // Due to a Minecraft client bug, Action bars through the chat packet don't properly support formatting
       final TextComponent legacyMessage = Component.text(legacy().serialize(message));
       try {
@@ -379,7 +378,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void playSound(final @NonNull Player viewer, final Object message) {
+    public void playSound(final @NotNull Player viewer, final Object message) {
       this.sendPacket(viewer, message);
     }
   }
@@ -390,7 +389,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       return super.isSupported() && CONSTRUCTOR_TITLE_MESSAGE != null && CONSTRUCTOR_TITLE_TIMES != null;
     }
 
-    @NonNull
+    @NotNull
     @Override
     public List<?> createTitle(final @Nullable Object title, final @Nullable Object subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       final List<Object> packets = new LinkedList<>();
@@ -411,14 +410,14 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void showTitle(final @NonNull Player viewer, final @NonNull List<?> packets) {
+    public void showTitle(final @NotNull Player viewer, final @NotNull List<?> packets) {
       for(final Object packet : packets) {
         this.sendMessage(viewer, packet);
       }
     }
 
     @Override
-    public void clearTitle(final @NonNull Player viewer) {
+    public void clearTitle(final @NotNull Player viewer) {
       try {
         if(TITLE_ACTION_CLEAR != null) {
           this.sendPacket(viewer, CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_CLEAR, null));
@@ -431,7 +430,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void resetTitle(final @NonNull Player viewer) {
+    public void resetTitle(final @NotNull Player viewer) {
       try {
         if(TITLE_ACTION_RESET != null) {
           this.sendPacket(viewer, CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_RESET, null));
@@ -449,7 +448,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final Material BOOK_TYPE = (Material) findEnum(Material.class, "WRITTEN_BOOK");
     private static final ItemStack BOOK_STACK = BOOK_TYPE == null ? null : new ItemStack(BOOK_TYPE);
 
-    protected abstract void sendOpenPacket(final @NonNull Player viewer) throws Throwable;
+    protected abstract void sendOpenPacket(final @NotNull Player viewer) throws Throwable;
 
     @Override
     public boolean isSupported() {
@@ -458,21 +457,21 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         && BOOK_STACK != null;
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public String createMessage(final @NonNull Player viewer, final @NonNull Component message) {
+    public String createMessage(final @NotNull Player viewer, final @NotNull Component message) {
       return gson().serialize(message);
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public ItemStack createBook(final @NonNull Object title, final @NonNull Object author, final @NonNull Iterable<Object> pages) {
+    public ItemStack createBook(final @NotNull Object title, final @NotNull Object author, final @NotNull Iterable<Object> pages) {
       return this.applyTag(BOOK_STACK, tagFor(title, author, pages));
     }
 
     @Deprecated
     @Override
-    public void openBook(final @NonNull Player viewer, final @NonNull ItemStack book) {
+    public void openBook(final @NotNull Player viewer, final @NotNull ItemStack book) {
       final PlayerInventory inventory = viewer.getInventory();
       final ItemStack current = inventory.getItemInHand();
       try {
@@ -490,7 +489,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final String BOOK_PAGES = "pages";
     private static final String BOOK_RESOLVED = "resolved"; // set resolved to save on a parse as MC Components for parseable texts
 
-    private static CompoundBinaryTag tagFor(final @NonNull Object title, final @NonNull Object author, final @NonNull Iterable<Object> pages) {
+    private static CompoundBinaryTag tagFor(final @NotNull Object title, final @NotNull Object author, final @NotNull Iterable<Object> pages) {
       final ListBinaryTag.Builder<StringBinaryTag> builder = ListBinaryTag.builder(BinaryTagTypes.STRING);
       for(final Object page : pages) {
         builder.add(StringBinaryTag.of((String) page));
@@ -537,7 +536,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       }
     }
 
-    private @NonNull Object createTag(final @NonNull CompoundBinaryTag tag) throws IOException {
+    private @NotNull Object createTag(final @NotNull CompoundBinaryTag tag) throws IOException {
       final TrustedByteArrayOutputStream output = new TrustedByteArrayOutputStream();
       BinaryTagIO.writer().write(tag, output);
 
@@ -557,7 +556,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final MethodHandle CRAFT_ITEMSTACK_NMS_COPY = findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asNMSCopy", CLASS_MC_ITEMSTACK, ItemStack.class);
     private static final MethodHandle CRAFT_ITEMSTACK_CRAFT_MIRROR = findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asCraftMirror", CLASS_CRAFT_ITEMSTACK, CLASS_MC_ITEMSTACK);
 
-    private ItemStack applyTag(final @NonNull ItemStack input, final CompoundBinaryTag binTag) {
+    private ItemStack applyTag(final @NotNull ItemStack input, final CompoundBinaryTag binTag) {
       if(CRAFT_ITEMSTACK_NMS_COPY == null || MC_ITEMSTACK_SET_TAG == null || CRAFT_ITEMSTACK_CRAFT_MIRROR == null) {
         return input;
       }
@@ -586,7 +585,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
+    protected void sendOpenPacket(final @NotNull Player viewer) throws Throwable {
       this.sendMessage(viewer, NEW_PACKET_OPEN_BOOK.invoke(HAND_MAIN));
     }
   }
@@ -619,7 +618,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
+    protected void sendOpenPacket(final @NotNull Player viewer) throws Throwable {
       final ByteBuf data = Unpooled.buffer();
       data.writeByte(HAND_MAIN);
       final Object packetByteBuf = NEW_FRIENDLY_BYTE_BUF.invoke(data);
@@ -643,7 +642,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    protected void sendOpenPacket(final @NonNull Player viewer) throws Throwable {
+    protected void sendOpenPacket(final @NotNull Player viewer) throws Throwable {
       final ByteBuf data = Unpooled.buffer();
       data.writeByte(HAND_MAIN);
       final Object packetByteBuf = NEW_PACKET_BYTE_BUF.invoke(data);
@@ -693,17 +692,17 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       }
 
       @Override
-      public CraftBukkitFacet.@NonNull BossBar createBossBar(final @NonNull Collection<Player> viewers) {
+      public CraftBukkitFacet.@NotNull BossBar createBossBar(final @NotNull Collection<Player> viewers) {
         return new CraftBukkitFacet.BossBar(viewers);
       }
     }
 
-    private BossBar(final @NonNull Collection<Player> viewers) {
+    private BossBar(final @NotNull Collection<Player> viewers) {
       super(viewers);
     }
 
     @Override
-    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       try {
         final Object handle = CRAFT_BOSS_BAR_HANDLE.invoke(this.bar);
         final Object text = MinecraftComponentSerializer.get().serialize(newName);
@@ -751,12 +750,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private final Object entityHandle;
     protected final Set<Player> viewers;
 
-    protected FakeEntity(final @NonNull Class<E> entityClass, final @NonNull Location location) {
+    protected FakeEntity(final @NotNull Class<E> entityClass, final @NotNull Location location) {
       this(BukkitAudience.PLUGIN.get(), entityClass, location);
     }
 
     @SuppressWarnings("unchecked")
-    protected FakeEntity(final @NonNull Plugin plugin, final @NonNull Class<E> entityClass, final @NonNull Location location) {
+    protected FakeEntity(final @NotNull Plugin plugin, final @NotNull Class<E> entityClass, final @NotNull Location location) {
       E entity = null;
       Object handle = null;
 
@@ -846,20 +845,20 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       }
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public Location createPosition(final @NonNull Player viewer) {
+    public Location createPosition(final @NotNull Player viewer) {
       return viewer.getLocation();
     }
 
-    @NonNull
+    @NotNull
     @Override
     public Location createPosition(final double x, final double y, final double z) {
       return new Location(null, x, y, z);
     }
 
     @Override
-    public void teleport(final @NonNull Player viewer, final @Nullable Location position) {
+    public void teleport(final @NotNull Player viewer, final @Nullable Location position) {
       if(position == null) {
         this.viewers.remove(viewer);
         this.sendPacket(viewer, this.createDespawnPacket());
@@ -880,7 +879,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void metadata(final int position, final @NonNull Object data) {
+    public void metadata(final int position, final @NotNull Object data) {
       // DataWatchers were refactored at some point and use TrackedData as their key, not ints -- but this works for 1.8
       if(DATA_WATCHER_WATCH != null) {
         try {
@@ -915,7 +914,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void name(final @NonNull Component name) {
+    public void name(final @NotNull Component name) {
       this.entity.setCustomName(legacy().serialize(name));
       this.broadcastPacket(this.createMetadataPacket());
     }
@@ -935,29 +934,29 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         super(Player.class);
       }
 
-      @NonNull
+      @NotNull
       @Override
-      public BossBarWither createBossBar(final @NonNull Collection<Player> viewers) {
+      public BossBarWither createBossBar(final @NotNull Collection<Player> viewers) {
         return new BossBarWither(viewers);
       }
     }
 
     private volatile boolean initialized = false;
 
-    private BossBarWither(final @NonNull Collection<Player> viewers) {
+    private BossBarWither(final @NotNull Collection<Player> viewers) {
       super(Wither.class, viewers.iterator().next().getWorld().getSpawnLocation());
       this.invisible(true);
       this.metadata(INVULNERABLE_KEY, INVULNERABLE_TICKS);
     }
 
     @Override
-    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NotNull BossBar bar) {
       Facet.BossBarEntity.super.bossBarInitialized(bar);
       this.initialized = true;
     }
 
     @Override
-    public @NonNull Location createPosition(final @NonNull Player viewer) {
+    public @NotNull Location createPosition(final @NotNull Player viewer) {
       final Location position = super.createPosition(viewer);
       position.setPitch(position.getPitch() - OFFSET_PITCH);
       position.setYaw(position.getYaw() + OFFSET_YAW);

@@ -33,8 +33,8 @@ import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.Index;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.boss.BossBarColor;
@@ -66,7 +66,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     super(viewerClass);
   }
 
-  public <K, S extends CatalogType> @Nullable S sponge(final @NonNull Class<S> spongeType, final @NonNull K value, final @NonNull Index<String, K> elements) {
+  public <K, S extends CatalogType> @Nullable S sponge(final @NotNull Class<S> spongeType, final @NotNull K value, final @NotNull Index<String, K> elements) {
     return Sponge.getRegistry()
             .getType(spongeType, elements.key(requireNonNull(value, "value")))
             .orElseGet(() -> {
@@ -75,7 +75,7 @@ class SpongeFacet<V> extends FacetBase<V> {
             });
   }
 
-  public <S extends CatalogType> @Nullable S sponge(final @NonNull Class<S> spongeType, final @NonNull Key identifier) {
+  public <S extends CatalogType> @Nullable S sponge(final @NotNull Class<S> spongeType, final @NotNull Key identifier) {
     return Sponge.getRegistry()
             .getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
             .orElseGet(() -> {
@@ -90,7 +90,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public @NonNull Text createMessage(final @NonNull V viewer, final @NonNull Component message) {
+    public @NotNull Text createMessage(final @NotNull V viewer, final @NotNull Component message) {
       return get().serialize(message);
     }
   }
@@ -101,7 +101,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull MessageReceiver viewer, final @NonNull Identity source, final @NonNull Text message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull MessageReceiver viewer, final @NotNull Identity source, final @NotNull Text message, final @NotNull MessageType type) {
       viewer.sendMessage(message);
     }
   }
@@ -111,7 +111,7 @@ class SpongeFacet<V> extends FacetBase<V> {
       super(ChatTypeMessageReceiver.class);
     }
 
-    private @Nullable ChatType type(final @NonNull MessageType type) {
+    private @Nullable ChatType type(final @NotNull MessageType type) {
       if(type == MessageType.CHAT) {
         return ChatTypes.CHAT;
       } else if(type == MessageType.SYSTEM) {
@@ -122,7 +122,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Identity source, final @NonNull Text message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull ChatTypeMessageReceiver viewer, final @NotNull Identity source, final @NotNull Text message, final @NotNull MessageType type) {
       final ChatType chat = this.type(type);
       if(chat != null) {
         viewer.sendMessage(chat, message);
@@ -136,7 +136,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull ChatTypeMessageReceiver viewer, final @NonNull Text message) {
+    public void sendMessage(final @NotNull ChatTypeMessageReceiver viewer, final @NotNull Text message) {
       viewer.sendMessage(ChatTypes.ACTION_BAR, message);
     }
   }
@@ -147,7 +147,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public org.spongepowered.api.text.title.@NonNull Title createTitle(final @Nullable Text title, final @Nullable Text subTitle, final int inTicks, final int stayTicks, final int outTicks) {
+    public org.spongepowered.api.text.title.@NotNull Title createTitle(final @Nullable Text title, final @Nullable Text subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       final org.spongepowered.api.text.title.Title.Builder builder = org.spongepowered.api.text.title.Title.builder();
 
       if(title != null) builder.title(title);
@@ -160,17 +160,17 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void showTitle(final @NonNull Viewer viewer, final org.spongepowered.api.text.title.@NonNull Title title) {
+    public void showTitle(final @NotNull Viewer viewer, final org.spongepowered.api.text.title.@NotNull Title title) {
       viewer.sendTitle(title);
     }
 
     @Override
-    public void clearTitle(final @NonNull Viewer viewer) {
+    public void clearTitle(final @NotNull Viewer viewer) {
       viewer.clearTitle();
     }
 
     @Override
-    public void resetTitle(final @NonNull Viewer viewer) {
+    public void resetTitle(final @NotNull Viewer viewer) {
       viewer.resetTitle();
     }
   }
@@ -181,20 +181,20 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public boolean isApplicable(final @NonNull Viewer viewer) {
+    public boolean isApplicable(final @NotNull Viewer viewer) {
       return super.isApplicable(viewer) && viewer instanceof Locatable;
     }
 
     @Nullable
     @Override
-    public Vector3d createPosition(final @NonNull Viewer viewer) {
+    public Vector3d createPosition(final @NotNull Viewer viewer) {
       if(viewer instanceof Locatable) {
         return ((Locatable) viewer).getLocation().getPosition();
       }
       return null;
     }
 
-    @NonNull
+    @NotNull
     @Override
     public Vector3d createPosition(final double x, final double y, final double z) {
       return new Vector3d(x, y, z);
@@ -203,7 +203,7 @@ class SpongeFacet<V> extends FacetBase<V> {
 
   static class Sound extends Position implements Facet.Sound<Viewer, Vector3d> {
     @Override
-    public void playSound(final @NonNull Viewer viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull Vector3d vector) {
+    public void playSound(final @NotNull Viewer viewer, final net.kyori.adventure.sound.@NotNull Sound sound, final @NotNull Vector3d vector) {
       final SoundType type = this.type(sound.name());
       final SoundCategory category = this.category(sound.source());
 
@@ -215,7 +215,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void stopSound(final @NonNull Viewer viewer, final @NonNull SoundStop stop) {
+    public void stopSound(final @NotNull Viewer viewer, final @NotNull SoundStop stop) {
       final SoundType type = this.type(stop.sound());
       final SoundCategory category = this.category(stop.source());
 
@@ -244,14 +244,14 @@ class SpongeFacet<V> extends FacetBase<V> {
       super(Viewer.class);
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public BookView createBook(final @NonNull Text title, final @NonNull Text author, final @NonNull Iterable<Text> pages) {
+    public BookView createBook(final @NotNull Text title, final @NotNull Text author, final @NotNull Iterable<Text> pages) {
       return BookView.builder().title(title).author(author).addPages(Lists.newArrayList(pages)).build();
     }
 
     @Override
-    public void openBook(final @NonNull Viewer viewer, final @NonNull BookView book) {
+    public void openBook(final @NotNull Viewer viewer, final @NotNull BookView book) {
       viewer.sendBookView(book);
     }
   }
@@ -262,7 +262,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public SpongeFacet.@NonNull BossBar createBossBar(final @NonNull Collection<Player> viewers) {
+    public SpongeFacet.@NotNull BossBar createBossBar(final @NotNull Collection<Player> viewers) {
       return new SpongeFacet.BossBar(viewers);
     }
   }
@@ -270,32 +270,32 @@ class SpongeFacet<V> extends FacetBase<V> {
   static class BossBar extends Message<Player> implements Facet.BossBar<Player> {
     private final ServerBossBar bar;
 
-    protected BossBar(final @NonNull Collection<Player> viewers) {
+    protected BossBar(final @NotNull Collection<Player> viewers) {
       super(Player.class);
       this.bar = ServerBossBar.builder().name(Text.of()).color(BossBarColors.PINK).overlay(BossBarOverlays.PROGRESS).visible(false).build();
       this.bar.addPlayers(viewers);
     }
 
     @Override
-    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NotNull BossBar bar) {
       Facet.BossBar.super.bossBarInitialized(bar);
       this.bar.setVisible(true);
     }
 
     @Override
-    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if(!this.bar.getPlayers().isEmpty()) {
         this.bar.setName(this.createMessage(this.bar.getPlayers().iterator().next(), newName));
       }
     }
 
     @Override
-    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final float oldPercent, final float newPercent) {
       this.bar.setPercent(newPercent);
     }
 
     @Override
-    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NonNull Color newColor) {
+    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NotNull Color newColor) {
       final BossBarColor color = this.sponge(BossBarColor.class, newColor, net.kyori.adventure.bossbar.BossBar.Color.NAMES);
       if(color != null) {
         this.bar.setColor(color);
@@ -303,7 +303,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay newOverlay) {
+    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay newOverlay) {
       final BossBarOverlay overlay = this.sponge(BossBarOverlay.class, newOverlay, net.kyori.adventure.bossbar.BossBar.Overlay.NAMES);
       if(overlay != null) {
         this.bar.setOverlay(overlay);
@@ -311,7 +311,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
       final Boolean fog = this.hasFlag(net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG, removedFlags, addedFlags);
       if(fog != null) this.bar.setCreateFog(fog);
       final Boolean darkenScreen = this.hasFlag(net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN, removedFlags, addedFlags);
@@ -320,19 +320,19 @@ class SpongeFacet<V> extends FacetBase<V> {
       if(bossMusic != null) this.bar.setPlayEndBossMusic(bossMusic);
     }
 
-    private @Nullable Boolean hasFlag(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
+    private @Nullable Boolean hasFlag(final net.kyori.adventure.bossbar.BossBar.@NotNull Flag flag, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> removedFlags, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> addedFlags) {
       if(addedFlags.contains(flag)) return true;
       if(removedFlags.contains(flag)) return false;
       return null;
     }
 
     @Override
-    public void addViewer(final @NonNull Player viewer) {
+    public void addViewer(final @NotNull Player viewer) {
       this.bar.addPlayer(viewer);
     }
 
     @Override
-    public void removeViewer(final @NonNull Player viewer) {
+    public void removeViewer(final @NotNull Player viewer) {
       this.bar.removePlayer(viewer);
     }
 
@@ -349,7 +349,7 @@ class SpongeFacet<V> extends FacetBase<V> {
 
   /*static class ViaHook implements Function<Player, UserConnection> {
     @Override
-    public UserConnection apply(final @NonNull Player player) {
+    public UserConnection apply(final @NotNull Player player) {
       return Via.getManager().getConnection(player.getUniqueId());
     }
   } */

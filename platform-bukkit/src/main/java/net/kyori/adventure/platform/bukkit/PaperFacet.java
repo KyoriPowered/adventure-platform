@@ -30,8 +30,8 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -84,7 +84,7 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public com.destroystokyo.paper.@NonNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
+    public com.destroystokyo.paper.@NotNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       final com.destroystokyo.paper.Title.Builder builder = com.destroystokyo.paper.Title.builder();
 
       if(title != null) builder.title(title);
@@ -97,17 +97,17 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void showTitle(final @NonNull Player viewer, final com.destroystokyo.paper.@NonNull Title title) {
+    public void showTitle(final @NotNull Player viewer, final com.destroystokyo.paper.@NotNull Title title) {
       viewer.sendTitle(title);
     }
 
     @Override
-    public void clearTitle(final @NonNull Player viewer) {
+    public void clearTitle(final @NotNull Player viewer) {
       viewer.hideTitle();
     }
 
     @Override
-    public void resetTitle(final @NonNull Player viewer) {
+    public void resetTitle(final @NotNull Player viewer) {
       viewer.resetTitle();
     }
   }
@@ -134,7 +134,7 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public @Nullable Object createMessage(final @NonNull Player viewer, final @NonNull Component message) {
+    public @Nullable Object createMessage(final @NotNull Player viewer, final @NotNull Component message) {
       try {
         return NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD_BOUND.invoke(GsonComponentSerializer.gson().serialize(message));
       } catch(final Throwable throwable) {

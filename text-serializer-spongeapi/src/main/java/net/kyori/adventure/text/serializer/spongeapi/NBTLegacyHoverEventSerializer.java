@@ -34,7 +34,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.gson.LegacyHoverEventSerializer;
 import net.kyori.adventure.util.Codec;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
   static final NBTLegacyHoverEventSerializer INSTANCE = new NBTLegacyHoverEventSerializer();
@@ -54,7 +54,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
   }
 
   @Override
-  public HoverEvent.@NonNull ShowItem deserializeShowItem(final @NonNull Component input) throws IOException {
+  public HoverEvent.@NotNull ShowItem deserializeShowItem(final @NotNull Component input) throws IOException {
     if(!(input instanceof TextComponent)) {
       throw new IllegalArgumentException("Legacy events must be single Component instances");
     }
@@ -68,7 +68,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
   }
 
   @Override
-  public HoverEvent.@NonNull ShowEntity deserializeShowEntity(final @NonNull Component input, final Codec.Decoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
+  public HoverEvent.@NotNull ShowEntity deserializeShowEntity(final @NotNull Component input, final Codec.Decoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
     if(!(input instanceof TextComponent)) {
       throw new IllegalArgumentException("Legacy events must be single Component instances");
     }
@@ -87,7 +87,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
   }
 
   @Override
-  public @NonNull Component serializeShowItem(final HoverEvent.@NonNull ShowItem input) throws IOException {
+  public @NotNull Component serializeShowItem(final HoverEvent.@NotNull ShowItem input) throws IOException {
     final CompoundBinaryTag.Builder builder = CompoundBinaryTag.builder()
       .putString(ITEM_TYPE, input.item().asString())
       .putByte(ITEM_COUNT, (byte) input.count());
@@ -99,7 +99,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
   }
 
   @Override
-  public @NonNull Component serializeShowEntity(final HoverEvent.@NonNull ShowEntity input, final Codec.Encoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
+  public @NotNull Component serializeShowEntity(final HoverEvent.@NotNull ShowEntity input, final Codec.Encoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
     final CompoundBinaryTag.Builder builder = CompoundBinaryTag.builder()
       .putString(ENTITY_ID, input.id().toString())
       .putString(ENTITY_TYPE, input.type().asString());

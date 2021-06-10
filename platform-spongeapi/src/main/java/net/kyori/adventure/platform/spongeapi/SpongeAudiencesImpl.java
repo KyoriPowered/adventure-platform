@@ -27,8 +27,8 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
@@ -72,7 +72,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
 
   private static final Map<String, SpongeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
-  static SpongeAudiences instanceFor(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+  static SpongeAudiences instanceFor(final @NotNull PluginContainer plugin, final @NotNull Game game) {
     requireNonNull(plugin, "plugin");
     requireNonNull(game, "game");
     return INSTANCES.computeIfAbsent(plugin.getId(), id -> new SpongeAudiencesImpl(plugin, game));
@@ -83,7 +83,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final EventListener eventListener;
 
   @Inject
-  SpongeAudiencesImpl(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game) {
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
@@ -96,9 +96,9 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     }
   }
 
-  @NonNull
+  @NotNull
   @Override
-  public Audience receiver(final @NonNull MessageReceiver receiver) {
+  public Audience receiver(final @NotNull MessageReceiver receiver) {
     if(receiver instanceof Player) {
       return this.player((Player) receiver);
     } else if(receiver instanceof ConsoleSource
@@ -114,14 +114,14 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     return new SpongeAudience(Collections.singletonList(receiver));
   }
 
-  @NonNull
+  @NotNull
   @Override
-  public Audience player(final @NonNull Player player) {
+  public Audience player(final @NotNull Player player) {
     return this.player(player.getUniqueId());
   }
 
   @Override
-  protected @Nullable UUID hasId(final @NonNull MessageReceiver viewer) {
+  protected @Nullable UUID hasId(final @NotNull MessageReceiver viewer) {
     if(viewer instanceof Player) {
       return ((Player) viewer).getUniqueId();
     }
@@ -129,12 +129,12 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   }
 
   @Override
-  protected boolean isConsole(final @NonNull MessageReceiver viewer) {
+  protected boolean isConsole(final @NotNull MessageReceiver viewer) {
     return viewer instanceof ConsoleSource;
   }
 
   @Override
-  protected boolean hasPermission(final @NonNull MessageReceiver viewer, final @NonNull String permission) {
+  protected boolean hasPermission(final @NotNull MessageReceiver viewer, final @NotNull String permission) {
     if(viewer instanceof Subject) {
       return ((Subject) viewer).hasPermission(permission);
     }
@@ -142,7 +142,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   }
 
   @Override
-  protected boolean isInWorld(final @NonNull MessageReceiver viewer, final @NonNull Key world) {
+  protected boolean isInWorld(final @NotNull MessageReceiver viewer, final @NotNull Key world) {
     if(viewer instanceof Locatable) {
       return ((Locatable) viewer).getWorld().getName().equals(world.value());
     }
@@ -150,13 +150,13 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   }
 
   @Override
-  protected boolean isOnServer(final @NonNull MessageReceiver viewer, final @NonNull String server) {
+  protected boolean isOnServer(final @NotNull MessageReceiver viewer, final @NotNull String server) {
     return false;
   }
 
-  @NonNull
+  @NotNull
   @Override
-  protected SpongeAudience createAudience(final @NonNull Collection<MessageReceiver> viewers) {
+  protected SpongeAudience createAudience(final @NotNull Collection<MessageReceiver> viewers) {
     return new SpongeAudience(viewers);
   }
 
@@ -168,27 +168,27 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
 
   public final class EventListener {
     @Listener(order = Order.FIRST)
-    public void onLogin(final ClientConnectionEvent.@NonNull Join event) {
+    public void onLogin(final ClientConnectionEvent.@NotNull Join event) {
       SpongeAudiencesImpl.this.addViewer(event.getTargetEntity());
     }
 
     @Listener(order = Order.LAST)
-    public void onDisconnect(final ClientConnectionEvent.@NonNull Disconnect event) {
+    public void onDisconnect(final ClientConnectionEvent.@NotNull Disconnect event) {
       SpongeAudiencesImpl.this.removeViewer(event.getTargetEntity());
     }
 
     @Listener(order = Order.LAST)
-    public void onChangeSettings(final @NonNull PlayerChangeClientSettingsEvent event) {
+    public void onChangeSettings(final @NotNull PlayerChangeClientSettingsEvent event) {
       SpongeAudiencesImpl.this.changeViewer(event.getTargetEntity(), event.getLocale());
     }
 
     @Listener
-    public void onStart(final @NonNull GameStartingServerEvent event) {
+    public void onStart(final @NotNull GameStartingServerEvent event) {
       SpongeAudiencesImpl.this.addViewer(SpongeAudiencesImpl.this.game.getServer().getConsole());
     }
 
     @Listener
-    public void onStop(final @NonNull GameStoppedServerEvent event) {
+    public void onStop(final @NotNull GameStoppedServerEvent event) {
       SpongeAudiencesImpl.this.removeViewer(SpongeAudiencesImpl.this.game.getServer().getConsole());
     }
   }

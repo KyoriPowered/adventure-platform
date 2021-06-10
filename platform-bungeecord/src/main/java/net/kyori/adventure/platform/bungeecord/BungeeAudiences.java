@@ -28,7 +28,7 @@ import net.kyori.adventure.platform.AudienceProvider;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Predicate;
 
@@ -47,7 +47,7 @@ public interface BungeeAudiences extends AudienceProvider {
    * @return an audience provider
    * @since 4.0.0
    */
-  static @NonNull BungeeAudiences create(final @NonNull Plugin plugin) {
+  static @NotNull BungeeAudiences create(final @NotNull Plugin plugin) {
     return BungeeAudiencesImpl.instanceFor(plugin);
   }
 
@@ -58,7 +58,7 @@ public interface BungeeAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience sender(final @NonNull CommandSender sender);
+  @NotNull Audience sender(final @NotNull CommandSender sender);
 
   /**
    * Gets an audience for a player.
@@ -67,7 +67,7 @@ public interface BungeeAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience player(final @NonNull ProxiedPlayer player);
+  @NotNull Audience player(final @NotNull ProxiedPlayer player);
 
   /**
    * Creates an audience based on a filter.
@@ -76,6 +76,6 @@ public interface BungeeAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
+  @NotNull Audience filter(final @NotNull Predicate<CommandSender> filter);
 }
 

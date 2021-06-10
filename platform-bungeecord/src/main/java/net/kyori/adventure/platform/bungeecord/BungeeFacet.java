@@ -35,8 +35,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.chat.ComponentSerializer;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Set;
@@ -60,17 +60,17 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public boolean isApplicable(final @NonNull CommandSender viewer) {
+    public boolean isApplicable(final @NotNull CommandSender viewer) {
       return super.isApplicable(viewer) && !(viewer instanceof Connection); // Console only accepts legacy formatting
     }
 
     @Override
-    public BaseComponent @NonNull[] createMessage(final @NonNull CommandSender viewer, final @NonNull Component message) {
+    public BaseComponent @NotNull[] createMessage(final @NotNull CommandSender viewer, final @NotNull Component message) {
       return legacy().serialize(message);
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull MessageType type) {
       viewer.sendMessage(message);
     }
   }
@@ -81,7 +81,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public BaseComponent @NonNull[] createMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Component message) {
+    public BaseComponent @NotNull[] createMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Component message) {
       if(viewer.getPendingConnection().getVersion() >= PROTOCOL_HEX_COLOR) {
         return get().serialize(message);
       } else {
@@ -91,7 +91,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class ChatPlayer extends Message implements Facet.Chat<ProxiedPlayer, BaseComponent[]> {
-    public @Nullable ChatMessageType createType(final @NonNull MessageType type) {
+    public @Nullable ChatMessageType createType(final @NotNull MessageType type) {
       if(type == MessageType.CHAT) {
         return ChatMessageType.CHAT;
       } else if(type == MessageType.SYSTEM) {
@@ -102,7 +102,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull ProxiedPlayer viewer, final @NonNull Identity source, final BaseComponent @NonNull [] message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull MessageType type) {
       final ChatMessageType chat = this.createType(type);
       if(chat != null) {
         viewer.sendMessage(chat, message);
@@ -112,7 +112,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
 
   static class ActionBar extends Message implements Facet.ActionBar<ProxiedPlayer, BaseComponent[]> {
     @Override
-    public void sendMessage(final @NonNull ProxiedPlayer viewer, final BaseComponent @NonNull[] message) {
+    public void sendMessage(final @NotNull ProxiedPlayer viewer, final BaseComponent @NotNull[] message) {
       viewer.sendMessage(ChatMessageType.ACTION_BAR, message);
     }
   }
@@ -122,7 +122,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     private static final net.md_5.bungee.api.Title RESET = ProxyServer.getInstance().createTitle().reset();
 
     @Override
-    public net.md_5.bungee.api.@NonNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
+    public net.md_5.bungee.api.@NotNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       final net.md_5.bungee.api.Title builder = ProxyServer.getInstance().createTitle();
 
       if(title != null) builder.title(title);
@@ -135,17 +135,17 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void showTitle(final @NonNull ProxiedPlayer viewer, final net.md_5.bungee.api.@NonNull Title title) {
+    public void showTitle(final @NotNull ProxiedPlayer viewer, final net.md_5.bungee.api.@NotNull Title title) {
       viewer.sendTitle(title);
     }
 
     @Override
-    public void clearTitle(final @NonNull ProxiedPlayer viewer) {
+    public void clearTitle(final @NotNull ProxiedPlayer viewer) {
       viewer.sendTitle(CLEAR);
     }
 
     @Override
-    public void resetTitle(final @NonNull ProxiedPlayer viewer) {
+    public void resetTitle(final @NotNull ProxiedPlayer viewer) {
       viewer.sendTitle(RESET);
     }
   }
@@ -155,7 +155,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     private final net.md_5.bungee.protocol.packet.BossBar bar;
     private volatile boolean initialized = false;
 
-    protected BossBar(final @NonNull Collection<ProxiedPlayer> viewers) {
+    protected BossBar(final @NotNull Collection<ProxiedPlayer> viewers) {
       super();
       this.viewers = new CopyOnWriteArraySet<>(viewers);
       this.bar = new net.md_5.bungee.protocol.packet.BossBar(UUID.randomUUID(), ACTION_ADD);
@@ -167,25 +167,25 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
       }
 
       @Override
-      public boolean isApplicable(final @NonNull ProxiedPlayer viewer) {
+      public boolean isApplicable(final @NotNull ProxiedPlayer viewer) {
         return super.isApplicable(viewer) && viewer.getPendingConnection().getVersion() >= PROTOCOL_BOSS_BAR;
       }
 
       @Override
-      public net.kyori.adventure.platform.bungeecord.BungeeFacet.@NonNull BossBar createBossBar(final @NonNull Collection<ProxiedPlayer> viewers) {
+      public net.kyori.adventure.platform.bungeecord.BungeeFacet.@NotNull BossBar createBossBar(final @NotNull Collection<ProxiedPlayer> viewers) {
         return new net.kyori.adventure.platform.bungeecord.BungeeFacet.BossBar(viewers);
       }
     }
 
     @Override
-    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NotNull BossBar bar) {
       BossBarPacket.super.bossBarInitialized(bar);
       this.initialized = true;
       this.broadcastPacket(ACTION_ADD);
     }
 
     @Override
-    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if(!this.viewers.isEmpty()) {
         this.bar.setTitle(ComponentSerializer.toString(this.createMessage(this.viewers.iterator().next(), newName)));
         this.broadcastPacket(ACTION_TITLE);
@@ -193,37 +193,37 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final float oldPercent, final float newPercent) {
       this.bar.setHealth(newPercent);
       this.broadcastPacket(ACTION_HEALTH);
     }
 
     @Override
-    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NonNull Color newColor) {
+    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NotNull Color newColor) {
       this.bar.setColor(this.createColor(newColor));
       this.broadcastPacket(ACTION_STYLE);
     }
 
     @Override
-    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay newOverlay) {
+    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay newOverlay) {
       this.bar.setDivision(this.createOverlay(newOverlay));
       this.broadcastPacket(ACTION_STYLE);
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
       this.bar.setFlags(this.createFlag(this.bar.getFlags(), flagsAdded, flagsRemoved));
       this.broadcastPacket(ACTION_FLAG);
     }
 
     @Override
-    public void addViewer(final @NonNull ProxiedPlayer viewer) {
+    public void addViewer(final @NotNull ProxiedPlayer viewer) {
       this.viewers.add(viewer);
       this.sendPacket(ACTION_ADD, viewer);
     }
 
     @Override
-    public void removeViewer(final @NonNull ProxiedPlayer viewer) {
+    public void removeViewer(final @NotNull ProxiedPlayer viewer) {
       this.viewers.remove(viewer);
       this.sendPacket(ACTION_REMOVE, viewer);
     }

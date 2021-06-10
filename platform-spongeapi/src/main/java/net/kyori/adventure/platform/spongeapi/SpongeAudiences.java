@@ -26,7 +26,7 @@ package net.kyori.adventure.platform.spongeapi;
 import com.google.inject.ImplementedBy;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -51,7 +51,7 @@ public interface SpongeAudiences extends AudienceProvider {
    * @return an audience provider
    * @since 4.0.0
    */
-  static @NonNull SpongeAudiences create(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+  static @NotNull SpongeAudiences create(final @NotNull PluginContainer plugin, final @NotNull Game game) {
     return SpongeAudiencesImpl.instanceFor(plugin, game);
   }
 
@@ -62,7 +62,7 @@ public interface SpongeAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience receiver(final @NonNull MessageReceiver receiver);
+  @NotNull Audience receiver(final @NotNull MessageReceiver receiver);
 
   /**
    * Gets an audience for a player.
@@ -71,7 +71,7 @@ public interface SpongeAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience player(final @NonNull Player player);
+  @NotNull Audience player(final @NotNull Player player);
 
   /**
    * Creates an audience based on a filter.
@@ -80,6 +80,6 @@ public interface SpongeAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience filter(final @NonNull Predicate<MessageReceiver> filter);
+  @NotNull Audience filter(final @NotNull Predicate<MessageReceiver> filter);
 }
 

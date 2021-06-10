@@ -37,8 +37,8 @@ import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.SettingsChangedEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -73,7 +73,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
 
   private static final Map<String, BungeeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
-  static BungeeAudiences instanceFor(final @NonNull Plugin plugin) {
+  static BungeeAudiences instanceFor(final @NotNull Plugin plugin) {
     requireNonNull(plugin, "plugin");
     return INSTANCES.computeIfAbsent(plugin.getDescription().getName(), name -> new BungeeAudiencesImpl(plugin));
   }
@@ -95,9 +95,9 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     }
   }
 
-  @NonNull
+  @NotNull
   @Override
-  public Audience sender(final @NonNull CommandSender sender) {
+  public Audience sender(final @NotNull CommandSender sender) {
     if(sender instanceof ProxiedPlayer) {
       return this.player((ProxiedPlayer) sender);
     } else if(this.isConsole(sender)) {
@@ -106,14 +106,14 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     return this.createAudience(Collections.singletonList(sender));
   }
 
-  @NonNull
+  @NotNull
   @Override
-  public Audience player(final @NonNull ProxiedPlayer player) {
+  public Audience player(final @NotNull ProxiedPlayer player) {
     return this.player(player.getUniqueId());
   }
 
   @Override
-  protected @Nullable UUID hasId(final @NonNull CommandSender viewer) {
+  protected @Nullable UUID hasId(final @NotNull CommandSender viewer) {
     if(viewer instanceof ProxiedPlayer) {
       return ((ProxiedPlayer) viewer).getUniqueId();
     }
@@ -121,31 +121,31 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   }
 
   @Override
-  protected boolean isConsole(final @NonNull CommandSender viewer) {
+  protected boolean isConsole(final @NotNull CommandSender viewer) {
     return ProxyServer.getInstance().getConsole().equals(viewer);
   }
 
   @Override
-  protected boolean hasPermission(final @NonNull CommandSender viewer, final @NonNull String permission) {
+  protected boolean hasPermission(final @NotNull CommandSender viewer, final @NotNull String permission) {
     return viewer.hasPermission(permission);
   }
 
   @Override
-  protected boolean isInWorld(final @NonNull CommandSender viewer, final @NonNull Key world) {
+  protected boolean isInWorld(final @NotNull CommandSender viewer, final @NotNull Key world) {
     return false;
   }
 
   @Override
-  protected boolean isOnServer(final @NonNull CommandSender viewer, final @NonNull String server) {
+  protected boolean isOnServer(final @NotNull CommandSender viewer, final @NotNull String server) {
     if(viewer instanceof ProxiedPlayer) {
       return ((ProxiedPlayer) viewer).getServer().getInfo().getName().equals(server);
     }
     return false;
   }
 
-  @NonNull
+  @NotNull
   @Override
-  protected BungeeAudience createAudience(final @NonNull Collection<CommandSender> viewers) {
+  protected BungeeAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
     return new BungeeAudience(viewers);
   }
 

@@ -35,8 +35,8 @@ import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.text.Component;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -71,7 +71,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   private final Function<V, UserConnection> connectionFunction;
   private final int minProtocol;
 
-  public ViaFacet(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction, final int minProtocol) {
+  public ViaFacet(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction, final int minProtocol) {
     super(viewerClass);
     this.connectionFunction = connectionFunction;
     this.minProtocol = minProtocol;
@@ -86,17 +86,17 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   }
 
   @Override
-  public boolean isApplicable(final @NonNull V viewer) {
+  public boolean isApplicable(final @NotNull V viewer) {
     return super.isApplicable(viewer)
       && this.minProtocol > Via.getAPI().getServerVersion().lowestSupportedVersion()
       && this.findProtocol(viewer) >= this.minProtocol;
   }
 
-  public @Nullable UserConnection findConnection(final @NonNull V viewer) {
+  public @Nullable UserConnection findConnection(final @NotNull V viewer) {
     return this.connectionFunction.apply(viewer);
   }
 
-  public int findProtocol(final @NonNull V viewer) {
+  public int findProtocol(final @NotNull V viewer) {
     final UserConnection connection = this.findConnection(viewer);
     if(connection != null) {
       return connection.getProtocolInfo().getProtocolVersion();
@@ -104,9 +104,9 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     return -1;
   }
 
-  @NonNull
+  @NotNull
   @Override
-  public String createMessage(final @NonNull V viewer, final @NonNull Component message) {
+  public String createMessage(final @NotNull V viewer, final @NotNull Component message) {
     final int protocol = this.findProtocol(viewer);
     if(protocol >= PROTOCOL_HEX_COLOR) {
       return gson().serialize(message);
@@ -121,7 +121,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     private final int packetId;
 
     @SuppressWarnings("unchecked")
-    protected ProtocolBased(final @NonNull String fromProtocol, final @NonNull String toProtocol, final int minProtocol, final @NonNull String packetName, final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+    protected ProtocolBased(final @NotNull String fromProtocol, final @NotNull String toProtocol, final int minProtocol, final @NotNull String packetName, final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       super(viewerClass, connectionFunction, minProtocol);
 
       final String protocolClassName = MessageFormat.format("{0}.protocols.protocol{1}to{2}.Protocol{1}To{2}", PACKAGE, fromProtocol, toProtocol);
@@ -156,11 +156,11 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
         && this.packetId >= 0;
     }
 
-    public PacketWrapper createPacket(final @NonNull V viewer) {
+    public PacketWrapper createPacket(final @NotNull V viewer) {
       return PacketWrapper.create(this.packetId, null, this.findConnection(viewer));
     }
 
-    public void sendPacket(final @NonNull PacketWrapper packet) {
+    public void sendPacket(final @NotNull PacketWrapper packet) {
       if(packet.user() == null) return;
       try {
         packet.send(this.protocolClass);
@@ -171,12 +171,12 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   }
 
   public static class Chat<V> extends ProtocolBased<V> implements ChatPacket<V, String> {
-    public Chat(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+    public Chat(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       super("1_16", "1_15_2", PROTOCOL_HEX_COLOR, "CHAT_MESSAGE", viewerClass, connectionFunction);
     }
 
     @Override
-    public void sendMessage(final @NonNull V viewer, final @NonNull Identity source, final @NonNull String message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull String message, final @NotNull MessageType type) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.STRING, message);
       packet.write(Type.BYTE, this.createMessageType(type));
@@ -186,28 +186,28 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   }
 
   public static class ActionBar<V> extends Chat<V> implements Facet.ActionBar<V, String> {
-    public ActionBar(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+    public ActionBar(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       super(viewerClass, connectionFunction);
     }
 
     @Override
-    public byte createMessageType(final @NonNull MessageType type) {
+    public byte createMessageType(final @NotNull MessageType type) {
       return TYPE_ACTION_BAR;
     }
 
     @Override
-    public void sendMessage(final @NonNull V viewer, final @NonNull String message) {
+    public void sendMessage(final @NotNull V viewer, final @NotNull String message) {
       this.sendMessage(viewer, Identity.nil(), message, MessageType.CHAT);
     }
   }
 
   public static class ActionBarTitle<V> extends ProtocolBased<V> implements Facet.ActionBar<V, String> {
-    public ActionBarTitle(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+    public ActionBarTitle(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       super("1_11", "1_10", TitlePacket.PROTOCOL_ACTION_BAR, "TITLE", viewerClass, connectionFunction);
     }
 
     @Override
-    public void sendMessage(final @NonNull V viewer, final @NonNull String message) {
+    public void sendMessage(final @NotNull V viewer, final @NotNull String message) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.VAR_INT, TitlePacket.ACTION_ACTIONBAR);
       packet.write(Type.STRING, message);
@@ -216,15 +216,15 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   }
 
   public static class Title<V> extends ProtocolBased<V> implements Facet.TitlePacket<V, String, Consumer<V>> {
-    protected Title(final @NonNull String fromProtocol, final @NonNull String toProtocol, final int minProtocol, final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+    protected Title(final @NotNull String fromProtocol, final @NotNull String toProtocol, final int minProtocol, final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       super(fromProtocol, toProtocol, minProtocol, "TITLE", viewerClass, connectionFunction);
     }
 
-    public Title(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+    public Title(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       this("1_16", "1_15_2", PROTOCOL_HEX_COLOR, viewerClass, connectionFunction);
     }
 
-    @NonNull
+    @NotNull
     @Override
     public Consumer<V> createTitle(final @Nullable String title, final @Nullable String subTitle, final int inTicks, final int stayTicks, final int outTicks) {
       return viewer -> {
@@ -254,19 +254,19 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void showTitle(final @NonNull V viewer, final @NonNull Consumer<V> title) {
+    public void showTitle(final @NotNull V viewer, final @NotNull Consumer<V> title) {
       title.accept(viewer);
     }
 
     @Override
-    public void clearTitle(final @NonNull V viewer) {
+    public void clearTitle(final @NotNull V viewer) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.VAR_INT, ACTION_CLEAR);
       this.sendPacket(packet);
     }
 
     @Override
-    public void resetTitle(final @NonNull V viewer) {
+    public void resetTitle(final @NotNull V viewer) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.VAR_INT, ACTION_RESET);
       this.sendPacket(packet);
@@ -282,42 +282,42 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     private int overlay;
     private byte flags;
 
-    private BossBar(final @NonNull String fromProtocol, final @NonNull String toProtocol, final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction, final Collection<V> viewers) {
+    private BossBar(final @NotNull String fromProtocol, final @NotNull String toProtocol, final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction, final Collection<V> viewers) {
       super(fromProtocol, toProtocol, PROTOCOL_BOSS_BAR, "BOSSBAR", viewerClass, connectionFunction);
       this.viewers = new CopyOnWriteArraySet<>(viewers);
     }
 
     public static class Builder<V> extends ViaFacet<V> implements Facet.BossBar.Builder<V, Facet.BossBar<V>> {
-      public Builder(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+      public Builder(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
         super(viewerClass, connectionFunction, PROTOCOL_HEX_COLOR);
       }
 
       @Override
-      public Facet.@NonNull BossBar<V> createBossBar(final @NonNull Collection<V> viewer) {
+      public Facet.@NotNull BossBar<V> createBossBar(final @NotNull Collection<V> viewer) {
         return new ViaFacet.BossBar<>("1_16", "1_15_2", this.viewerClass, this::findConnection, viewer);
       }
     }
 
     public static class Builder1_9_To_1_15<V> extends ViaFacet<V> implements Facet.BossBar.Builder<V, Facet.BossBar<V>> {
-      public Builder1_9_To_1_15(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> connectionFunction) {
+      public Builder1_9_To_1_15(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
         super(viewerClass, connectionFunction, PROTOCOL_BOSS_BAR);
       }
 
       @Override
-      public Facet.@NonNull BossBar<V> createBossBar(final @NonNull Collection<V> viewer) {
+      public Facet.@NotNull BossBar<V> createBossBar(final @NotNull Collection<V> viewer) {
         return new ViaFacet.BossBar<>("1_9", "1_8", this.viewerClass, this::findConnection, viewer);
       }
     }
 
     @Override
-    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NotNull BossBar bar) {
       Facet.BossBarPacket.super.bossBarInitialized(bar);
       this.id = UUID.randomUUID();
       this.broadcastPacket(ACTION_ADD);
     }
 
     @Override
-    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if(!this.viewers.isEmpty()) {
         this.title = this.createMessage(this.viewers.iterator().next(), newName);
         this.broadcastPacket(ACTION_TITLE);
@@ -325,30 +325,30 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final float oldPercent, final float newPercent) {
       this.health = newPercent;
       this.broadcastPacket(ACTION_HEALTH);
     }
 
     @Override
-    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NonNull Color newColor) {
+    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NotNull Color newColor) {
       this.color = this.createColor(newColor);
       this.broadcastPacket(ACTION_STYLE);
     }
 
     @Override
-    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay newOverlay) {
+    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay newOverlay) {
       this.overlay = this.createOverlay(newOverlay);
       this.broadcastPacket(ACTION_STYLE);
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
       this.flags = this.createFlag(this.flags, flagsAdded, flagsRemoved);
       this.broadcastPacket(ACTION_FLAG);
     }
 
-    public void sendPacket(final @NonNull V viewer, final int action) {
+    public void sendPacket(final @NotNull V viewer, final int action) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.UUID, this.id);
       packet.write(Type.VAR_INT, action);
@@ -376,14 +376,14 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void addViewer(final @NonNull V viewer) {
+    public void addViewer(final @NotNull V viewer) {
       if(this.viewers.add(viewer)) {
         this.sendPacket(viewer, ACTION_ADD);
       }
     }
 
     @Override
-    public void removeViewer(final @NonNull V viewer) {
+    public void removeViewer(final @NotNull V viewer) {
       if(this.viewers.remove(viewer)) {
         this.sendPacket(viewer, ACTION_REMOVE);
       }
@@ -403,7 +403,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
 
   public static final class TabList<V> extends ProtocolBased<V> implements Facet.TabList<V, String> {
 
-    public TabList(final @NonNull Class<? extends V> viewerClass, final @NonNull Function<V, UserConnection> userConnection) {
+    public TabList(final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> userConnection) {
       super("1_16", "1_15_2", PROTOCOL_HEX_COLOR, "TAB_LIST", viewerClass, userConnection);
     }
 

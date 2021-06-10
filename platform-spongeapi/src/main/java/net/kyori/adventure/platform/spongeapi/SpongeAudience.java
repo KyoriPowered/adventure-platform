@@ -25,7 +25,7 @@ package net.kyori.adventure.platform.spongeapi;
 
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
@@ -57,7 +57,7 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
     SpongeFacet.TabList::new
   );
 
-  SpongeAudience(final @NonNull Collection<MessageReceiver> viewers) {
+  SpongeAudience(final @NotNull Collection<MessageReceiver> viewers) {
     super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, null, BOOK, BOSS_BAR, TAB_LIST);
   }
 }

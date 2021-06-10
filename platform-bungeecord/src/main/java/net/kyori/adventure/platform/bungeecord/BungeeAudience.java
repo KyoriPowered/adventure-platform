@@ -27,7 +27,7 @@ import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudience;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -45,7 +45,7 @@ final class BungeeAudience extends FacetAudience<CommandSender> {
     BungeeFacet.TabList::new
   );
 
-  BungeeAudience(final @NonNull Collection<? extends CommandSender> viewers) {
+  BungeeAudience(final @NotNull Collection<? extends CommandSender> viewers) {
     super(viewers, null, CHAT, ACTION_BAR, TITLE, null, null, null, BOSS_BAR, TAB_LIST);
   }
 }

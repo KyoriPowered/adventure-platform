@@ -33,8 +33,8 @@ import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.translation.GlobalTranslator;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
 import java.util.Collection;
@@ -59,9 +59,9 @@ import static java.util.Objects.requireNonNull;
  * @since 4.0.0
  */
 public class FacetAudience<V> implements Audience, Closeable {
-  private final @NonNull Set<V> viewers;
+  private final @NotNull Set<V> viewers;
   private volatile @Nullable V viewer; // The first viewer is used for facet and message selection
-  private volatile @NonNull Locale locale;
+  private volatile @NotNull Locale locale;
 
   private final Facet.@Nullable Chat<V, Object> chat;
   private final Facet.@Nullable ActionBar<V, Object> actionBar;
@@ -88,7 +88,7 @@ public class FacetAudience<V> implements Audience, Closeable {
    */
   @SuppressWarnings({"unchecked", "rawtypes"}) // Without suppression, this constructor becomes unreadable
   public FacetAudience(
-    final @NonNull Collection<? extends V> viewers,
+    final @NotNull Collection<? extends V> viewers,
     final @Nullable Locale locale,
     final @Nullable Collection<? extends Facet.Chat> chat,
     final @Nullable Collection<? extends Facet.ActionBar> actionBar,
@@ -121,7 +121,7 @@ public class FacetAudience<V> implements Audience, Closeable {
    * @param viewer the viewer
    * @since 4.0.0
    */
-  public void addViewer(final @NonNull V viewer) {
+  public void addViewer(final @NotNull V viewer) {
     if(this.viewers.add(viewer) && this.viewer == null) {
       this.viewer = viewer;
     }
@@ -133,7 +133,7 @@ public class FacetAudience<V> implements Audience, Closeable {
    * @param viewer the viewer to remove
    * @since 4.0.0
    */
-  public void removeViewer(final @NonNull V viewer) {
+  public void removeViewer(final @NotNull V viewer) {
     if(this.viewers.remove(viewer) && this.viewer == viewer) {
       this.viewer = this.viewers.isEmpty() ? null : this.viewers.iterator().next();
     }
@@ -150,12 +150,12 @@ public class FacetAudience<V> implements Audience, Closeable {
    * @param locale a locale
    * @since 4.0.0
    */
-  public void changeLocale(final @NonNull Locale locale) {
+  public void changeLocale(final @NotNull Locale locale) {
     this.locale = requireNonNull(locale, "locale");
   }
 
   @Override
-  public void sendMessage(final @NonNull Identity source, final @NonNull Component original, final @NonNull MessageType type) {
+  public void sendMessage(final @NotNull Identity source, final @NotNull Component original, final @NotNull MessageType type) {
     if(this.chat == null) return;
 
     final Object message = this.createMessage(original, this.chat);
@@ -167,7 +167,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void sendActionBar(final @NonNull Component original) {
+  public void sendActionBar(final @NotNull Component original) {
     if(this.actionBar == null) return;
 
     final Object message = this.createMessage(original, this.actionBar);
@@ -179,7 +179,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void playSound(final net.kyori.adventure.sound.@NonNull Sound original) {
+  public void playSound(final net.kyori.adventure.sound.@NotNull Sound original) {
     if(this.sound == null) return;
 
     for(final V viewer : this.viewers) {
@@ -191,7 +191,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void playSound(final @NonNull Sound sound, final Sound.@NonNull Emitter emitter) {
+  public void playSound(final @NotNull Sound sound, final Sound.@NotNull Emitter emitter) {
     if(this.entitySound == null) return;
     if(emitter == Sound.Emitter.self()) {
       for(final V viewer : this.viewers) {
@@ -210,7 +210,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void playSound(final net.kyori.adventure.sound.@NonNull Sound original, final double x, final double y, final double z) {
+  public void playSound(final net.kyori.adventure.sound.@NotNull Sound original, final double x, final double y, final double z) {
     if(this.sound == null) return;
 
     final Object position = this.sound.createPosition(x, y, z);
@@ -220,7 +220,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void stopSound(final @NonNull SoundStop original) {
+  public void stopSound(final @NotNull SoundStop original) {
     if(this.sound == null) return;
 
     for(final V viewer : this.viewers) {
@@ -229,7 +229,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void openBook(final net.kyori.adventure.inventory.@NonNull Book original) {
+  public void openBook(final net.kyori.adventure.inventory.@NotNull Book original) {
     if(this.book == null) return;
 
     final Object title = this.createMessage(original.title(), this.book);
@@ -252,7 +252,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void showTitle(final net.kyori.adventure.title.@NonNull Title original) {
+  public void showTitle(final net.kyori.adventure.title.@NotNull Title original) {
     if(this.title == null) return;
 
     final Object mainTitle = this.createMessage(original.title(), this.title);
@@ -289,7 +289,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void showBossBar(final @NonNull BossBar bar) {
+  public void showBossBar(final @NotNull BossBar bar) {
     if(this.bossBars == null) return;
 
     Facet.BossBar<V> listener;
@@ -312,7 +312,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void hideBossBar(final @NonNull BossBar bar) {
+  public void hideBossBar(final @NotNull BossBar bar) {
     if(this.bossBars == null) return;
 
     final Facet.BossBar<V> listener = this.bossBars.get(bar);
@@ -329,7 +329,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void sendPlayerListHeader(final @NonNull Component header) {
+  public void sendPlayerListHeader(final @NotNull Component header) {
     if(this.tabList != null) {
       final Object headerFormatted = this.createMessage(header, this.tabList);
       if(headerFormatted == null) return;
@@ -340,7 +340,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void sendPlayerListFooter(final @NonNull Component footer) {
+  public void sendPlayerListFooter(final @NotNull Component footer) {
     if(this.tabList != null) {
       final Object footerFormatted = this.createMessage(footer, this.tabList);
       if(footerFormatted == null) return;
@@ -351,7 +351,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   @Override
-  public void sendPlayerListHeaderAndFooter(final @NonNull Component header, final @NonNull Component footer) {
+  public void sendPlayerListHeaderAndFooter(final @NotNull Component header, final @NotNull Component footer) {
     if(this.tabList != null) {
       final Object headerFormatted = this.createMessage(header, this.tabList);
       final Object footerFormatted = this.createMessage(footer, this.tabList);
@@ -378,7 +378,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     this.viewers.clear();
   }
 
-  private @Nullable Object createMessage(final @NonNull Component original, final Facet.@NonNull Message<V, Object> facet) {
+  private @Nullable Object createMessage(final @NotNull Component original, final Facet.@NotNull Message<V, Object> facet) {
     final Component message = GlobalTranslator.render(original, this.locale);
     final V viewer = this.viewer;
     return viewer == null ? null : facet.createMessage(viewer, message);

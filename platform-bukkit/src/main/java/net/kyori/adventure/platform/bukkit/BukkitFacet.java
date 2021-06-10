@@ -41,8 +41,8 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Set;
@@ -64,9 +64,9 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       super(viewerClass);
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public String createMessage(final @NonNull V viewer, final @NonNull Component message) {
+    public String createMessage(final @NotNull V viewer, final @NotNull Component message) {
       return legacy().serialize(message);
     }
   }
@@ -77,7 +77,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NonNull CommandSender viewer, final @NonNull Identity source, final @NonNull String message, final @NonNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final @NotNull String message, final @NotNull MessageType type) {
       viewer.sendMessage(message);
     }
   }
@@ -87,13 +87,13 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       super(Player.class);
     }
 
-    @NonNull
+    @NotNull
     @Override
-    public Vector createPosition(final @NonNull Player viewer) {
+    public Vector createPosition(final @NotNull Player viewer) {
       return viewer.getLocation().toVector();
     }
 
-    @NonNull
+    @NotNull
     @Override
     public Vector createPosition(final double x, final double y, final double z) {
       return new Vector(x, y, z);
@@ -105,7 +105,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final boolean STOP_SUPPORTED = hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
 
     @Override
-    public void playSound(final @NonNull Player viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull Vector vector) {
+    public void playSound(final @NotNull Player viewer, final net.kyori.adventure.sound.@NotNull Sound sound, final @NotNull Vector vector) {
       final String name = name(sound.name());
       final Location location = vector.toLocation(viewer.getWorld());
 
@@ -113,14 +113,14 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void stopSound(final @NonNull Player viewer, final @NonNull SoundStop stop) {
+    public void stopSound(final @NotNull Player viewer, final @NotNull SoundStop stop) {
       if(STOP_SUPPORTED) {
         final String name = name(stop.sound());
         viewer.stopSound(name);
       }
     }
 
-    protected static @NonNull String name(final @Nullable Key name) {
+    protected static @NotNull String name(final @Nullable Key name) {
       if(name == null) {
         return "";
       }
@@ -141,7 +141,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void playSound(final @NonNull Player viewer, final net.kyori.adventure.sound.@NonNull Sound sound, final @NonNull Vector vector) {
+    public void playSound(final @NotNull Player viewer, final net.kyori.adventure.sound.@NotNull Sound sound, final @NotNull Vector vector) {
       final SoundCategory category = this.category(sound.source());
       if(category == null) {
         super.playSound(viewer, sound, vector);
@@ -152,7 +152,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void stopSound(final @NonNull Player viewer, final @NonNull SoundStop stop) {
+    public void stopSound(final @NotNull Player viewer, final @NotNull SoundStop stop) {
       final SoundCategory category = this.category(stop.source());
       if(category == null) {
         super.stopSound(viewer, stop);
@@ -205,7 +205,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public net.kyori.adventure.platform.bukkit.BukkitFacet.@NonNull BossBar createBossBar(final @NonNull Collection<Player> viewers) {
+    public net.kyori.adventure.platform.bukkit.BukkitFacet.@NotNull BossBar createBossBar(final @NotNull Collection<Player> viewers) {
       return new net.kyori.adventure.platform.bukkit.BukkitFacet.BossBar(viewers);
     }
   }
@@ -213,7 +213,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
   static class BossBar extends Message<Player> implements Facet.BossBar<Player> {
     protected final org.bukkit.boss.BossBar bar;
 
-    protected BossBar(final @NonNull Collection<Player> viewers) {
+    protected BossBar(final @NotNull Collection<Player> viewers) {
       super(Player.class);
       this.bar = Bukkit.createBossBar("", BarColor.PINK, BarStyle.SOLID);
       this.bar.setVisible(false);
@@ -223,32 +223,32 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NonNull BossBar bar) {
+    public void bossBarInitialized(final net.kyori.adventure.bossbar.@NotNull BossBar bar) {
       Facet.BossBar.super.bossBarInitialized(bar);
       this.bar.setVisible(true);
     }
 
     @Override
-    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Component oldName, final @NonNull Component newName) {
+    public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if(!this.bar.getPlayers().isEmpty()) {
         this.bar.setTitle(this.createMessage(this.bar.getPlayers().get(0), newName));
       }
     }
 
     @Override
-    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final float oldPercent, final float newPercent) {
+    public void bossBarProgressChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final float oldPercent, final float newPercent) {
       this.bar.setProgress(newPercent);
     }
 
     @Override
-    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NonNull Color newColor) {
+    public void bossBarColorChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Color oldColor, final net.kyori.adventure.bossbar.BossBar.@NotNull Color newColor) {
       final BarColor color = this.color(newColor);
       if(color != null) {
         this.bar.setColor(color);
       }
     }
 
-    private @Nullable BarColor color(final net.kyori.adventure.bossbar.BossBar.@NonNull Color color) {
+    private @Nullable BarColor color(final net.kyori.adventure.bossbar.BossBar.@NotNull Color color) {
       if(color == net.kyori.adventure.bossbar.BossBar.Color.PINK) {
         return BarColor.PINK;
       } else if(color == net.kyori.adventure.bossbar.BossBar.Color.BLUE) {
@@ -269,14 +269,14 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay newOverlay) {
+    public void bossBarOverlayChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay oldOverlay, final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay newOverlay) {
       final BarStyle style = this.style(newOverlay);
       if(style != null) {
         this.bar.setStyle(style);
       }
     }
 
-    private @Nullable BarStyle style(final net.kyori.adventure.bossbar.BossBar.@NonNull Overlay overlay) {
+    private @Nullable BarStyle style(final net.kyori.adventure.bossbar.BossBar.@NotNull Overlay overlay) {
       if(overlay == net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS) {
         return BarStyle.SOLID;
       } else if(overlay == net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_6) {
@@ -293,7 +293,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NonNull BossBar bar, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NonNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
+    public void bossBarFlagsChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsAdded, final @NotNull Set<net.kyori.adventure.bossbar.BossBar.Flag> flagsRemoved) {
       for(final net.kyori.adventure.bossbar.BossBar.Flag removeFlag : flagsRemoved) {
         final BarFlag flag = this.flag(removeFlag);
         if(flag != null) {
@@ -308,7 +308,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       }
     }
 
-    private @Nullable BarFlag flag(final net.kyori.adventure.bossbar.BossBar.@NonNull Flag flag) {
+    private @Nullable BarFlag flag(final net.kyori.adventure.bossbar.BossBar.@NotNull Flag flag) {
       if(flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN) {
         return BarFlag.DARKEN_SKY;
       } else if(flag == net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC) {
@@ -321,12 +321,12 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void addViewer(final @NonNull Player viewer) {
+    public void addViewer(final @NotNull Player viewer) {
       this.bar.addPlayer(viewer);
     }
 
     @Override
-    public void removeViewer(final @NonNull Player viewer) {
+    public void removeViewer(final @NotNull Player viewer) {
       this.bar.removePlayer(viewer);
     }
 
@@ -343,7 +343,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static final class ViaHook implements Function<Player, UserConnection> {
     @Override
-    public UserConnection apply(final @NonNull Player player) {
+    public UserConnection apply(final @NotNull Player player) {
       return Via.getManager().getConnectionManager().getConnectedClient(player.getUniqueId());
     }
   }

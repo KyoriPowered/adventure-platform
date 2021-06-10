@@ -30,9 +30,8 @@ import java.lang.reflect.Field;
 
 import com.google.common.annotations.Beta;
 import org.bukkit.Bukkit;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.reflection.qual.ForName;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -73,8 +72,7 @@ public final class MinecraftReflection {
    * @param className a class name
    * @return a class or {@code null} if not found
    */
-  @ForName
-  public static @Nullable Class<?> findClass(final @NonNull String className) {
+  public static @Nullable Class<?> findClass(final @NotNull String className) {
     try {
       return Class.forName(className);
     } catch(final ClassNotFoundException e) {
@@ -88,7 +86,7 @@ public final class MinecraftReflection {
    * @param className a class name
    * @return if the class is loaded
    */
-  public static boolean hasClass(final @NonNull String className) {
+  public static boolean hasClass(final @NotNull String className) {
     return findClass(className) != null;
   }
 
@@ -205,7 +203,7 @@ public final class MinecraftReflection {
    * @return an accessible field
    * @throws NoSuchFieldException when thrown by {@link Class#getDeclaredField(String)}
    */
-  public static @NonNull Field needField(final @NonNull Class<?> holderClass, final @NonNull String fieldName) throws NoSuchFieldException {
+  public static @NotNull Field needField(final @NotNull Class<?> holderClass, final @NotNull String fieldName) throws NoSuchFieldException {
     final Field field = holderClass.getDeclaredField(fieldName);
     field.setAccessible(true);
     return field;
@@ -218,7 +216,7 @@ public final class MinecraftReflection {
    * @param fieldName a field name
    * @return an accessible field
    */
-  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NonNull String fieldName) {
+  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NotNull String fieldName) {
     return findField(holderClass, fieldName, null);
   }
 
@@ -229,7 +227,7 @@ public final class MinecraftReflection {
    * @param fieldName a field name
    * @return an accessible field
    */
-  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NonNull String fieldName, final @Nullable Class<?> expectedType) {
+  public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @NotNull String fieldName, final @Nullable Class<?> expectedType) {
     if(holderClass == null) return null;
 
     final Field field;
@@ -286,7 +284,7 @@ public final class MinecraftReflection {
    * @param enumName an enum name
    * @return an enum value or {@code null} if not found
    */
-  public static @Nullable Object findEnum(final @Nullable Class<?> enumClass, final @NonNull String enumName) {
+  public static @Nullable Object findEnum(final @Nullable Class<?> enumClass, final @NotNull String enumName) {
     return findEnum(enumClass, enumName, Integer.MAX_VALUE);
   }
 
@@ -299,7 +297,7 @@ public final class MinecraftReflection {
    * @return an enum value or {@code null} if not found
    */
   @SuppressWarnings("unchecked")
-  public static @Nullable Object findEnum(final @Nullable Class<?> enumClass, final @NonNull String enumName, final int enumFallbackOrdinal) {
+  public static @Nullable Object findEnum(final @Nullable Class<?> enumClass, final @NotNull String enumName, final int enumFallbackOrdinal) {
     if(enumClass == null || !Enum.class.isAssignableFrom(enumClass)) {
       return null;
     }
@@ -331,7 +329,7 @@ public final class MinecraftReflection {
    * @param className a class name, without the {@code org.bukkit.craftbukkit} prefix
    * @return a class name or {@code null} if not found
    */
-  public static @Nullable String findCraftClassName(final @NonNull String className) {
+  public static @Nullable String findCraftClassName(final @NotNull String className) {
     return isCraftBukkit() ? PREFIX_CRAFTBUKKIT + VERSION + className : null;
   }
 
@@ -341,8 +339,7 @@ public final class MinecraftReflection {
    * @param className a class name, without the {@code org.bukkit.craftbukkit} prefix
    * @return a class or {@code null} if not found
    */
-  @ForName
-  public static @Nullable Class<?> findCraftClass(final @NonNull String className) {
+  public static @Nullable Class<?> findCraftClass(final @NotNull String className) {
     final String craftClassName = findCraftClassName(className);
     if(craftClassName == null) {
       return null;
@@ -356,11 +353,10 @@ public final class MinecraftReflection {
    *
    * @param className a class name, without the {@code org.bukkit.craftbukkit} prefix
    * @param superClass a super class
-   * @return a class or {@code null} if not found
    * @param <T> a super type
+   * @return a class or {@code null} if not found
    */
-  @ForName
-  public static <T> @Nullable Class<? extends T> findCraftClass(final @NonNull String className, final @NonNull Class<T> superClass) {
+  public static <T> @Nullable Class<? extends T> findCraftClass(final @NotNull String className, final @NotNull Class<T> superClass) {
     final Class<?> craftClass = findCraftClass(className);
     if(craftClass == null || !requireNonNull(superClass, "superClass").isAssignableFrom(craftClass)) {
       return null;
@@ -375,8 +371,7 @@ public final class MinecraftReflection {
    * @return a class
    * @throws NullPointerException if the class was not found
    */
-  @ForName
-  public static @NonNull Class<?> needCraftClass(final @NonNull String className) {
+  public static @NotNull Class<?> needCraftClass(final @NotNull String className) {
     return requireNonNull(findCraftClass(className), "Could not find org.bukkit.craftbukkit class " + className);
   }
 
@@ -386,7 +381,7 @@ public final class MinecraftReflection {
    * @param className a class name, without the {@code net.minecraft.server} prefix
    * @return a class name or {@code null} if not found
    */
-  public static @Nullable String findNmsClassName(final @NonNull String className) {
+  public static @Nullable String findNmsClassName(final @NotNull String className) {
     return isCraftBukkit() ? PREFIX_NMS + VERSION + className : null;
   }
 
@@ -396,8 +391,7 @@ public final class MinecraftReflection {
    * @param className a class name, without the {@code net.minecraft.server} prefix
    * @return a class name or {@code null} if not found
    */
-  @ForName
-  public static @Nullable Class<?> findNmsClass(final @NonNull String className) {
+  public static @Nullable Class<?> findNmsClass(final @NotNull String className) {
     final String nmsClassName = findNmsClassName(className);
     if(nmsClassName == null) {
       return null;
@@ -413,8 +407,7 @@ public final class MinecraftReflection {
    * @return a class
    * @throws NullPointerException if the class was not found
    */
-  @ForName
-  public static @NonNull Class<?> needNmsClass(final @NonNull String className) {
+  public static @NotNull Class<?> needNmsClass(final @NotNull String className) {
     return requireNonNull(findNmsClass(className), "Could not find net.minecraft.server class " + className);
   }
 
@@ -423,7 +416,7 @@ public final class MinecraftReflection {
    *
    * @return the method handle lookup
    */
-  public static MethodHandles.@NonNull Lookup lookup() {
+  public static MethodHandles.@NotNull Lookup lookup() {
     return LOOKUP;
   }
 }

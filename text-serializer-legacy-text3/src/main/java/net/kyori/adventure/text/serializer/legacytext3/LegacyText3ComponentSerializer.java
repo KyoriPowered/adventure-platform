@@ -26,7 +26,7 @@ package net.kyori.adventure.text.serializer.legacytext3;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import static java.util.Objects.requireNonNull;
 
@@ -44,7 +44,7 @@ public final class LegacyText3ComponentSerializer implements ComponentSerializer
    * @return a component serializer
    * @since 4.0.0
    */
-  public static @NonNull LegacyText3ComponentSerializer get() {
+  public static @NotNull LegacyText3ComponentSerializer get() {
     return INSTANCE;
   }
 
@@ -52,12 +52,12 @@ public final class LegacyText3ComponentSerializer implements ComponentSerializer
   }
 
   @Override
-  public @NonNull Component deserialize(final net.kyori.text.@NonNull Component input) {
+  public @NotNull Component deserialize(final net.kyori.text.@NotNull Component input) {
     return GsonComponentSerializer.gson().deserialize(net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.serialize(requireNonNull(input, "text")));
   }
 
   @Override
-  public net.kyori.text.@NonNull Component serialize(final @NonNull Component component) {
+  public net.kyori.text.@NotNull Component serialize(final @NotNull Component component) {
     return net.kyori.text.serializer.gson.GsonComponentSerializer.INSTANCE.deserialize(GsonComponentSerializer.colorDownsamplingGson().serialize(requireNonNull(component, "component")));
   }
 }

@@ -30,7 +30,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Predicate;
 
@@ -50,7 +50,7 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return an audience provider
    * @since 4.0.0
    */
-  static @NonNull BukkitAudiences create(final @NonNull Plugin plugin) {
+  static @NotNull BukkitAudiences create(final @NotNull Plugin plugin) {
     return BukkitAudiencesImpl.instanceFor(plugin);
   }
 
@@ -61,7 +61,7 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return an emitter
    * @since 4.0.0
    */
-  static Sound.@NonNull Emitter asEmitter(final @NonNull Entity entity) {
+  static Sound.@NotNull Emitter asEmitter(final @NotNull Entity entity) {
     return new BukkitEmitter(entity);
   }
 
@@ -72,7 +72,7 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience sender(final @NonNull CommandSender sender);
+  @NotNull Audience sender(final @NotNull CommandSender sender);
 
   /**
    * Gets an audience for a player.
@@ -81,7 +81,7 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience player(final @NonNull Player player);
+  @NotNull Audience player(final @NotNull Player player);
 
   /**
    * Creates an audience based on a filter.
@@ -90,6 +90,6 @@ public interface BukkitAudiences extends AudienceProvider {
    * @return an audience
    * @since 4.0.0
    */
-  @NonNull Audience filter(final @NonNull Predicate<CommandSender> filter);
+  @NotNull Audience filter(final @NotNull Predicate<CommandSender> filter);
 }
 
