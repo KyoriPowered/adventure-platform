@@ -130,7 +130,15 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public boolean isSupported() {
-      return SUPPORTED && super.isSupported();
+      return SUPPORTED && super.isSupported() && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null;
+    }
+
+    @Override
+    protected Object create117Packet(final Player viewer, final @Nullable Object header, final @Nullable Object footer) throws Throwable {
+      final Object packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(null, null);
+      CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
+      CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER.invoke(packet, footer == null ? this.createMessage(viewer, Component.empty()) : footer);
+      return packet;
     }
 
     @Override

@@ -1198,16 +1198,16 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       findMcClassName("network.protocol.game.ClientboundTabListPacket")
     );
     private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17 = findConstructor(CLIENTBOUND_TAB_LIST_PACKET);
-    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR = findConstructor(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, CLASS_CHAT_COMPONENT);
+    protected static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_CTOR = findConstructor(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, CLASS_CHAT_COMPONENT);
     // Fields added by spigot -- names stable
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_HEADER = findField(CLASS_CRAFT_PLAYER, "playerListHeader");
     private static final @Nullable Field CRAFT_PLAYER_TAB_LIST_FOOTER = findField(CLASS_CRAFT_PLAYER, "playerListFooter");
 
-    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = first(
+    protected static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER = first(
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, PaperFacet.NATIVE_COMPONENT_CLASS, "adventure$header")),
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, "header", "a"))
     );
-    private static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = first(
+    protected static final @Nullable MethodHandle CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER = first(
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, PaperFacet.NATIVE_COMPONENT_CLASS, "adventure$footer")),
       findSetterOf(findField(CLIENTBOUND_TAB_LIST_PACKET, CLASS_CHAT_COMPONENT, "footer", "b"))
     );
@@ -1225,6 +1225,13 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public boolean isSupported() {
       return (CLIENTBOUND_TAB_LIST_PACKET_CTOR != null || CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17 != null) && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null && super.isSupported();
+    }
+
+    protected Object create117Packet(final Player viewer, final @Nullable Object header, final @Nullable Object footer) throws Throwable {
+      return CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(
+        header == null ? this.createMessage(viewer, Component.empty()) : header,
+        footer == null ? this.createMessage(viewer, Component.empty()) : footer
+      );
     }
 
     @Override
@@ -1246,10 +1253,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
         final Object packet;
         if(CLIENTBOUND_TAB_LIST_PACKET_CTOR != null) {
-          packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(
-            header == null ? this.createMessage(viewer, Component.empty()) : header,
-            footer == null ? this.createMessage(viewer, Component.empty()) : footer
-          );
+          packet = this.create117Packet(viewer, header, footer);
         } else {
           packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17.invoke();
           CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
