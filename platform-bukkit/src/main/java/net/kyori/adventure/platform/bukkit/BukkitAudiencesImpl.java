@@ -89,7 +89,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
     this.plugin = plugin;
     this.softDepend("ViaVersion");
 
-    final CommandSender console = new LazyConsole(this.plugin.getServer());
+    final CommandSender console = this.plugin.getServer().getConsoleSender();
     this.addViewer(console);
     this.changeViewer(console, Locale.getDefault());
 
