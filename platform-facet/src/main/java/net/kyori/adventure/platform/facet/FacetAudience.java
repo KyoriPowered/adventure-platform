@@ -31,6 +31,7 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.jetbrains.annotations.NotNull;
@@ -232,8 +233,8 @@ public class FacetAudience<V> implements Audience, Closeable {
   public void openBook(final net.kyori.adventure.inventory.@NotNull Book original) {
     if(this.book == null) return;
 
-    final Object title = this.createMessage(original.title(), this.book);
-    final Object author = this.createMessage(original.author(), this.book);
+    final String title = this.toPlain(original.title());
+    final String author = this.toPlain(original.author());
     final List<Object> pages = new LinkedList<>();
     for(final Component originalPage : original.pages()) {
       final Object page = this.createMessage(originalPage, this.book);
@@ -249,6 +250,15 @@ public class FacetAudience<V> implements Audience, Closeable {
     for(final V viewer : this.viewers) {
       this.book.openBook(viewer, book);
     }
+  }
+
+  private String toPlain(final Component comp) {
+    if(comp == null) {
+      return null;
+    }
+    final StringBuilder builder = new StringBuilder();
+    ComponentFlattener.basic().flatten(GlobalTranslator.render(comp, this.locale), builder::append);
+    return builder.toString();
   }
 
   @Override

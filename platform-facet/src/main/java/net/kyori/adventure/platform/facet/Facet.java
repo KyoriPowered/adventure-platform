@@ -405,7 +405,7 @@ public interface Facet<V> {
      * @return a book or {@code null}
      * @since 4.0.0
      */
-    @Nullable B createBook(final @NotNull M title, final @NotNull M author, final @NotNull Iterable<M> pages);
+    @Nullable B createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<M> pages);
 
     /**
      * Opens a book.

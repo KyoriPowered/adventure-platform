@@ -658,7 +658,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @NotNull
     @Override
-    public ItemStack createBook(final @NotNull Object title, final @NotNull Object author, final @NotNull Iterable<Object> pages) {
+    public ItemStack createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<Object> pages) {
       return this.applyTag(BOOK_STACK, tagFor(title, author, pages));
     }
 
@@ -682,14 +682,14 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final String BOOK_PAGES = "pages";
     private static final String BOOK_RESOLVED = "resolved"; // set resolved to save on a parse as MC Components for parseable texts
 
-    private static CompoundBinaryTag tagFor(final @NotNull Object title, final @NotNull Object author, final @NotNull Iterable<Object> pages) {
+    private static CompoundBinaryTag tagFor(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<Object> pages) {
       final ListBinaryTag.Builder<StringBinaryTag> builder = ListBinaryTag.builder(BinaryTagTypes.STRING);
       for(final Object page : pages) {
         builder.add(StringBinaryTag.of((String) page));
       }
       return CompoundBinaryTag.builder()
-        .putString(BOOK_TITLE, (String) title)
-        .putString(BOOK_AUTHOR, (String) author)
+        .putString(BOOK_TITLE, title)
+        .putString(BOOK_AUTHOR, author)
         .put(BOOK_PAGES, builder.build())
         .putByte(BOOK_RESOLVED, (byte) 1)
         .build();

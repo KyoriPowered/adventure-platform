@@ -48,7 +48,6 @@ import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSer
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
 import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
-import static net.md_5.bungee.api.chat.BaseComponent.toLegacyText;
 
 class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("spigot", true) && isNative();
@@ -152,7 +151,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
 
     @NotNull
     @Override
-    public ItemStack createBook(final BaseComponent @NotNull[] title, final BaseComponent @NotNull[] author, final @NotNull Iterable<BaseComponent[]> pages) {
+    public ItemStack createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<BaseComponent[]> pages) {
       final ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
       final ItemMeta meta = book.getItemMeta();
       if(meta instanceof BookMeta) {
@@ -160,8 +159,8 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
         for(final BaseComponent[] page : pages) {
           spigot.spigot().addPage(page);
         }
-        spigot.setTitle(toLegacyText(title));
-        spigot.setAuthor(toLegacyText(author));
+        spigot.setTitle(title);
+        spigot.setAuthor(author);
         book.setItemMeta(spigot);
       }
       return book;

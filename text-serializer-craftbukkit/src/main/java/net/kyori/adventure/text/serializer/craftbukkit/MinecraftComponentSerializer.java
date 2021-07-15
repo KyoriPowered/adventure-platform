@@ -151,7 +151,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
         }
       }
     } catch(final Throwable error) {
-      INITIALIZATION_ERROR.set(new UnsupportedOperationException(error));
+      INITIALIZATION_ERROR.set(new UnsupportedOperationException("Erorr occurred during initialization", error));
     }
 
     MC_TEXT_GSON = gson;

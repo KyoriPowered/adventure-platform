@@ -246,8 +246,8 @@ class SpongeFacet<V> extends FacetBase<V> {
 
     @NotNull
     @Override
-    public BookView createBook(final @NotNull Text title, final @NotNull Text author, final @NotNull Iterable<Text> pages) {
-      return BookView.builder().title(title).author(author).addPages(Lists.newArrayList(pages)).build();
+    public BookView createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<Text> pages) {
+      return BookView.builder().title(Text.of(title)).author(Text.of(author)).addPages(Lists.newArrayList(pages)).build();
     }
 
     @Override
