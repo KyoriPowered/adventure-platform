@@ -56,8 +56,10 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
     // () -> new ViaFacet.TabList<>(Player.class, VIA),
     SpongeFacet.TabList::new
   );
+  private static final Collection<Facet.Pointers<?>> POINTERS = Facet.of(
+  );
 
   SpongeAudience(final @NotNull Collection<MessageReceiver> viewers) {
-    super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, null, BOOK, BOSS_BAR, TAB_LIST);
+    super(viewers, null, CHAT, ACTION_BAR, TITLE, SOUND, null, BOOK, BOSS_BAR, TAB_LIST, POINTERS);
   }
 }

@@ -29,6 +29,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -65,6 +66,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   private final @NotNull Set<V> viewers;
   private volatile @Nullable V viewer; // The first viewer is used for facet and message selection
   private volatile @NotNull Locale locale;
+  private volatile Pointers pointers; // lazy init
 
   private final Facet.@Nullable Chat<V, Object> chat;
   private final Facet.@Nullable ActionBar<V, Object> actionBar;
@@ -75,6 +77,7 @@ public class FacetAudience<V> implements Audience, Closeable {
   private final Facet.BossBar.@Nullable Builder<V, Facet.BossBar<V>> bossBar;
   private final @Nullable Map<BossBar, Facet.BossBar<V>> bossBars;
   private final Facet.@Nullable TabList<V, Object> tabList;
+  private final @NotNull Collection<? extends Facet.Pointers<V>> pointerProviders;
 
   /**
    * Create a new facet-based audience.
@@ -100,7 +103,8 @@ public class FacetAudience<V> implements Audience, Closeable {
     final @Nullable Collection<? extends Facet.EntitySound> entitySound,
     final @Nullable Collection<? extends Facet.Book> book,
     final @Nullable Collection<? extends Facet.BossBar.Builder> bossBar,
-    final @Nullable Collection<? extends Facet.TabList> tabList
+    final @Nullable Collection<? extends Facet.TabList> tabList,
+    final @Nullable Collection<? extends Facet.Pointers> pointerProviders
   ) {
     this.viewers = new CopyOnWriteArraySet<>();
     this.locale = locale == null ? Locale.US : locale;
@@ -116,6 +120,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     this.bossBar = Facet.of(bossBar, this.viewer);
     this.bossBars = this.bossBar == null ? null : Collections.synchronizedMap(new IdentityHashMap<>(4));
     this.tabList = Facet.of(tabList, this.viewer);
+    this.pointerProviders = pointerProviders == null ? Collections.emptyList() : (Collection) pointerProviders;
   }
 
   /**
@@ -411,6 +416,27 @@ public class FacetAudience<V> implements Audience, Closeable {
         this.tabList.send(viewer, headerFormatted, footerFormatted);
       }
     }
+  }
+
+  @Override
+  public @NotNull Pointers pointers() {
+    if(this.pointers == null) {
+      synchronized (this) {
+        if(this.pointers == null) {
+          final V viewer = this.viewer;
+          if(viewer == null) return Pointers.empty();
+          final Pointers.Builder builder = Pointers.builder();
+          for(final Facet.Pointers<V> provider : this.pointerProviders) {
+            if(provider.isApplicable(viewer)) {
+              provider.contributePointers(viewer, builder);
+            }
+          }
+          return this.pointers = builder.build();
+        }
+      }
+    }
+
+    return this.pointers;
   }
 
   @Override

@@ -83,11 +83,13 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new CraftBukkitFacet.TabList(),
     () -> new BukkitFacet.TabList()
   );
+  private static final Collection<Facet.Pointers<? extends CommandSender>> POINTERS = Facet.of(
+  );
 
   private final @NotNull Plugin plugin;
 
   BukkitAudience(final @NotNull Plugin plugin, final @NotNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
-    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, ENTITY_SOUND, BOOK, BOSS_BAR, TAB_LIST);
+    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, ENTITY_SOUND, BOOK, BOSS_BAR, TAB_LIST, POINTERS);
     this.plugin = plugin;
   }
 
