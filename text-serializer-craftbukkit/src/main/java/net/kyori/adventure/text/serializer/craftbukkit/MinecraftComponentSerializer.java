@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.text.serializer.craftbukkit;
 
-import com.google.common.annotations.Beta;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.lang.invoke.MethodHandle;
@@ -37,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,7 +59,7 @@ import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflectio
  * @see #get()
  * @since 4.0.0
  */
-@Beta // Causes users to see "UnstableApiUsage"
+@ApiStatus.Experimental // due to direct server implementation references
 public final class MinecraftComponentSerializer implements ComponentSerializer<Component, Component, Object> {
   private static final MinecraftComponentSerializer INSTANCE = new MinecraftComponentSerializer();
 
@@ -125,20 +125,21 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
             .findFirst()
             .orElse(null);
           if(gsonField != null) {
+            System.err.println("Found GSON instance");
             gsonField.setAccessible(true);
             gson = gsonField.get(null);
           } else {
             final Method[] declaredMethods = chatSerializerClass.getDeclaredMethods();
             final Method deserialize = Arrays.stream(declaredMethods)
               .filter(m -> Modifier.isStatic(m.getModifiers()))
-              .filter(m -> m.getReturnType().equals(CLASS_CHAT_COMPONENT))
+              .filter(m -> CLASS_CHAT_COMPONENT.isAssignableFrom(m.getReturnType()))
               .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
               .min(Comparator.comparing(Method::getName)) // prefer the #a method
               .orElse(null);
             final Method serialize = Arrays.stream(declaredMethods)
               .filter(m -> Modifier.isStatic(m.getModifiers()))
               .filter(m -> m.getReturnType().equals(String.class))
-              .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(CLASS_CHAT_COMPONENT))
+              .filter(m -> m.getParameterCount() == 1 && CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
               .findFirst()
               .orElse(null);
             if(deserialize != null) {
@@ -151,7 +152,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
         }
       }
     } catch(final Throwable error) {
-      INITIALIZATION_ERROR.set(new UnsupportedOperationException("Erorr occurred during initialization", error));
+      INITIALIZATION_ERROR.set(new UnsupportedOperationException("Error occurred during initialization", error));
     }
 
     MC_TEXT_GSON = gson;
