@@ -43,7 +43,7 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
     // () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
     // () -> new ViaFacet.ActionBar<>(Player.class, VIA),
     SpongeFacet.ActionBar::new);
-  private static final Collection<Facet.Title<Viewer, ?, ?>> TITLE = Facet.of(
+  private static final Collection<Facet.Title<Viewer, ?, ?, ?>> TITLE = Facet.of(
     SpongeFacet.Title::new);
   private static final Collection<Facet.Sound<Viewer, ?>> SOUND = Facet.of(
     SpongeFacet.Sound::new);

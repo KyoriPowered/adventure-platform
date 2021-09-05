@@ -11,7 +11,7 @@ plugins {
 }
 
 // Adventure version
-ext.adventure = "4.8.1"
+ext.adventure = "4.9.0"
 
 group 'net.kyori'
 version '4.0.0-SNAPSHOT'
@@ -57,9 +57,10 @@ subprojects {
     components {
       withModule("com.destroystokyo.paper:paper-api", BukkitAnnotationsRule)
     }
+    annotationProcessor 'ca.stellardrift:contract-validator:1.0.1'
     checkstyle 'ca.stellardrift:stylecheck:0.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
   }
 
   indra {

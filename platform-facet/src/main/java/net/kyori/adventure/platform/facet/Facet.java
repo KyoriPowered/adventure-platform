@@ -25,7 +25,6 @@ package net.kyori.adventure.platform.facet;
 
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -231,25 +230,65 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <M> a message type
-   * @param <T> a title type
+   * @param <C> a collection type
+   * @param <T> a completed title type
    * @since 4.0.0
    */
-  interface Title<V, M, T> extends Message<V, M> {
+  interface Title<V, M, C, T> extends Message<V, M> {
     int PROTOCOL_ACTION_BAR = 310; // Added 16w40a
     long MAX_SECONDS = Long.MAX_VALUE / 20;
 
     /**
-     * Creates a title.
+     * Creates a collection that will receive title parts.
      *
-     * @param title a title or {@code null} if empty
-     * @param subTitle a subtitle or {@code null} if empty
+     * @return the collection
+     * @since 4.0.0
+     */
+    @NotNull C createTitleCollection();
+
+    /**
+     * Contribute a title part to the title builder.
+     *
+     * <p>This will only be called if a title is present</p>
+     *
+     * @param coll collection
+     * @param title title text
+     * @since 4.0.0
+     */
+    void contributeTitle(final @NotNull C coll, final @NotNull M title);
+
+    /**
+     * Contribute a subtitle part to the title builder.
+     *
+     * <p>This will only be called if a subtitle is present</p>
+     *
+     * @param coll collection
+     * @param subtitle subtitle text
+     * @since 4.0.0
+     */
+    void contributeSubtitle(final @NotNull C coll, final @NotNull M subtitle);
+
+    /**
+     * Contribute a times part to the title builder.
+     *
+     * <p>This will only be called if times are present</p>
+     *
+     * @param coll collection
      * @param inTicks number of fade in ticks
      * @param stayTicks number of stay ticks
      * @param outTicks number of fade out ticks
+     * @since 4.0.0
+     */
+    void contributeTimes(final @NotNull C coll, final int inTicks, final int stayTicks, final int outTicks);
+
+    /**
+     * Complete a title.
+     *
+     * @param coll The in-progress collection of parts
      * @return a title or {@code null}
      * @since 4.0.0
      */
-    @Nullable T createTitle(final @Nullable M title, final @Nullable M subTitle, final int inTicks, final int stayTicks, final int outTicks);
+    @Nullable T completeTitle(final @NotNull C coll);
 
     /**
      * Shows a title.
@@ -306,7 +345,7 @@ public interface Facet<V> {
    * @param <T> a title type
    * @since 4.0.0
    */
-  interface TitlePacket<V, M, T> extends Title<V, M, T> {
+  interface TitlePacket<V, M, C, T> extends Title<V, M, C, T> {
     int ACTION_TITLE = 0;
     int ACTION_SUBTITLE = 1;
     int ACTION_ACTIONBAR = 2;

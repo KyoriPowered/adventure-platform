@@ -37,6 +37,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -506,7 +507,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class Title_1_17 extends PacketFacet<Player> implements Facet.Title<Player, Object, List<?>> {
+  static class Title_1_17 extends PacketFacet<Player> implements Facet.Title<Player, Object, List<Object>, List<?>> {
 
     private static final Class<?> PACKET_SET_TITLE = findMcClass("network.protocol.game.ClientboundSetTitleTextPacket");
     private static final Class<?> PACKET_SET_SUBTITLE = findMcClass("network.protocol.game.ClientboundSetSubtitleTextPacket");
@@ -524,22 +525,40 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public @Nullable List<?> createTitle(final @Nullable Object title, final @Nullable Object subTitle, final int inTicks, final int stayTicks, final int outTicks) {
-      final List<Object> packets = new LinkedList<>();
+    public @NotNull List<Object> createTitleCollection() {
+      return new ArrayList<>();
+    }
+
+    @Override
+    public void contributeTitle(final @NotNull List<Object> coll, final @NotNull Object title) {
       try {
-        if(subTitle != null) {
-          packets.add(CONSTRUCTOR_SET_SUBTITLE.invoke(subTitle));
-        }
-        if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
-          packets.add(CONSTRUCTOR_SET_TITLE_ANIMATION.invoke(inTicks, stayTicks, outTicks));
-        }
-        if(title != null) {
-          packets.add(CONSTRUCTOR_SET_TITLE.invoke(title));
-        }
+        coll.add(CONSTRUCTOR_SET_TITLE.invoke(title));
       } catch(final Throwable error) {
-        logError(error, "Failed to invoke title packet constructors");
+        logError(error, "Failed to invoke title packet constructor");
       }
-      return packets;
+    }
+
+    @Override
+    public void contributeSubtitle(final @NotNull List<Object> coll, final @NotNull Object subtitle) {
+      try {
+        coll.add(CONSTRUCTOR_SET_SUBTITLE.invoke(subtitle));
+      } catch(final Throwable error) {
+        logError(error, "Failed to invoke subtitle packet constructor");
+      }
+    }
+
+    @Override
+    public void contributeTimes(final @NotNull List<Object> coll, final int inTicks, final int stayTicks, final int outTicks) {
+      try {
+        coll.add(CONSTRUCTOR_SET_TITLE_ANIMATION.invoke(inTicks, stayTicks, outTicks));
+      } catch(final Throwable error) {
+        logError(error, "Failed to invoke title animations packet constructor");
+      }
+    }
+
+    @Override
+    public @Nullable List<?> completeTitle(final @NotNull List<Object> coll) {
+      return coll;
     }
 
     @Override
@@ -576,30 +595,47 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class Title extends PacketFacet<Player> implements Facet.Title<Player, Object, List<?>> {
+  static class Title extends PacketFacet<Player> implements Facet.Title<Player, Object, List<Object>, List<?>> {
     @Override
     public boolean isSupported() {
       return super.isSupported() && CONSTRUCTOR_TITLE_MESSAGE != null && CONSTRUCTOR_TITLE_TIMES != null;
     }
 
-    @NotNull
     @Override
-    public List<?> createTitle(final @Nullable Object title, final @Nullable Object subTitle, final int inTicks, final int stayTicks, final int outTicks) {
-      final List<Object> packets = new LinkedList<>();
+    public @NotNull List<Object> createTitleCollection() {
+      return new ArrayList<>();
+    }
+
+    @Override
+    public void contributeTitle(final @NotNull List<Object> coll, final @NotNull Object title) {
       try {
-        if(subTitle != null) {
-          packets.add(CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_SUBTITLE, subTitle));
-        }
-        if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
-          packets.add(CONSTRUCTOR_TITLE_TIMES.invoke(inTicks, stayTicks, outTicks));
-        }
-        if(title != null) {
-          packets.add(CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_TITLE, title));
-        }
+        coll.add(CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_TITLE, title));
       } catch(final Throwable error) {
-        logError(error, "Failed to invoke PacketPlayOutTitle constructor");
+        logError(error, "Failed to invoke title packet constructor");
       }
-      return packets;
+    }
+
+    @Override
+    public void contributeSubtitle(final @NotNull List<Object> coll, final @NotNull Object subtitle) {
+      try {
+        coll.add(CONSTRUCTOR_TITLE_MESSAGE.invoke(TITLE_ACTION_SUBTITLE, subtitle));
+      } catch(final Throwable error) {
+        logError(error, "Failed to invoke subtitle packet constructor");
+      }
+    }
+
+    @Override
+    public void contributeTimes(final @NotNull List<Object> coll, final int inTicks, final int stayTicks, final int outTicks) {
+      try {
+        coll.add(CONSTRUCTOR_TITLE_TIMES.invoke(inTicks, stayTicks, outTicks));
+      } catch(final Throwable error) {
+        logError(error, "Failed to invoke title animations packet constructor");
+      }
+    }
+
+    @Override
+    public @Nullable List<?> completeTitle(final @NotNull List<Object> coll) {
+      return coll;
     }
 
     @Override

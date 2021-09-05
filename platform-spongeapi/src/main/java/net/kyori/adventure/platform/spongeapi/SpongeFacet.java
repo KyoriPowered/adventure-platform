@@ -52,6 +52,7 @@ import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
+import org.spongepowered.api.text.title.Title;
 import org.spongepowered.api.world.Locatable;
 
 import java.util.Collection;
@@ -141,22 +142,37 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
   }
   
-  static class Title extends Message<Viewer> implements Facet.Title<Viewer, Text, org.spongepowered.api.text.title.Title> {
+  static class Title extends Message<Viewer> implements Facet.Title<Viewer, Text, org.spongepowered.api.text.title.Title.Builder, org.spongepowered.api.text.title.Title> {
     protected Title() {
       super(Viewer.class);
     }
 
     @Override
-    public org.spongepowered.api.text.title.@NotNull Title createTitle(final @Nullable Text title, final @Nullable Text subTitle, final int inTicks, final int stayTicks, final int outTicks) {
-      final org.spongepowered.api.text.title.Title.Builder builder = org.spongepowered.api.text.title.Title.builder();
+    public org.spongepowered.api.text.title.Title.@NotNull Builder createTitleCollection() {
+      return org.spongepowered.api.text.title.Title.builder();
+    }
 
-      if(title != null) builder.title(title);
-      if(subTitle != null) builder.subtitle(subTitle);
-      if(inTicks > -1) builder.fadeIn(inTicks);
-      if(stayTicks > -1) builder.stay(stayTicks);
-      if(outTicks > -1) builder.fadeOut(outTicks);
+    @Override
+    public void contributeTitle(final org.spongepowered.api.text.title.Title.@NotNull Builder coll, final @NotNull Text title) {
+      coll.title(title);
+    }
 
-      return builder.build();
+    @Override
+    public void contributeSubtitle(final org.spongepowered.api.text.title.Title.@NotNull Builder coll, final @NotNull Text subtitle) {
+      coll.subtitle(subtitle);
+    }
+
+    @Override
+    public void contributeTimes(final org.spongepowered.api.text.title.Title.@NotNull Builder coll, final int inTicks, final int stayTicks, final int outTicks) {
+      if(inTicks > -1) coll.fadeIn(inTicks);
+      if(stayTicks > -1) coll.stay(stayTicks);
+      if(outTicks > -1) coll.fadeOut(outTicks);
+    }
+
+    @Nullable
+    @Override
+    public org.spongepowered.api.text.title.Title completeTitle(final org.spongepowered.api.text.title.Title.@NotNull Builder coll) {
+      return coll.build();
     }
 
     @Override

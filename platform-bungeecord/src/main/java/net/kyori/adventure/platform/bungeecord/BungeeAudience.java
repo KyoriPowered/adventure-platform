@@ -37,7 +37,7 @@ final class BungeeAudience extends FacetAudience<CommandSender> {
     BungeeFacet.ChatConsole::new);
   private static final Collection<Facet.ActionBar<ProxiedPlayer, ?>> ACTION_BAR = Facet.of(
     BungeeFacet.ActionBar::new);
-  private static final Collection<Facet.Title<ProxiedPlayer, ?, ?>> TITLE = Facet.of(
+  private static final Collection<Facet.Title<ProxiedPlayer, ?, ?, ?>> TITLE = Facet.of(
     BungeeFacet.Title::new);
   private static final Collection<Facet.BossBar.Builder<ProxiedPlayer, ? extends Facet.BossBar<ProxiedPlayer>>> BOSS_BAR = Facet.of(
     BungeeFacet.BossBar.Builder::new);

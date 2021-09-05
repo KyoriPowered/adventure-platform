@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
+import com.destroystokyo.paper.Title;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
@@ -71,7 +72,8 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     return super.isSupported() && SUPPORTED;
   }
 
-  static class Title extends SpigotFacet.Message<Player> implements Facet.Title<Player, BaseComponent[], com.destroystokyo.paper.Title> {
+  // don't use without resolving parts handling
+  static class Title extends SpigotFacet.Message<Player> implements Facet.Title<Player, BaseComponent[], com.destroystokyo.paper.Title.Builder, com.destroystokyo.paper.Title> {
     private static final boolean SUPPORTED = hasClass("com.destroystokyo.paper.Title");
 
     protected Title() {
@@ -84,16 +86,31 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public com.destroystokyo.paper.@NotNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
-      final com.destroystokyo.paper.Title.Builder builder = com.destroystokyo.paper.Title.builder();
+    public com.destroystokyo.paper.Title.@NotNull Builder createTitleCollection() {
+      return com.destroystokyo.paper.Title.builder();
+    }
 
-      if(title != null) builder.title(title);
-      if(subTitle != null) builder.subtitle(subTitle);
-      if(inTicks > -1) builder.fadeIn(inTicks);
-      if(stayTicks > -1) builder.stay(stayTicks);
-      if(outTicks > -1) builder.fadeOut(outTicks);
+    @Override
+    public void contributeTitle(final com.destroystokyo.paper.Title.@NotNull Builder coll, final BaseComponent @NotNull [] title) {
+      coll.title(title);
+    }
 
-      return builder.build();
+    @Override
+    public void contributeSubtitle(final com.destroystokyo.paper.Title.@NotNull Builder coll, final BaseComponent @NotNull [] subtitle) {
+      coll.subtitle(subtitle);
+    }
+
+    @Override
+    public void contributeTimes(final com.destroystokyo.paper.Title.@NotNull Builder coll, final int inTicks, final int stayTicks, final int outTicks) {
+      if(inTicks > -1) coll.fadeIn(inTicks);
+      if(stayTicks > -1) coll.stay(stayTicks);
+      if(outTicks > -1) coll.fadeOut(outTicks);
+    }
+
+    @Nullable
+    @Override
+    public com.destroystokyo.paper.Title completeTitle(final com.destroystokyo.paper.Title.@NotNull Builder coll) {
+      return coll.build(); // todo: can't really do parts
     }
 
     @Override

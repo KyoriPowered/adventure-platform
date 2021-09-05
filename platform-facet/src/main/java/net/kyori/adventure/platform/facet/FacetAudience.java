@@ -24,6 +24,7 @@
 package net.kyori.adventure.platform.facet;
 
 import java.util.HashSet;
+import java.util.Objects;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
@@ -33,6 +34,7 @@ import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.title.Title;
+import net.kyori.adventure.title.TitlePart;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,7 +68,7 @@ public class FacetAudience<V> implements Audience, Closeable {
 
   private final Facet.@Nullable Chat<V, Object> chat;
   private final Facet.@Nullable ActionBar<V, Object> actionBar;
-  private final Facet.@Nullable Title<V, Object, Object> title;
+  private final Facet.@Nullable Title<V, Object, Object, Object> title;
   private final Facet.@Nullable Sound<V, Object> sound;
   private final Facet.@Nullable EntitySound<V, Object> entitySound;
   private final Facet.@Nullable Book<V, Object, Object> book;
@@ -272,7 +274,45 @@ public class FacetAudience<V> implements Audience, Closeable {
     final int stayTicks = times == null ? -1 : this.title.toTicks(times.stay());
     final int outTicks = times == null ? -1 : this.title.toTicks(times.fadeOut());
 
-    final Object title = this.title.createTitle(mainTitle, subTitle, inTicks, stayTicks, outTicks);
+    final Object collection = this.title.createTitleCollection();
+    this.title.contributeTitle(collection, mainTitle);
+    this.title.contributeSubtitle(collection, subTitle);
+    if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
+      this.title.contributeTimes(collection, inTicks, stayTicks, outTicks);
+    }
+    final Object title = this.title.completeTitle(collection);
+    if(title == null) return;
+
+    for(final V viewer : this.viewers) {
+      this.title.showTitle(viewer, title);
+    }
+  }
+
+  @Override
+  public <T> void sendTitlePart(final @NotNull TitlePart<T> part, @NotNull final T value) {
+    if(this.title == null) return;
+
+    Objects.requireNonNull(value, "value");
+    final Object collection = this.title.createTitleCollection();
+    if(part == TitlePart.TITLE) {
+      final @Nullable Object message = this.createMessage((Component) value, this.title);
+      if(message != null) this.title.contributeTitle(collection, message);
+    } else if(part == TitlePart.SUBTITLE) {
+      final @Nullable Object message = this.createMessage((Component) value, this.title);
+      if(message != null) this.title.contributeSubtitle(collection, message);
+    } else if(part == TitlePart.TIMES) {
+      final Title.Times times = (Title.Times) value;
+      final int inTicks = this.title.toTicks(times.fadeIn());
+      final int stayTicks = this.title.toTicks(times.stay());
+      final int outTicks = this.title.toTicks(times.fadeOut());
+      if(inTicks != -1 || stayTicks != -1 || outTicks != -1) {
+        this.title.contributeTimes(collection, inTicks, stayTicks, outTicks);
+      }
+    } else {
+      throw new IllegalArgumentException("Unknown TitlePart '" + part + "'");
+    }
+
+    final Object title = this.title.completeTitle(collection);
     if(title == null) return;
 
     for(final V viewer : this.viewers) {

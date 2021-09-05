@@ -29,6 +29,8 @@ import com.viaversion.viaversion.api.protocol.Protocol;
 import com.viaversion.viaversion.api.protocol.packet.ClientboundPacketType;
 import com.viaversion.viaversion.api.protocol.packet.PacketWrapper;
 import com.viaversion.viaversion.api.type.Type;
+import java.util.ArrayList;
+import java.util.List;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
@@ -215,7 +217,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
   }
 
-  public static class Title<V> extends ProtocolBased<V> implements Facet.TitlePacket<V, String, Consumer<V>> {
+  public static class Title<V> extends ProtocolBased<V> implements Facet.TitlePacket<V, String, List<Consumer<PacketWrapper>>, Consumer<V>> {
     protected Title(final @NotNull String fromProtocol, final @NotNull String toProtocol, final int minProtocol, final @NotNull Class<? extends V> viewerClass, final @NotNull Function<V, UserConnection> connectionFunction) {
       super(fromProtocol, toProtocol, minProtocol, "TITLE", viewerClass, connectionFunction);
     }
@@ -224,31 +226,44 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
       this("1_16", "1_15_2", PROTOCOL_HEX_COLOR, viewerClass, connectionFunction);
     }
 
-    @NotNull
     @Override
-    public Consumer<V> createTitle(final @Nullable String title, final @Nullable String subTitle, final int inTicks, final int stayTicks, final int outTicks) {
-      return viewer -> {
-        if(inTicks > -1 || stayTicks > -1 || outTicks > -1) {
-          final PacketWrapper packet = this.createPacket(viewer);
-          packet.write(Type.VAR_INT, ACTION_TIMES);
-          packet.write(Type.INT, inTicks);
-          packet.write(Type.INT, stayTicks);
-          packet.write(Type.INT, outTicks);
-          this.sendPacket(packet);
-        }
+    public @NotNull List<Consumer<PacketWrapper>> createTitleCollection() {
+      return new ArrayList<>();
+    }
 
-        if(subTitle != null) {
-          final PacketWrapper packet = this.createPacket(viewer);
-          packet.write(Type.VAR_INT, ACTION_SUBTITLE);
-          packet.write(Type.STRING, subTitle);
-          this.sendPacket(packet);
-        }
+    @Override
+    public void contributeTitle(final @NotNull List<Consumer<PacketWrapper>> coll, final @NotNull String title) {
+      coll.add(packet -> {
+        packet.write(Type.VAR_INT, ACTION_TITLE);
+        packet.write(Type.STRING, title);
+      });
+    }
 
-        if(title != null) {
-          final PacketWrapper packet = this.createPacket(viewer);
-          packet.write(Type.VAR_INT, ACTION_TITLE);
-          packet.write(Type.STRING, title);
-          this.sendPacket(packet);
+    @Override
+    public void contributeSubtitle(final @NotNull List<Consumer<PacketWrapper>> coll, final @NotNull String subtitle) {
+      coll.add(packet -> {
+        packet.write(Type.VAR_INT, ACTION_SUBTITLE);
+        packet.write(Type.STRING, subtitle);
+      });
+    }
+
+    @Override
+    public void contributeTimes(final @NotNull List<Consumer<PacketWrapper>> coll, final int inTicks, final int stayTicks, final int outTicks) {
+      coll.add(packet -> {
+        packet.write(Type.VAR_INT, ACTION_TIMES);
+        packet.write(Type.INT, inTicks);
+        packet.write(Type.INT, stayTicks);
+        packet.write(Type.INT, outTicks);
+      });
+    }
+
+    @Override
+    public @Nullable Consumer<V> completeTitle(final @NotNull List<Consumer<PacketWrapper>> coll) {
+      return v -> {
+        for(int i = 0, length = coll.size(); i < length; i++) {
+          final PacketWrapper pkt = this.createPacket(v);
+          coll.get(i).accept(pkt);
+          this.sendPacket(pkt);
         }
       };
     }

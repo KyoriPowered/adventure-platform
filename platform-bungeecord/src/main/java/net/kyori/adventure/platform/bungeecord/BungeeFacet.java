@@ -31,6 +31,7 @@ import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -117,21 +118,36 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class Title extends Message implements Facet.Title<ProxiedPlayer, BaseComponent[], net.md_5.bungee.api.Title> {
+  static class Title extends Message implements Facet.Title<ProxiedPlayer, BaseComponent[], net.md_5.bungee.api.Title, net.md_5.bungee.api.Title> {
     private static final net.md_5.bungee.api.Title CLEAR = ProxyServer.getInstance().createTitle().clear();
     private static final net.md_5.bungee.api.Title RESET = ProxyServer.getInstance().createTitle().reset();
 
     @Override
-    public net.md_5.bungee.api.@NotNull Title createTitle(final BaseComponent @Nullable[] title, final BaseComponent @Nullable[] subTitle, final int inTicks, final int stayTicks, final int outTicks) {
-      final net.md_5.bungee.api.Title builder = ProxyServer.getInstance().createTitle();
+    public net.md_5.bungee.api.@NotNull Title createTitleCollection() {
+      return ProxyServer.getInstance().createTitle();
+    }
 
-      if(title != null) builder.title(title);
-      if(subTitle != null) builder.subTitle(subTitle);
-      if(inTicks > -1) builder.fadeIn(inTicks);
-      if(stayTicks > -1) builder.stay(stayTicks);
-      if(outTicks > -1) builder.fadeOut(outTicks);
+    @Override
+    public void contributeTitle(final net.md_5.bungee.api.@NotNull Title coll, final BaseComponent@NotNull[] title) {
+      coll.title(title);
+    }
 
-      return builder;
+    @Override
+    public void contributeSubtitle(final net.md_5.bungee.api.@NotNull Title coll, final BaseComponent@NotNull[] subtitle) {
+      coll.subTitle(subtitle);
+    }
+
+    @Override
+    public void contributeTimes(final net.md_5.bungee.api.@NotNull Title coll, final int inTicks, final int stayTicks, final int outTicks) {
+      if(inTicks > -1) coll.fadeIn(inTicks);
+      if(stayTicks > -1) coll.stay(stayTicks);
+      if(outTicks > -1) coll.fadeOut(outTicks);
+    }
+
+    @Nullable
+    @Override
+    public net.md_5.bungee.api.Title completeTitle(final net.md_5.bungee.api.@NotNull Title coll) {
+      return coll;
     }
 
     @Override
