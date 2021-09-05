@@ -354,20 +354,25 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       findMcClassName("network.protocol.game.PacketPlayOutEntitySound"),
       findMcClassName("network.protocol.game.ClientboundEntitySoundPacket")
     );
+    private static final Class<?> CLASS_CLIENTBOUND_CUSTOM_SOUND = findClass(
+      findNmsClassName("PacketPlayOutCustomSoundEffect"),
+      findMcClassName("network.protocol.game.ClientboundCustomSoundPacket"),
+      findMcClassName("network.protocol.game.PacketPlayOutCustomSoundEffect")
+    );
     private static final Class<?> CLASS_REGISTRY = findClass(
       findNmsClassName("IRegistry"),
       findMcClassName("core.IRegistry"),
       findMcClassName("core.Registry")
     );
-    private static final Class<?> CLASS_WRITABLE_REGISTRY = findClass(
-      findNmsClassName("IRegistryWritable"),
-      findMcClassName("core.IRegistryWritable"),
-      findMcClassName("core.WritableRegistry")
-    );
     private static final Class<?> CLASS_RESOURCE_LOCATION = findClass(
       findNmsClassName("MinecraftKey"),
       findMcClassName("resources.MinecraftKey"),
       findMcClassName("resources.ResourceLocation")
+    );
+    private static final Class<?> CLASS_WRITABLE_REGISTRY = findClass(
+      findNmsClassName("IRegistryWritable"),
+      findMcClassName("core.IRegistryWritable"),
+      findMcClassName("core.WritableRegistry")
     );
     private static final Class<?> CLASS_SOUND_EFFECT = findClass(
       findNmsClassName("SoundEffect"),
@@ -379,8 +384,15 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       findMcClassName("sounds.SoundCategory"),
       findMcClassName("sounds.SoundSource")
     );
+    private static final Class<?> CLASS_VEC3 = findClass(
+      findNmsClassName("Vec3D"),
+      findMcClassName("world.phys.Vec3D"),
+      findMcClassName("world.phys.Vec3")
+    );
 
     private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class);
+    private static final MethodHandle NEW_CLIENTBOUND_CUSTOM_SOUND = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class);
+    private static final MethodHandle NEW_VEC3 = findConstructor(CLASS_VEC3, double.class, double.class, double.class);
     private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
     private static final MethodHandle REGISTRY_GET_OPTIONAL = findMethod(CLASS_REGISTRY, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
     private static final MethodHandle SOUND_SOURCE_GET_NAME;
@@ -478,6 +490,9 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         final java.util.Optional<?> event = (Optional<?>) REGISTRY_GET_OPTIONAL.invoke(REGISTRY_SOUND_EVENT, nameRl);
         if(event.isPresent()) {
           return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch());
+        } else if(NEW_CLIENTBOUND_CUSTOM_SOUND != null && NEW_VEC3 != null) {
+          final Location loc = entity.getLocation();
+          return NEW_CLIENTBOUND_CUSTOM_SOUND.invoke(nameRl, soundCategory, NEW_VEC3.invoke(loc.getX(), loc.getY(), loc.getZ()), sound.volume(), sound.pitch());
         }
       } catch(final Throwable error) {
         logError(error, "Failed to send sound tracking an entity");
