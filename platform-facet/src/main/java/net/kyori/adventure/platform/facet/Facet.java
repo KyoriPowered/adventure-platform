@@ -744,4 +744,24 @@ public interface Facet<V> {
      */
     void send(final V viewer, final @Nullable M header, final @Nullable M footer);
   }
+
+  /**
+   * Methods for building pointers.
+   *
+   * <p>Unlike other {@code Facet}s, pointer facets will stack, so <em>all</em> facets
+   * applicable to a particular viewer will be applied.</p>
+   *
+   * @param <V> the viewer type
+   * @since 4.0.0
+   */
+  interface Pointers<V> extends Facet<V> {
+    /**
+     * Contribute pointers to the builder for a certain viewer.
+     *
+     * @param viewer the viewer
+     * @param builder the builder
+     * @since 4.0.0
+     */
+    void contributePointers(final V viewer, final net.kyori.adventure.pointer.Pointers.Builder builder);
+  }
 }

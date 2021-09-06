@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.function.Function;
 
+@SuppressWarnings("Convert2MethodRef")
 final class BukkitAudience extends FacetAudience<CommandSender> {
   static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
   private static final Function<Player, UserConnection> VIA = new BukkitFacet.ViaHook();
@@ -83,11 +84,15 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new CraftBukkitFacet.TabList(),
     () -> new BukkitFacet.TabList()
   );
+  private static final Collection<Facet.Pointers<? extends CommandSender>> POINTERS = Facet.of(
+    () -> new BukkitFacet.CommandSenderPointers(),
+    () -> new BukkitFacet.PlayerPointers()
+  );
 
   private final @NotNull Plugin plugin;
 
   BukkitAudience(final @NotNull Plugin plugin, final @NotNull Collection<CommandSender> viewers, final @Nullable Locale locale) {
-    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, ENTITY_SOUND, BOOK, BOSS_BAR, TAB_LIST);
+    super(viewers, locale, CHAT, ACTION_BAR, TITLE, SOUND, ENTITY_SOUND, BOOK, BOSS_BAR, TAB_LIST, POINTERS);
     this.plugin = plugin;
   }
 

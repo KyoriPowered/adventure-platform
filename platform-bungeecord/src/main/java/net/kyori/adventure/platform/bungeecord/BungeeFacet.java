@@ -25,9 +25,12 @@ package net.kyori.adventure.platform.bungeecord;
 
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -285,6 +288,30 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
       viewer.setTabHeader(
         header == null ? EMPTY_COMPONENT_ARRAY : header,
         footer == null ? EMPTY_COMPONENT_ARRAY : footer);
+    }
+  }
+
+  static final class CommandSenderPointers extends BungeeFacet<CommandSender> implements Facet.Pointers<CommandSender> {
+    CommandSenderPointers() {
+      super(CommandSender.class);
+    }
+
+    @Override
+    public void contributePointers(final CommandSender viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withDynamic(Identity.NAME, viewer::getName);
+      // todo: bungee doesn't expose any sort of TriState/isPermissionSet value :((((
+      builder.withStatic(PermissionChecker.POINTER, perm -> viewer.hasPermission(perm) ? TriState.TRUE : TriState.FALSE);
+    }
+  }
+
+  static final class PlayerPointers extends BungeeFacet<ProxiedPlayer> implements Facet.Pointers<ProxiedPlayer> {
+    PlayerPointers() {
+      super(ProxiedPlayer.class);
+    }
+
+    @Override
+    public void contributePointers(final ProxiedPlayer viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withDynamic(Identity.UUID, viewer::getUniqueId);
     }
   }
 }

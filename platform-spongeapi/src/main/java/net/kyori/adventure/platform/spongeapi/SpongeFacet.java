@@ -28,11 +28,14 @@ import com.google.common.collect.Lists;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.Index;
+import net.kyori.adventure.util.TriState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.CatalogType;
@@ -42,10 +45,12 @@ import org.spongepowered.api.boss.BossBarColors;
 import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.BossBarOverlays;
 import org.spongepowered.api.boss.ServerBossBar;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.effect.sound.SoundCategory;
 import org.spongepowered.api.effect.sound.SoundType;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.BookView;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
@@ -53,6 +58,8 @@ import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.text.title.Title;
+import org.spongepowered.api.util.Identifiable;
+import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.Locatable;
 
 import java.util.Collection;
@@ -385,6 +392,46 @@ class SpongeFacet<V> extends FacetBase<V> {
       } else if(footer != null) {
         viewer.getTabList().setFooter(footer);
       }
+    }
+  }
+
+  static class SubjectPointers extends SpongeFacet<Subject> implements Facet.Pointers<Subject> {
+    SubjectPointers() {
+      super(Subject.class);
+    }
+
+    @Override
+    public void contributePointers(final Subject viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(PermissionChecker.POINTER, perm -> {
+        final Tristate sponge = viewer.getPermissionValue(viewer.getActiveContexts(), perm);
+        if(sponge == Tristate.UNDEFINED) {
+          return TriState.NOT_SET;
+        } else {
+          return TriState.byBoolean(sponge.asBoolean());
+        }
+      });
+    }
+  }
+
+  static class CommandSourcePointers extends SpongeFacet<CommandSource> implements Facet.Pointers<CommandSource> {
+    CommandSourcePointers() {
+      super(CommandSource.class);
+    }
+
+    @Override
+    public void contributePointers(final CommandSource viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(Identity.NAME, viewer.getName());
+    }
+  }
+
+  static class IdentifiablePointers extends SpongeFacet<Identifiable> implements Facet.Pointers<Identifiable> {
+    IdentifiablePointers() {
+      super(Identifiable.class);
+    }
+
+    @Override
+    public void contributePointers(final Identifiable viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withDynamic(Identity.UUID, viewer::getUniqueId);
     }
   }
 }
