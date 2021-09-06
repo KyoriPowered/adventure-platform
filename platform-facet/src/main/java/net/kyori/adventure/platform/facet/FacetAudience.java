@@ -426,6 +426,10 @@ public class FacetAudience<V> implements Audience, Closeable {
           final V viewer = this.viewer;
           if(viewer == null) return Pointers.empty();
           final Pointers.Builder builder = Pointers.builder();
+          // We have special handling for Locales
+          builder.withDynamic(Identity.LOCALE, () -> this.locale);
+
+          // Then any extra pointers
           for(final Facet.Pointers<V> provider : this.pointerProviders) {
             if(provider.isApplicable(viewer)) {
               provider.contributePointers(viewer, builder);

@@ -57,6 +57,9 @@ final class SpongeAudience extends FacetAudience<MessageReceiver> {
     SpongeFacet.TabList::new
   );
   private static final Collection<Facet.Pointers<?>> POINTERS = Facet.of(
+    SpongeFacet.CommandSourcePointers::new,
+    SpongeFacet.SubjectPointers::new,
+    SpongeFacet.IdentifiablePointers::new
   );
 
   SpongeAudience(final @NotNull Collection<MessageReceiver> viewers) {

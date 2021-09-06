@@ -45,6 +45,8 @@ final class BungeeAudience extends FacetAudience<CommandSender> {
     BungeeFacet.TabList::new
   );
   private static final Collection<Facet.Pointers<? extends CommandSender>> POINTERS = Facet.of(
+    BungeeFacet.CommandSenderPointers::new,
+    BungeeFacet.PlayerPointers::new
   );
 
   BungeeAudience(final @NotNull Collection<? extends CommandSender> viewers) {

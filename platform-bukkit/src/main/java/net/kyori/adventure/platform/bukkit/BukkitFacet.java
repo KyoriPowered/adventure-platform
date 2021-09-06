@@ -28,10 +28,14 @@ import com.viaversion.viaversion.api.connection.UserConnection;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
@@ -370,6 +374,40 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       } else if(footer != null) {
         viewer.setPlayerListFooter(footer);
       }
+    }
+  }
+
+  static final class CommandSenderPointers extends BukkitFacet<CommandSender> implements Facet.Pointers<CommandSender> {
+
+    CommandSenderPointers() {
+      super(CommandSender.class);
+    }
+
+    @Override
+    public void contributePointers(final CommandSender viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      // Name
+      builder.withStatic(Identity.NAME, viewer.getName());
+      // Permission (technically up in Permissible but *shrug*
+      builder.withDynamic(PermissionChecker.POINTER, () -> perm -> {
+        if(viewer.isPermissionSet(perm)) {
+          return viewer.hasPermission(perm) ? TriState.TRUE : TriState.FALSE;
+        } else {
+          return TriState.NOT_SET;
+        }
+      });
+    }
+  }
+
+  static final class PlayerPointers extends BukkitFacet<Player> implements Facet.Pointers<Player> {
+
+    PlayerPointers() {
+      super(Player.class);
+    }
+
+    @Override
+    public void contributePointers(final Player viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(Identity.UUID, viewer.getUniqueId());
+      builder.withDynamic(Identity.DISPLAY_NAME, () -> BukkitComponentSerializer.legacy().deserializeOrNull(viewer.getDisplayName()));
     }
   }
 }

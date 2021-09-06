@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.function.Function;
 
+@SuppressWarnings("Convert2MethodRef")
 final class BukkitAudience extends FacetAudience<CommandSender> {
   static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
   private static final Function<Player, UserConnection> VIA = new BukkitFacet.ViaHook();
@@ -84,6 +85,8 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new BukkitFacet.TabList()
   );
   private static final Collection<Facet.Pointers<? extends CommandSender>> POINTERS = Facet.of(
+    () -> new BukkitFacet.CommandSenderPointers(),
+    () -> new BukkitFacet.PlayerPointers()
   );
 
   private final @NotNull Plugin plugin;
