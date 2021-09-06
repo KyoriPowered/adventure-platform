@@ -27,6 +27,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.pointer.Pointers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,11 +68,26 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    *
    * @since 4.0.0
    */
-  public FacetAudienceProvider() {
+  protected FacetAudienceProvider() {
     this.viewers = new ConcurrentHashMap<>();
     this.players = new ConcurrentHashMap<>();
     this.consoles = new CopyOnWriteArraySet<>();
-    this.console = Audience.audience(this.consoles);
+    this.console = new ForwardingAudience() {
+      @Override
+      public @NotNull Iterable<? extends Audience> audiences() {
+        return FacetAudienceProvider.this.consoles;
+      }
+
+      @Override
+      public @NotNull Pointers pointers() {
+
+        if(FacetAudienceProvider.this.consoles.size() == 1) {
+          return FacetAudienceProvider.this.consoles.iterator().next().pointers();
+        } else {
+          return Pointers.empty();
+        }
+      }
+    };
     this.player = Audience.audience(this.players.values());
     this.empty = this.createAudience(Collections.emptyList());
     this.closed = false;
