@@ -125,7 +125,6 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
             .findFirst()
             .orElse(null);
           if(gsonField != null) {
-            System.err.println("Found GSON instance");
             gsonField.setAccessible(true);
             gson = gsonField.get(null);
           } else {
