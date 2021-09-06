@@ -97,8 +97,7 @@ public interface Facet<V> {
    * @return a facet or {@code null} if none are applicable
    * @since 4.0.0
    */
-  static <V, F extends Facet<V>> @Nullable F of(
-    final @Nullable Collection<F> facets, final @Nullable V viewer) {
+  static <V, F extends Facet<V>> @Nullable F of(final @Nullable Collection<F> facets, final @Nullable V viewer) {
     if(facets == null || viewer == null) return null;
     for(final F facet : facets) {
       try {

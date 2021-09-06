@@ -204,10 +204,10 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
    *
    * <p>Cancelled events will be ignored.</p>
    *
-   * @param type     an event type
+   * @param type an event type
    * @param priority a listener priority
    * @param callback a callback
-   * @param <T>      an event type
+   * @param <T> an event type
    */
   @SuppressWarnings("unchecked")
   private <T extends Event> void registerEvent(final @NotNull Class<T> type, final @NotNull EventPriority priority, final @NotNull Consumer<T> callback) {

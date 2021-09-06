@@ -153,7 +153,6 @@ public interface AudienceProvider extends AutoCloseable {
      * @return the built provider
      * @since 4.0.0
      */
-    @NotNull
-    P build();
+    @NotNull P build();
   }
 }

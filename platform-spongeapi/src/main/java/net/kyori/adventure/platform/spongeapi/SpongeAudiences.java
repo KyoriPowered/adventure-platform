@@ -61,9 +61,9 @@ public interface SpongeAudiences extends AudienceProvider {
    * <p>There will only be one provider for each plugin.</p>
    *
    * @param plugin a plugin container
-   * @param game   a game
+   * @param game a game
    * @return an audience provider
-   * @since 4.5.0
+   * @since 4.0.0
    */
   static @NonNull Builder builder(final @NonNull PluginContainer plugin, final @NonNull Game game) {
     return SpongeAudiencesImpl.builder(plugin, game);
@@ -99,7 +99,7 @@ public interface SpongeAudiences extends AudienceProvider {
   /**
    * A builder for {@link SpongeAudiences}.
    *
-   * @since 4.5.0
+   * @since 4.0.0
    */
   interface Builder extends AudienceProvider.Builder<SpongeAudiences, Builder> {
   }

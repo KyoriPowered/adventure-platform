@@ -107,7 +107,7 @@ public interface BukkitAudiences extends AudienceProvider {
   /**
    * A builder for {@link BukkitAudiences}.
    *
-   * @since 4.5.0
+   * @since 4.0.0
    */
   interface Builder extends AudienceProvider.Builder<BukkitAudiences, Builder> {
   }
