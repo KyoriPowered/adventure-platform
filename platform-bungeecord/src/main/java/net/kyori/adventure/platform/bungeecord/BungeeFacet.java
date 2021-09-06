@@ -300,7 +300,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     public void contributePointers(final CommandSender viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       builder.withDynamic(Identity.NAME, viewer::getName);
       // todo: bungee doesn't expose any sort of TriState/isPermissionSet value :((((
-      builder.withDynamic(PermissionChecker.POINTER, () -> perm -> viewer.hasPermission(perm) ? TriState.TRUE : TriState.FALSE);
+      builder.withStatic(PermissionChecker.POINTER, perm -> viewer.hasPermission(perm) ? TriState.TRUE : TriState.FALSE);
     }
   }
 

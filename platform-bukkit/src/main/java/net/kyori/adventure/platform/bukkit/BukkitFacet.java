@@ -386,9 +386,9 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void contributePointers(final CommandSender viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       // Name
-      builder.withStatic(Identity.NAME, viewer.getName());
-      // Permission (technically up in Permissible but *shrug*
-      builder.withDynamic(PermissionChecker.POINTER, () -> perm -> {
+      builder.withDynamic(Identity.NAME, viewer::getName);
+      // Permission (technically up in Permissible but *shrug*)
+      builder.withStatic(PermissionChecker.POINTER, perm -> {
         if(viewer.isPermissionSet(perm)) {
           return viewer.hasPermission(perm) ? TriState.TRUE : TriState.FALSE;
         } else {
@@ -406,7 +406,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public void contributePointers(final Player viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
-      builder.withStatic(Identity.UUID, viewer.getUniqueId());
+      builder.withDynamic(Identity.UUID, viewer::getUniqueId);
       builder.withDynamic(Identity.DISPLAY_NAME, () -> BukkitComponentSerializer.legacy().deserializeOrNull(viewer.getDisplayName()));
     }
   }

@@ -402,7 +402,7 @@ class SpongeFacet<V> extends FacetBase<V> {
 
     @Override
     public void contributePointers(final Subject viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
-      builder.withDynamic(PermissionChecker.POINTER, () -> perm -> {
+      builder.withStatic(PermissionChecker.POINTER, perm -> {
         final Tristate sponge = viewer.getPermissionValue(viewer.getActiveContexts(), perm);
         if(sponge == Tristate.UNDEFINED) {
           return TriState.NOT_SET;
