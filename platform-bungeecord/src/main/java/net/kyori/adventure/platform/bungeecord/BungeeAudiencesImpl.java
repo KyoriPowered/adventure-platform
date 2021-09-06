@@ -32,9 +32,10 @@ import java.util.Map;
 import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AudienceIdentity;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
@@ -83,7 +84,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   private final Plugin plugin;
   private final Listener listener;
 
-  BungeeAudiencesImpl(final Plugin plugin, final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+  BungeeAudiencesImpl(final Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
     super(componentRenderer, partitionFunction);
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
@@ -115,11 +116,6 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   }
 
   @Override
-  protected @NotNull AudienceIdentity createIdentity(final @NotNull CommandSender viewer) {
-    return new BungeeIdentity(viewer);
-  }
-
-  @Override
   protected @NotNull BungeeAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
     return new BungeeAudience(this, viewers);
   }
@@ -132,28 +128,28 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
 
   static final class Builder implements BungeeAudiences.Builder {
     private final @NotNull Plugin plugin;
-    private ComponentRenderer<AudienceIdentity> componentRenderer;
-    private ToIntFunction<AudienceIdentity> partitionFunction;
+    private ComponentRenderer<Pointered> componentRenderer;
+    private ToIntFunction<Pointered> partitionFunction;
 
     Builder(final @NotNull Plugin plugin) {
       this.plugin = requireNonNull(plugin, "plugin");
-      this.componentRenderer(new ComponentRenderer<AudienceIdentity>() {
+      this.componentRenderer(new ComponentRenderer<Pointered>() {
         @Override
-        public @NotNull Component render(final @NotNull Component component, final @NotNull AudienceIdentity context) {
-          return GlobalTranslator.render(component, context.locale());
+        public @NotNull Component render(final @NotNull Component component, final @NotNull Pointered context) {
+          return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
         }
       });
-      this.partitionBy(context -> context.locale().hashCode());
+      this.partitionBy(context -> context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE).hashCode());
     }
 
     @Override
-    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer) {
+    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
       this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
       return this;
     }
 
     @Override
-    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction) {
       this.partitionFunction = requireNonNull(partitionFunction, "partition function");
       return this;
     }

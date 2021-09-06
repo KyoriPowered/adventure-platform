@@ -27,6 +27,7 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,9 +47,12 @@ import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 /**
  * A unit of functionality for a viewer.
  *
+ * <p>This is not supported API. Subject to change at any time.</p>
+ *
  * @param <V> a viewer type
  * @since 4.0.0
  */
+@ApiStatus.Internal
 public interface Facet<V> {
   /**
    * Creates a collection of supported facets.

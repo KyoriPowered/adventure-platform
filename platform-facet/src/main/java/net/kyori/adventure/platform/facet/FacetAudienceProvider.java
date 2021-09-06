@@ -23,12 +23,16 @@
  */
 package net.kyori.adventure.platform.facet;
 
+import java.util.Locale;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.pointer.Pointers;
-import org.jetbrains.annotations.NotNull;
+import net.kyori.adventure.util.TriState;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,32 +47,38 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
-import net.kyori.adventure.platform.AudienceIdentity;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 /**
  * An audience provider implementation using facets.
  *
+ * <p>This is not supported API. Subject to change at any time.</p>
+ *
  * @param <V> the viewer type
  * @param <A> the audience type
  * @since 4.0.0
  */
+@ApiStatus.Internal
 public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
   implements AudienceProvider, ForwardingAudience {
-  protected final ComponentRenderer<AudienceIdentity> componentRenderer;
-  protected final ToIntFunction<AudienceIdentity> partitionFunction;
+  protected static final Locale DEFAULT_LOCALE = Locale.US;
+  protected final ComponentRenderer<Pointered> componentRenderer;
+  protected final ToIntFunction<Pointered> partitionFunction;
 
   private final Audience console;
   private final Audience player;
-  private final Map<V, A> viewers;
+  protected final Map<V, A> viewers;
   private final Map<UUID, A> players;
   private final Set<A> consoles;
   private final A empty;
   private volatile boolean closed;
 
-  protected FacetAudienceProvider(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+  protected FacetAudienceProvider(final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
     this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
     this.partitionFunction = requireNonNull(partitionFunction, "partition function");
     this.viewers = new ConcurrentHashMap<>();
@@ -82,7 +92,6 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
 
       @Override
       public @NotNull Pointers pointers() {
-
         if(FacetAudienceProvider.this.consoles.size() == 1) {
           return FacetAudienceProvider.this.consoles.iterator().next().pointers();
         } else {
@@ -103,14 +112,14 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
    */
   public void addViewer(final @NotNull V viewer) {
     if(this.closed) return;
-    final AudienceIdentity identity = this.createIdentity(viewer);
-    final A audience =
-      this.viewers.computeIfAbsent(
+    final A audience = this.viewers.computeIfAbsent(
         requireNonNull(viewer, "viewer"),
         v -> this.createAudience(Collections.singletonList(v)));
-    if(identity.player()) {
-      this.players.putIfAbsent(identity.uuid(), audience);
-    } else if(identity.console()) {
+    final FacetPointers.Type type = audience.getOrDefault(FacetPointers.TYPE, FacetPointers.Type.OTHER);
+    if(type == FacetPointers.Type.PLAYER) {
+      final @Nullable UUID id = audience.getOrDefault(Identity.UUID, null);
+      if(id != null) this.players.putIfAbsent(id, audience);
+    } else if(type == FacetPointers.Type.CONSOLE) {
       this.consoles.add(audience);
     }
   }
@@ -124,10 +133,11 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
   public void removeViewer(final @NotNull V viewer) {
     final A audience = this.viewers.remove(viewer);
     if(audience == null) return;
-    final AudienceIdentity identity = audience.identity();
-    if(identity.player()) {
-      this.players.remove(identity.uuid());
-    } else if(identity.console()) {
+    final FacetPointers.Type type = audience.getOrDefault(FacetPointers.TYPE, FacetPointers.Type.OTHER);
+    if(type == FacetPointers.Type.PLAYER) {
+      final @Nullable UUID id = audience.getOrDefault(Identity.UUID, null);
+      if(id != null) this.players.remove(id);
+    } else if(type == FacetPointers.Type.CONSOLE) {
       this.consoles.remove(audience);
     }
     audience.close();
@@ -139,7 +149,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
    * <p>Should be called after a viewer changes their locale, world, server, etc.</p>
    *
    * @param viewer a viewer
-   * @since 4.5.0
+   * @since 4.0.0
    */
   public void refreshViewer(final @NotNull V viewer) {
     final A audience = this.viewers.get(viewer);
@@ -147,14 +157,6 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
       audience.refresh();
     }
   }
-
-  /**
-   * Creates an audience identity for a viewer.
-   *
-   * @param viewer a viewer
-   * @return an audience identity
-   */
-  protected abstract @NotNull AudienceIdentity createIdentity(final @NotNull V viewer);
 
   /**
    * Creates an audience for a collection of viewers.
@@ -202,27 +204,27 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
         this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
   }
 
-  private @NotNull Audience filterIdentity(final @NotNull Predicate<AudienceIdentity> predicate) {
+  private @NotNull Audience filterPointers(final @NotNull Predicate<Pointered> predicate) {
     return Audience.audience(
       filter(
         this.viewers.entrySet(),
-        entry -> predicate.test(entry.getValue().identity()),
+        entry -> predicate.test(entry.getValue()),
         Map.Entry::getValue));
   }
 
   @Override
   public @NotNull Audience permission(final @NotNull String permission) {
-    return this.filterIdentity(identity -> identity.permission(permission));
+    return this.filterPointers(pointers -> pointers.get(PermissionChecker.POINTER).orElse(PermissionChecker.always(TriState.FALSE)).test(permission));
   }
 
   @Override
   public @NotNull Audience world(final @NotNull Key world) {
-    return this.filterIdentity(identity -> world.value().equals(identity.world()));
+    return this.filterPointers(pointers -> world.equals(pointers.getOrDefault(FacetPointers.WORLD, null)));
   }
 
   @Override
   public @NotNull Audience server(final @NotNull String serverName) {
-    return this.filterIdentity(identity -> serverName.equals(identity.server()));
+    return this.filterPointers(pointers -> serverName.equals(pointers.getOrDefault(FacetPointers.SERVER, null)));
   }
 
   @Override

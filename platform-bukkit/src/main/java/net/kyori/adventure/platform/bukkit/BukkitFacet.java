@@ -34,7 +34,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
-import net.kyori.adventure.pointer.Pointers;
+import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer;
@@ -46,6 +46,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -394,6 +395,17 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
+  static final class ConsoleCommandSenderPointers extends BukkitFacet<ConsoleCommandSender> implements Facet.Pointers<ConsoleCommandSender> {
+    ConsoleCommandSenderPointers() {
+      super(ConsoleCommandSender.class);
+    }
+
+    @Override
+    public void contributePointers(final ConsoleCommandSender viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.CONSOLE);
+    }
+  }
+
   static final class PlayerPointers extends BukkitFacet<Player> implements Facet.Pointers<Player> {
 
     PlayerPointers() {
@@ -404,6 +416,8 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     public void contributePointers(final Player viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       builder.withDynamic(Identity.UUID, viewer::getUniqueId);
       builder.withDynamic(Identity.DISPLAY_NAME, () -> BukkitComponentSerializer.legacy().deserializeOrNull(viewer.getDisplayName()));
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.PLAYER);
+      builder.withDynamic(FacetPointers.WORLD, () -> Key.key(viewer.getWorld().getName())); // :(
     }
   }
 }

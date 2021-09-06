@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.function.ToIntFunction;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.jetbrains.annotations.NotNull;
 
@@ -135,7 +136,7 @@ public interface AudienceProvider extends AutoCloseable {
   /**
    * A builder for {@link AudienceProvider}.
    *
-   * @since 4.5.0
+   * @since 4.0.0
    */
   interface Builder<P extends AudienceProvider, B extends Builder<P, B>> {
     /**
@@ -143,9 +144,9 @@ public interface AudienceProvider extends AutoCloseable {
      *
      * @param componentRenderer a component renderer
      * @return this builder
-     * @since 4.5.0
+     * @since 4.0.0
      */
-    @NotNull B componentRenderer(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer);
+    @NotNull B componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer);
 
     /**
      * Sets the partition function for the provider.
@@ -159,15 +160,15 @@ public interface AudienceProvider extends AutoCloseable {
      *
      * @param partitionFunction a partition function
      * @return this builder
-     * @since 4.5.0
+     * @since 4.0.0
      */
-    @NotNull B partitionBy(final @NotNull ToIntFunction<AudienceIdentity> partitionFunction);
+    @NotNull B partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction);
 
     /**
      * Builds the provider.
      *
      * @return the built provider
-     * @since 4.5.0
+     * @since 4.0.0
      */
     @NotNull
     P build();

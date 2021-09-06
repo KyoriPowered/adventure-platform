@@ -31,10 +31,11 @@ import java.util.function.ToIntFunction;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.platform.AudienceIdentity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.pointer.Pointered;
 import org.jetbrains.annotations.NotNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
@@ -86,7 +87,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final EventListener eventListener;
 
   @Inject
-  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
     super(componentRenderer, partitionFunction);
     this.game = game;
     this.eventManager = game.getEventManager();
@@ -125,11 +126,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   }
 
   @Override
-  protected @NotNull AudienceIdentity createIdentity(final @NotNull MessageReceiver viewer) {
-    return new SpongeIdentity(viewer);
-  }
-
-  protected SpongeAudience createAudience(final @NotNull Collection<MessageReceiver> viewers) {
+  protected @NotNull SpongeAudience createAudience(final @NotNull Collection<MessageReceiver> viewers) {
     return new SpongeAudience(this, viewers);
   }
 
@@ -142,30 +139,30 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   final static class Builder implements SpongeAudiences.Builder {
     private final @NotNull PluginContainer plugin;
     private final @NotNull Game game;
-    private ComponentRenderer<AudienceIdentity> componentRenderer;
-    private ToIntFunction<AudienceIdentity> partitionFunction;
+    private ComponentRenderer<Pointered> componentRenderer;
+    private ToIntFunction<Pointered> partitionFunction;
 
     Builder(final @NotNull PluginContainer plugin, final @NotNull Game game) {
       super();
       this.plugin = requireNonNull(plugin, "plugin");
       this.game = requireNonNull(game, "game");
-      this.componentRenderer(new ComponentRenderer<AudienceIdentity>() {
+      this.componentRenderer(new ComponentRenderer<Pointered>() {
         @Override
-        public @NotNull Component render(final @NotNull Component component, final @NotNull AudienceIdentity context) {
-          return GlobalTranslator.render(component, context.locale());
+        public @NotNull Component render(final @NotNull Component component, final @NotNull Pointered context) {
+          return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
         }
       });
-      this.partitionBy(context -> context.locale().hashCode());
+      this.partitionBy(context -> context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE).hashCode());
     }
 
     @Override
-    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer) {
+    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
       this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
       return this;
     }
 
     @Override
-    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction) {
       this.partitionFunction = requireNonNull(partitionFunction, "partition function");
       return this;
     }

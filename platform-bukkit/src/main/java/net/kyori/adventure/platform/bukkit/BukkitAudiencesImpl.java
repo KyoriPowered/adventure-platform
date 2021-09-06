@@ -38,9 +38,10 @@ import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.AudienceIdentity;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
+import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -90,7 +91,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
   private final Plugin plugin;
 
-  BukkitAudiencesImpl(final @NotNull Plugin plugin, final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer, final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+  BukkitAudiencesImpl(final @NotNull Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
     super(componentRenderer, partitionFunction);
     this.plugin = requireNonNull(plugin, "plugin");
     this.softDepend("ViaVersion");
@@ -106,7 +107,10 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       this.addViewer(event.getPlayer()));
     this.registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event ->
       this.removeViewer(event.getPlayer()));
-    this.registerLocaleEvent(EventPriority.MONITOR, (viewer, locale) -> this.refreshViewer(viewer));
+    this.registerLocaleEvent(EventPriority.MONITOR, (viewer, locale) -> {
+      final @Nullable BukkitAudience audience = this.viewers.get(viewer);
+      if(audience != null) audience.locale(locale);
+    });
   }
 
   @Override
@@ -129,39 +133,34 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   }
 
   @Override
-  protected @NotNull AudienceIdentity createIdentity(final @NotNull CommandSender viewer) {
-    return new BukkitIdentity(viewer);
-  }
-
-  @Override
   protected @NotNull BukkitAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
     return new BukkitAudience(this.plugin, this, viewers);
   }
 
   static final class Builder implements BukkitAudiences.Builder {
     private final @NotNull Plugin plugin;
-    private ComponentRenderer<AudienceIdentity> componentRenderer;
-    private ToIntFunction<AudienceIdentity> partitionFunction;
+    private ComponentRenderer<Pointered> componentRenderer;
+    private ToIntFunction<Pointered> partitionFunction;
 
     Builder(final @NotNull Plugin plugin) {
       this.plugin = requireNonNull(plugin, "plugin");
-      this.componentRenderer(new ComponentRenderer<AudienceIdentity>() {
+      this.componentRenderer(new ComponentRenderer<Pointered>() {
         @Override
-        public @NotNull Component render(final @NotNull Component component, final @NotNull AudienceIdentity context) {
-          return GlobalTranslator.render(component, context.locale());
+        public @NotNull Component render(final @NotNull Component component, final @NotNull Pointered context) {
+          return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
         }
       });
-      this.partitionBy(context -> context.locale().hashCode());
+      this.partitionBy(context -> context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE).hashCode());
     }
 
     @Override
-    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<AudienceIdentity> componentRenderer) {
+    public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
       this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
       return this;
     }
 
     @Override
-    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<AudienceIdentity> partitionFunction) {
+    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction) {
       this.partitionFunction = requireNonNull(partitionFunction, "partition function");
       return this;
     }

@@ -29,17 +29,14 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.platform.AudienceIdentity;
 import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -47,9 +44,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 
 import static java.util.Objects.requireNonNull;
 
@@ -58,17 +55,19 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>This audience must support multiple viewers, although platforms do not use this feature yet.</p>
  *
+ * <p>This is not supported API. Subject to change at any time.</p>
+ *
  * @param <V> a viewer type
  * @see Facet
  * @since 4.0.0
  */
+@ApiStatus.Internal
 public class FacetAudience<V> implements Audience, Closeable {
   protected final @NotNull FacetAudienceProvider<V, FacetAudience<V>> provider;
 
   private final @NotNull Set<V> viewers;
   private @Nullable V viewer;
   private volatile Pointers pointers; // lazy init
-  private @UnknownNullability AudienceIdentity identity;
 
   private final Facet.@Nullable Chat<V, Object> chat;
   private final Facet.@Nullable ActionBar<V, Object> actionBar;
@@ -130,16 +129,6 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   /**
-   * Gets the audience identity.
-   *
-   * @return an audience identity
-   * @since 4.0.0
-   */
-  public AudienceIdentity identity() {
-    return this.identity;
-  }
-
-  /**
    * Add a member to this audience.
    *
    * @param viewer the viewer
@@ -176,8 +165,9 @@ public class FacetAudience<V> implements Audience, Closeable {
    * @since 4.0.0
    */
   public void refresh() {
-    this.identity =
-      this.viewer == null ? EmptyIdentity.INSTANCE : this.provider.createIdentity(this.viewer);
+    synchronized (this) {
+      this.pointers = null; // todo: is this necessary?
+    }
 
     if(this.bossBars == null) return;
     for(final Map.Entry<BossBar, Facet.BossBar<V>> entry : this.bossBars.entrySet()) {
@@ -290,7 +280,7 @@ public class FacetAudience<V> implements Audience, Closeable {
       return null;
     }
     final StringBuilder builder = new StringBuilder();
-    ComponentFlattener.basic().flatten(this.provider.componentRenderer.render(comp, this.identity), builder::append);
+    ComponentFlattener.basic().flatten(this.provider.componentRenderer.render(comp, this), builder::append);
     return builder.toString();
   }
 
@@ -371,7 +361,7 @@ public class FacetAudience<V> implements Audience, Closeable {
 
   @Override
   public void showBossBar(final @NotNull BossBar bar) {
-    if(this.bossBars == null) return;
+    if(this.bossBar == null || this.bossBars == null) return;
 
     Facet.BossBar<V> listener;
     synchronized(this.bossBars) {
@@ -380,7 +370,7 @@ public class FacetAudience<V> implements Audience, Closeable {
         listener =
           new FacetBossBarListener<>(
             this.bossBar.createBossBar(this.viewers),
-            message -> this.provider.componentRenderer.render(message, this.identity));
+            message -> this.provider.componentRenderer.render(message, this));
         this.bossBars.put(bar, listener);
       }
     }
@@ -455,9 +445,8 @@ public class FacetAudience<V> implements Audience, Closeable {
           final V viewer = this.viewer;
           if(viewer == null) return Pointers.empty();
           final Pointers.Builder builder = Pointers.builder();
-          // We have special handling for Locales
-          // todo
-          // builder.withDynamic(Identity.LOCALE, () -> this.locale);
+          // audience-specific, for things -platform needs to track itself
+          this.contributePointers(builder);
 
           // Then any extra pointers
           for(final Facet.Pointers<V> provider : this.pointerProviders) {
@@ -471,6 +460,10 @@ public class FacetAudience<V> implements Audience, Closeable {
     }
 
     return this.pointers;
+  }
+
+  @ApiStatus.OverrideOnly
+  protected void contributePointers(final Pointers.Builder builder) {
   }
 
   @Override
@@ -489,47 +482,8 @@ public class FacetAudience<V> implements Audience, Closeable {
   }
 
   private @Nullable Object createMessage(final @NotNull Component original, final Facet.@NotNull Message<V, Object> facet) {
-    final Component message = this.provider.componentRenderer.render(original, this.identity);
+    final Component message = this.provider.componentRenderer.render(original, this);
     final V viewer = this.viewer;
     return viewer == null ? null : facet.createMessage(viewer, message);
-  }
-
-  static final class EmptyIdentity implements AudienceIdentity {
-    private static final EmptyIdentity INSTANCE = new EmptyIdentity();
-
-    @Override
-    public @NotNull UUID uuid() {
-      return Identity.nil().uuid();
-    }
-
-    @Override
-    public @NotNull Locale locale() {
-      return Locale.US;
-    }
-
-    @Override
-    public @Nullable String world() {
-      return null;
-    }
-
-    @Override
-    public @Nullable String server() {
-      return null;
-    }
-
-    @Override
-    public boolean player() {
-      return false;
-    }
-
-    @Override
-    public boolean console() {
-      return false;
-    }
-
-    @Override
-    public boolean permission(final @NotNull String key) {
-      return false;
-    }
   }
 }

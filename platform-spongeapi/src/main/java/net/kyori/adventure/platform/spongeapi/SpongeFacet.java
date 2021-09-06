@@ -33,7 +33,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
-import net.kyori.adventure.pointer.Pointers;
+import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.Index;
@@ -48,6 +48,7 @@ import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.BossBarOverlays;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.effect.sound.SoundCategory;
 import org.spongepowered.api.effect.sound.SoundType;
@@ -394,7 +395,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
   }
 
-  static class SubjectPointers extends SpongeFacet<Subject> implements Facet.Pointers<Subject> {
+  static final class SubjectPointers extends SpongeFacet<Subject> implements Facet.Pointers<Subject> {
     SubjectPointers() {
       super(Subject.class);
     }
@@ -412,7 +413,18 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
   }
 
-  static class CommandSourcePointers extends SpongeFacet<CommandSource> implements Facet.Pointers<CommandSource> {
+  static final class ConsoleSourcePointers extends SpongeFacet<ConsoleSource> implements Facet.Pointers<ConsoleSource> {
+    ConsoleSourcePointers() {
+      super(ConsoleSource.class);
+    }
+
+    @Override
+    public void contributePointers(final ConsoleSource viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.CONSOLE);
+    }
+  }
+
+  static final class CommandSourcePointers extends SpongeFacet<CommandSource> implements Facet.Pointers<CommandSource> {
     CommandSourcePointers() {
       super(CommandSource.class);
     }
@@ -420,10 +432,33 @@ class SpongeFacet<V> extends FacetBase<V> {
     @Override
     public void contributePointers(final CommandSource viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       builder.withStatic(Identity.NAME, viewer.getName());
+      builder.withDynamic(Identity.LOCALE, viewer::getLocale);
     }
   }
 
-  static class IdentifiablePointers extends SpongeFacet<Identifiable> implements Facet.Pointers<Identifiable> {
+  static final class LocatablePointers extends SpongeFacet<Locatable> implements Facet.Pointers<Locatable> {
+    LocatablePointers() {
+      super(Locatable.class);
+    }
+
+    @Override
+    public void contributePointers(final Locatable viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withDynamic(FacetPointers.WORLD, () -> Key.key(viewer.getWorld().getName()));
+    }
+  }
+
+  static final class PlayerPointers extends SpongeFacet<Player> implements Facet.Pointers<Player> {
+    PlayerPointers() {
+      super(Player.class);
+    }
+
+    @Override
+    public void contributePointers(final Player viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.PLAYER);
+    }
+  }
+
+  static final class IdentifiablePointers extends SpongeFacet<Identifiable> implements Facet.Pointers<Identifiable> {
     IdentifiablePointers() {
       super(Identifiable.class);
     }

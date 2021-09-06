@@ -34,6 +34,8 @@ import java.util.function.Consumer;
 /**
  * Facet utilities and logging pipeline.
  *
+ * <p>This is not supported API. Subject to change at any time.</p>
+ *
  * @since 4.0.0
  */
 public final class Knob {
