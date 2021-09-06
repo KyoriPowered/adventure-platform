@@ -46,7 +46,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +67,6 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
   implements AudienceProvider, ForwardingAudience {
   protected static final Locale DEFAULT_LOCALE = Locale.US;
   protected final ComponentRenderer<Pointered> componentRenderer;
-  protected final ToIntFunction<Pointered> partitionFunction;
 
   private final Audience console;
   private final Audience player;
@@ -78,9 +76,8 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
   private final A empty;
   private volatile boolean closed;
 
-  protected FacetAudienceProvider(final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
+  protected FacetAudienceProvider(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
     this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
-    this.partitionFunction = requireNonNull(partitionFunction, "partition function");
     this.viewers = new ConcurrentHashMap<>();
     this.players = new ConcurrentHashMap<>();
     this.consoles = new CopyOnWriteArraySet<>();

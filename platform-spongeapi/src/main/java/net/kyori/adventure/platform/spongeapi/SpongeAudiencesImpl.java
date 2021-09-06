@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.ToIntFunction;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
@@ -73,9 +72,10 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private static final Map<String, SpongeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
 
   static SpongeAudiences instanceFor(final @NotNull PluginContainer plugin, final @NotNull Game game) {
-    requireNonNull(plugin, "plugin");
-    requireNonNull(game, "game");
-    return builder(plugin, game).build();
+    return builder(
+      requireNonNull(plugin, "plugin"),
+      requireNonNull(game, "game")
+    ).build();
   }
 
   static Builder builder(final @NotNull PluginContainer plugin, final @NotNull Game game) {
@@ -87,8 +87,8 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final EventListener eventListener;
 
   @Inject
-  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
-    super(componentRenderer, partitionFunction);
+  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
+    super(componentRenderer);
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
@@ -140,7 +140,6 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     private final @NotNull PluginContainer plugin;
     private final @NotNull Game game;
     private ComponentRenderer<Pointered> componentRenderer;
-    private ToIntFunction<Pointered> partitionFunction;
 
     Builder(final @NotNull PluginContainer plugin, final @NotNull Game game) {
       super();
@@ -152,7 +151,6 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
           return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
         }
       });
-      this.partitionBy(context -> context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE).hashCode());
     }
 
     @Override
@@ -162,14 +160,8 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     }
 
     @Override
-    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction) {
-      this.partitionFunction = requireNonNull(partitionFunction, "partition function");
-      return this;
-    }
-
-    @Override
     public @NotNull SpongeAudiences build() {
-      return INSTANCES.computeIfAbsent(this.plugin.getId(), id -> new SpongeAudiencesImpl(this.plugin, this.game, this.componentRenderer, this.partitionFunction));
+      return INSTANCES.computeIfAbsent(this.plugin.getId(), id -> new SpongeAudiencesImpl(this.plugin, this.game, this.componentRenderer));
     }
   }
 

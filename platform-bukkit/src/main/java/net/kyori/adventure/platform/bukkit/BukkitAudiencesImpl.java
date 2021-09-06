@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
@@ -91,8 +90,8 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
   private final Plugin plugin;
 
-  BukkitAudiencesImpl(final @NotNull Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
-    super(componentRenderer, partitionFunction);
+  BukkitAudiencesImpl(final @NotNull Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
+    super(componentRenderer);
     this.plugin = requireNonNull(plugin, "plugin");
     this.softDepend("ViaVersion");
 
@@ -140,7 +139,6 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   static final class Builder implements BukkitAudiences.Builder {
     private final @NotNull Plugin plugin;
     private ComponentRenderer<Pointered> componentRenderer;
-    private ToIntFunction<Pointered> partitionFunction;
 
     Builder(final @NotNull Plugin plugin) {
       this.plugin = requireNonNull(plugin, "plugin");
@@ -150,7 +148,6 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
           return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
         }
       });
-      this.partitionBy(context -> context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE).hashCode());
     }
 
     @Override
@@ -160,14 +157,8 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
     }
 
     @Override
-    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction) {
-      this.partitionFunction = requireNonNull(partitionFunction, "partition function");
-      return this;
-    }
-
-    @Override
     public @NotNull BukkitAudiences build() {
-      return INSTANCES.computeIfAbsent(this.plugin.getName(), name -> new BukkitAudiencesImpl(this.plugin, this.componentRenderer, this.partitionFunction));
+      return INSTANCES.computeIfAbsent(this.plugin.getName(), name -> new BukkitAudiencesImpl(this.plugin, this.componentRenderer));
     }
   }
 

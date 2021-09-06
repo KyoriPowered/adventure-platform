@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
@@ -84,8 +83,8 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   private final Plugin plugin;
   private final Listener listener;
 
-  BungeeAudiencesImpl(final Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer, final @NotNull ToIntFunction<Pointered> partitionFunction) {
-    super(componentRenderer, partitionFunction);
+  BungeeAudiencesImpl(final Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
+    super(componentRenderer);
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
     this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);
@@ -129,7 +128,6 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   static final class Builder implements BungeeAudiences.Builder {
     private final @NotNull Plugin plugin;
     private ComponentRenderer<Pointered> componentRenderer;
-    private ToIntFunction<Pointered> partitionFunction;
 
     Builder(final @NotNull Plugin plugin) {
       this.plugin = requireNonNull(plugin, "plugin");
@@ -139,7 +137,6 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
           return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
         }
       });
-      this.partitionBy(context -> context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE).hashCode());
     }
 
     @Override
@@ -149,14 +146,8 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     }
 
     @Override
-    public @NotNull Builder partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction) {
-      this.partitionFunction = requireNonNull(partitionFunction, "partition function");
-      return this;
-    }
-
-    @Override
     public @NotNull BungeeAudiences build() {
-      return INSTANCES.computeIfAbsent(this.plugin.getDescription().getName(), name -> new BungeeAudiencesImpl(this.plugin, this.componentRenderer, this.partitionFunction));
+      return INSTANCES.computeIfAbsent(this.plugin.getDescription().getName(), name -> new BungeeAudiencesImpl(this.plugin, this.componentRenderer));
     }
   }
 

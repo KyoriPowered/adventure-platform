@@ -24,7 +24,6 @@
 package net.kyori.adventure.platform;
 
 import java.util.UUID;
-import java.util.function.ToIntFunction;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.pointer.Pointered;
@@ -147,22 +146,6 @@ public interface AudienceProvider extends AutoCloseable {
      * @since 4.0.0
      */
     @NotNull B componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer);
-
-    /**
-     * Sets the partition function for the provider.
-     *
-     * <p>Determines how to group audiences together, for optimization purposes. This will depend on
-     * the logic of {@link #componentRenderer(ComponentRenderer)}. For example, if the renderer only
-     * checks the audience's locale, then the partition function should return the hashCode of the
-     * locale.</p>
-     *
-     * <p>When in doubt, do not set this since the default partition will always work.</p>
-     *
-     * @param partitionFunction a partition function
-     * @return this builder
-     * @since 4.0.0
-     */
-    @NotNull B partitionBy(final @NotNull ToIntFunction<Pointered> partitionFunction);
 
     /**
      * Builds the provider.
