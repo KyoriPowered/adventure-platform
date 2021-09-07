@@ -97,9 +97,9 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
     this.eventManager.registerListeners(plugin, this.eventListener);
-    if(game.isServerAvailable() && game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
+    if (game.isServerAvailable() && game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
       this.addViewer(game.getServer().getConsole());
-      for(final Player player : game.getServer().getOnlinePlayers()) {
+      for (final Player player : game.getServer().getOnlinePlayers()) {
         this.addViewer(player);
       }
     }
@@ -108,16 +108,16 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   @NotNull
   @Override
   public Audience receiver(final @NotNull MessageReceiver receiver) {
-    if(receiver instanceof Player) {
+    if (receiver instanceof Player) {
       return this.player((Player) receiver);
-    } else if(receiver instanceof ConsoleSource
+    } else if (receiver instanceof ConsoleSource
       || (receiver instanceof RconSource && ((RconSource) receiver).getLoggedIn())) {
       return this.console();
-    } else if(receiver instanceof World) {
+    } else if (receiver instanceof World) {
       return this.world(Key.key(((World) receiver).getName()));
-    } else if(receiver instanceof ProxySource) {
+    } else if (receiver instanceof ProxySource) {
       return this.receiver(((ProxySource) receiver).getOriginalSource());
-    } else if(receiver instanceof CommandBlock) {
+    } else if (receiver instanceof CommandBlock) {
       return Audience.empty();
     }
     return new SpongeAudience(this, Collections.singletonList(receiver));

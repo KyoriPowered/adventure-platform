@@ -76,21 +76,21 @@ final class GsonInjections {
       final int index = findExcluderIndex(modifiedFactories);
 
       Collections.reverse(newFactories);
-      for(final TypeAdapterFactory newFactory : newFactories) {
+      for (final TypeAdapterFactory newFactory : newFactories) {
         modifiedFactories.add(index, newFactory);
       }
 
       factoriesField.set(existing, modifiedFactories);
       return true;
-    } catch(final NoSuchFieldException | IllegalAccessException ex) {
+    } catch (final NoSuchFieldException | IllegalAccessException ex) {
       return false;
     }
   }
 
   private static int findExcluderIndex(final @NotNull List<TypeAdapterFactory> factories) {
-    for(int i = 0, size = factories.size(); i < size; i++) {
+    for (int i = 0, size = factories.size(); i < size; i++) {
       final TypeAdapterFactory factory = factories.get(i);
-      if(factory instanceof Excluder) {
+      if (factory instanceof Excluder) {
         return i + 1;
       }
     }

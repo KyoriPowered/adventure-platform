@@ -88,7 +88,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
 
       @Override
       public @NotNull Pointers pointers() {
-        if(FacetAudienceProvider.this.consoles.size() == 1) {
+        if (FacetAudienceProvider.this.consoles.size() == 1) {
           return FacetAudienceProvider.this.consoles.iterator().next().pointers();
         } else {
           return Pointers.empty();
@@ -107,15 +107,15 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
    * @since 4.0.0
    */
   public void addViewer(final @NotNull V viewer) {
-    if(this.closed) return;
+    if (this.closed) return;
     final A audience = this.viewers.computeIfAbsent(
         requireNonNull(viewer, "viewer"),
         v -> this.createAudience(Collections.singletonList(v)));
     final FacetPointers.Type type = audience.getOrDefault(FacetPointers.TYPE, FacetPointers.Type.OTHER);
-    if(type == FacetPointers.Type.PLAYER) {
+    if (type == FacetPointers.Type.PLAYER) {
       final @Nullable UUID id = audience.getOrDefault(Identity.UUID, null);
-      if(id != null) this.players.putIfAbsent(id, audience);
-    } else if(type == FacetPointers.Type.CONSOLE) {
+      if (id != null) this.players.putIfAbsent(id, audience);
+    } else if (type == FacetPointers.Type.CONSOLE) {
       this.consoles.add(audience);
     }
   }
@@ -128,12 +128,12 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
    */
   public void removeViewer(final @NotNull V viewer) {
     final A audience = this.viewers.remove(viewer);
-    if(audience == null) return;
+    if (audience == null) return;
     final FacetPointers.Type type = audience.getOrDefault(FacetPointers.TYPE, FacetPointers.Type.OTHER);
-    if(type == FacetPointers.Type.PLAYER) {
+    if (type == FacetPointers.Type.PLAYER) {
       final @Nullable UUID id = audience.getOrDefault(Identity.UUID, null);
-      if(id != null) this.players.remove(id);
-    } else if(type == FacetPointers.Type.CONSOLE) {
+      if (id != null) this.players.remove(id);
+    } else if (type == FacetPointers.Type.CONSOLE) {
       this.consoles.remove(audience);
     }
     audience.close();
@@ -149,7 +149,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
    */
   public void refreshViewer(final @NotNull V viewer) {
     final A audience = this.viewers.get(viewer);
-    if(audience != null) {
+    if (audience != null) {
       audience.refresh();
     }
   }
@@ -226,7 +226,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
   @Override
   public void close() {
     this.closed = true;
-    for(final V viewer : this.viewers.keySet()) {
+    for (final V viewer : this.viewers.keySet()) {
       this.removeViewer(viewer);
     }
   }
@@ -261,9 +261,9 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
 
           private void populate() {
             this.next = null;
-            while(this.parent.hasNext()) {
+            while (this.parent.hasNext()) {
               final T next = this.parent.next();
-              if(filter.test(next)) {
+              if (filter.test(next)) {
                 this.next = transformer.apply(next);
                 return;
               }
@@ -282,7 +282,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
 
           @Override
           public V next() {
-            if(this.next == null) {
+            if (this.next == null) {
               throw new NoSuchElementException();
             }
             final V next = this.next;
@@ -294,8 +294,8 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
 
       @Override
       public void forEach(final Consumer<? super V> action) {
-        for(final T each : input) {
-          if(filter.test(each)) {
+        for (final T each : input) {
+          if (filter.test(each)) {
             action.accept(transformer.apply(each));
           }
         }

@@ -98,7 +98,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
     final CommandSender console = this.plugin.getServer().getConsoleSender();
     this.addViewer(console);
 
-    for(final Player player : this.plugin.getServer().getOnlinePlayers()) {
+    for (final Player player : this.plugin.getServer().getOnlinePlayers()) {
       this.addViewer(player);
     }
 
@@ -108,19 +108,19 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       this.removeViewer(event.getPlayer()));
     this.registerLocaleEvent(EventPriority.MONITOR, (viewer, locale) -> {
       final @Nullable BukkitAudience audience = this.viewers.get(viewer);
-      if(audience != null) audience.locale(locale);
+      if (audience != null) audience.locale(locale);
     });
   }
 
   @Override
   public @NotNull Audience sender(final @NotNull CommandSender sender) {
-    if(sender instanceof Player) {
+    if (sender instanceof Player) {
       return this.player((Player) sender);
-    } else if(sender instanceof ConsoleCommandSender) {
+    } else if (sender instanceof ConsoleCommandSender) {
       return this.console();
-    } else if(sender instanceof ProxiedCommandSender) {
+    } else if (sender instanceof ProxiedCommandSender) {
       return this.sender(((ProxiedCommandSender) sender).getCallee());
-    } else if(sender instanceof Entity || sender instanceof Block) {
+    } else if (sender instanceof Entity || sender instanceof Block) {
       return Audience.empty();
     }
     return this.createAudience(Collections.singletonList(sender));
@@ -177,16 +177,16 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   @SuppressWarnings("unchecked")
   private void softDepend(final @NotNull String pluginName) {
     final PluginDescriptionFile file = this.plugin.getDescription();
-    if(file.getName().equals(pluginName)) return;
+    if (file.getName().equals(pluginName)) return;
 
     try {
       final Field softDepend = needField(file.getClass(), "softDepend");
       final List<String> dependencies = (List<String>) softDepend.get(file);
-      if(!dependencies.contains(pluginName)) {
+      if (!dependencies.contains(pluginName)) {
         final List<String> newList = ImmutableList.<String>builder().addAll(dependencies).add(pluginName).build();
         softDepend.set(file, newList);
       }
-    } catch(final Throwable error) {
+    } catch (final Throwable error) {
       logError(error, "Failed to inject softDepend in plugin.yml: %s %s", this.plugin, pluginName);
     }
 
@@ -195,7 +195,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       final Field dependencyGraphField = needField(manager.getClass(), "dependencyGraph");
       final MutableGraph<String> graph = (MutableGraph<String>) dependencyGraphField.get(manager);
       graph.putEdge(file.getName(), pluginName);
-    } catch(final Throwable error) {
+    } catch (final Throwable error) {
       // Fail silently, dependency graphs were added in 1.15, but the previous method still works
     }
   }
@@ -227,16 +227,16 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
    */
   private void registerLocaleEvent(final EventPriority priority, final @NotNull BiConsumer<Player, Locale> callback) {
     Class<?> eventClass = findClass("org.bukkit.event.player.PlayerLocaleChangeEvent");
-    if(eventClass == null) {
+    if (eventClass == null) {
       eventClass = findClass("com.destroystokyo.paper.event.player.PlayerLocaleChangeEvent");
     }
 
     MethodHandle getMethod = findMethod(eventClass, "getLocale", String.class);
-    if(getMethod == null) {
+    if (getMethod == null) {
       getMethod = findMethod(eventClass, "getNewLocale", String.class);
     }
 
-    if(getMethod != null && PlayerEvent.class.isAssignableFrom(eventClass)) {
+    if (getMethod != null && PlayerEvent.class.isAssignableFrom(eventClass)) {
       final Class<? extends PlayerEvent> localeEvent = (Class<? extends PlayerEvent>) eventClass;
       final MethodHandle getLocale = getMethod;
 
@@ -245,7 +245,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
         final String locale;
         try {
           locale = (String) getLocale.invoke(event);
-        } catch(final Throwable error) {
+        } catch (final Throwable error) {
           logError(error, "Failed to accept %s: %s", localeEvent.getName(), player);
           return;
         }
@@ -261,9 +261,9 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
    * @return a parsed locale
    */
   private static @NotNull Locale toLocale(final @Nullable String string) {
-    if(string != null) {
+    if (string != null) {
       final Locale locale = Translator.parseLocale(string);
-      if(locale != null) {
+      if (locale != null) {
         return locale;
       }
     }

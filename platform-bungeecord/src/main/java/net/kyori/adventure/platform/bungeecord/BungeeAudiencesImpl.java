@@ -65,7 +65,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
       gsonField.setAccessible(true);
       final Gson gson = (Gson) gsonField.get(ProxyServer.getInstance());
       BungeeComponentSerializer.inject(gson);
-    } catch(final Throwable error) {
+    } catch (final Throwable error) {
       logError(error, "Failed to inject ProxyServer gson");
     }
   }
@@ -92,7 +92,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     final CommandSender console = this.plugin.getProxy().getConsole();
     this.addViewer(console);
 
-    for(final ProxiedPlayer player : this.plugin.getProxy().getPlayers()) {
+    for (final ProxiedPlayer player : this.plugin.getProxy().getPlayers()) {
       this.addViewer(player);
     }
   }
@@ -100,9 +100,9 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   @NotNull
   @Override
   public Audience sender(final @NotNull CommandSender sender) {
-    if(sender instanceof ProxiedPlayer) {
+    if (sender instanceof ProxiedPlayer) {
       return this.player((ProxiedPlayer) sender);
-    } else if(ProxyServer.getInstance().getConsole().equals(sender)) {
+    } else if (ProxyServer.getInstance().getConsole().equals(sender)) {
       return this.console();
     }
     return this.createAudience(Collections.singletonList(sender));

@@ -46,7 +46,7 @@ public final class BukkitComponentSerializer {
   private static final GsonComponentSerializer GSON_SERIALIZER;
 
   static {
-    if(IS_1_16) {
+    if (IS_1_16) {
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
         .hexColors()
         .useUnusualXRepeatedCharacterHexFormat()

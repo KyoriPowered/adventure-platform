@@ -55,7 +55,7 @@ interface SelfSerializable {
 
     @Override
     public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
-      if(!SelfSerializable.class.isAssignableFrom(type.getRawType())) {
+      if (!SelfSerializable.class.isAssignableFrom(type.getRawType())) {
         return null;
       }
 

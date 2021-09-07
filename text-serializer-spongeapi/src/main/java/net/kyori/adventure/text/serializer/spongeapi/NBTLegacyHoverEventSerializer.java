@@ -55,7 +55,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
 
   @Override
   public HoverEvent.@NotNull ShowItem deserializeShowItem(final @NotNull Component input) throws IOException {
-    if(!(input instanceof TextComponent)) {
+    if (!(input instanceof TextComponent)) {
       throw new IllegalArgumentException("Legacy events must be single Component instances");
     }
     final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
@@ -69,14 +69,14 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
 
   @Override
   public HoverEvent.@NotNull ShowEntity deserializeShowEntity(final @NotNull Component input, final Codec.Decoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
-    if(!(input instanceof TextComponent)) {
+    if (!(input instanceof TextComponent)) {
       throw new IllegalArgumentException("Legacy events must be single Component instances");
     }
     final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
     Component name;
     try {
       name = componentCodec.decode(contents.getString(ENTITY_NAME));
-    } catch(final Exception e) {
+    } catch (final Exception e) {
       name = Component.text(contents.getString(ENTITY_NAME));
     }
     return HoverEvent.ShowEntity.of(
@@ -91,7 +91,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
     final CompoundBinaryTag.Builder builder = CompoundBinaryTag.builder()
       .putString(ITEM_TYPE, input.item().asString())
       .putByte(ITEM_COUNT, (byte) input.count());
-    if(input.nbt() != null) {
+    if (input.nbt() != null) {
       builder.put(ITEM_TAG, input.nbt().get(SNBT_CODEC));
     }
 
@@ -103,7 +103,7 @@ final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer 
     final CompoundBinaryTag.Builder builder = CompoundBinaryTag.builder()
       .putString(ENTITY_ID, input.id().toString())
       .putString(ENTITY_TYPE, input.type().asString());
-    if(input.name() != null) {
+    if (input.name() != null) {
       builder.putString(ENTITY_NAME, componentCodec.encode(input.name()));
     }
     return Component.text(SNBT_CODEC.encode(builder.build()));

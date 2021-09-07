@@ -57,9 +57,9 @@ public final class MinecraftReflection {
 
   static {
     final Class<?> serverClass = Bukkit.getServer().getClass(); // TODO: use reflection here too?
-    if(!serverClass.getSimpleName().equals(CRAFT_SERVER)) {
+    if (!serverClass.getSimpleName().equals(CRAFT_SERVER)) {
       VERSION = null;
-    } else if(serverClass.getName().equals(PREFIX_CRAFTBUKKIT + "." + CRAFT_SERVER)) {
+    } else if (serverClass.getName().equals(PREFIX_CRAFTBUKKIT + "." + CRAFT_SERVER)) {
       VERSION = ".";
     } else {
       String name = serverClass.getName();
@@ -76,13 +76,13 @@ public final class MinecraftReflection {
    * @return a class or {@code null} if not found
    */
   public static @Nullable Class<?> findClass(final @Nullable String@NotNull... classNames) {
-    for(final String clazz : classNames) {
-      if(clazz == null) continue;
+    for (final String clazz : classNames) {
+      if (clazz == null) continue;
 
       try {
         final Class<?> classObj = Class.forName(clazz);
         return classObj;
-      } catch(final ClassNotFoundException e) {
+      } catch (final ClassNotFoundException e) {
       }
     }
     return null;
@@ -132,16 +132,16 @@ public final class MinecraftReflection {
    * @return a method handle or {@code null} if not found
    */
   public static @Nullable MethodHandle findMethod(final @Nullable Class<?> holderClass, final @Nullable String@NotNull[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
-    if(holderClass == null || returnClass == null) return null;
-    for(final Class<?> parameterClass : parameterClasses) {
-      if(parameterClass == null) return null;
+    if (holderClass == null || returnClass == null) return null;
+    for (final Class<?> parameterClass : parameterClasses) {
+      if (parameterClass == null) return null;
     }
 
-    for(final String methodName : methodNames) {
-      if(methodName == null) continue;
+    for (final String methodName : methodNames) {
+      if (methodName == null) continue;
       try {
         return LOOKUP.findVirtual(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
-      } catch(final NoSuchMethodException | IllegalAccessException e) {
+      } catch (final NoSuchMethodException | IllegalAccessException e) {
       }
     }
     return null;
@@ -171,15 +171,15 @@ public final class MinecraftReflection {
    * @return a method handle or {@code null} if not found
    */
   public static @Nullable MethodHandle findStaticMethod(final @Nullable Class<?> holderClass, final String[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
-    if(holderClass == null || returnClass == null) return null;
-    for(final Class<?> parameterClass : parameterClasses) {
-      if(parameterClass == null) return null;
+    if (holderClass == null || returnClass == null) return null;
+    for (final Class<?> parameterClass : parameterClasses) {
+      if (parameterClass == null) return null;
     }
 
-    for(final String methodName : methodNames) {
+    for (final String methodName : methodNames) {
       try {
         return LOOKUP.findStatic(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
-      } catch(final NoSuchMethodException | IllegalAccessException e) {
+      } catch (final NoSuchMethodException | IllegalAccessException e) {
       }
     }
 
@@ -195,13 +195,13 @@ public final class MinecraftReflection {
    * @return if the method exists
    */
   public static boolean hasField(final @Nullable Class<?> holderClass, final Class<?> type, final String... names) {
-    if(holderClass == null) return false;
+    if (holderClass == null) return false;
 
-    for(final String name : names) {
+    for (final String name : names) {
       try {
         final Field field = holderClass.getDeclaredField(name);
-        if(field.getType() == type) return true;
-      } catch(final NoSuchFieldException e) {
+        if (field.getType() == type) return true;
+      } catch (final NoSuchFieldException e) {
         // continue
       }
     }
@@ -229,16 +229,16 @@ public final class MinecraftReflection {
    * @return if the method exists
    */
   public static boolean hasMethod(final @Nullable Class<?> holderClass, final String[] methodNames, final Class<?>... parameterClasses) {
-    if(holderClass == null) return false;
-    for(final Class<?> parameterClass : parameterClasses) {
-      if(parameterClass == null) return false;
+    if (holderClass == null) return false;
+    for (final Class<?> parameterClass : parameterClasses) {
+      if (parameterClass == null) return false;
     }
 
-    for(final String methodName : methodNames) {
+    for (final String methodName : methodNames) {
       try {
         holderClass.getMethod(methodName, parameterClasses);
         return true;
-      } catch(final NoSuchMethodException e) {
+      } catch (final NoSuchMethodException e) {
       }
     }
 
@@ -253,14 +253,14 @@ public final class MinecraftReflection {
    * @return a method handle or {@code null} if not found
    */
   public static @Nullable MethodHandle findConstructor(final @Nullable Class<?> holderClass, final @Nullable Class<?>... parameterClasses) {
-    if(holderClass == null) return null;
-    for(final Class<?> parameterClass : parameterClasses) {
-      if(parameterClass == null) return null;
+    if (holderClass == null) return null;
+    for (final Class<?> parameterClass : parameterClasses) {
+      if (parameterClass == null) return null;
     }
 
     try {
       return LOOKUP.findConstructor(holderClass, MethodType.methodType(void.class, parameterClasses));
-    } catch(final NoSuchMethodException | IllegalAccessException e) {
+    } catch (final NoSuchMethodException | IllegalAccessException e) {
       return null;
     }
   }
@@ -299,18 +299,18 @@ public final class MinecraftReflection {
    * @return an accessible field
    */
   public static @Nullable Field findField(final @Nullable Class<?> holderClass, final @Nullable Class<?> expectedType, final @NotNull String... fieldNames) {
-    if(holderClass == null) return null;
+    if (holderClass == null) return null;
 
     Field field;
-    for(final String fieldName : fieldNames) {
+    for (final String fieldName : fieldNames) {
       try {
         field = holderClass.getDeclaredField(fieldName);
-      } catch(final NoSuchFieldException ex) {
+      } catch (final NoSuchFieldException ex) {
         continue;
       }
 
       field.setAccessible(true);
-      if(expectedType != null && !expectedType.isAssignableFrom(field.getType())) {
+      if (expectedType != null && !expectedType.isAssignableFrom(field.getType())) {
         continue;
       }
 
@@ -327,11 +327,11 @@ public final class MinecraftReflection {
    * @return a handle, if accessible
    */
   public static @Nullable MethodHandle findSetterOf(final @Nullable Field field) {
-    if(field == null) return null;
+    if (field == null) return null;
 
     try {
       return LOOKUP.unreflectSetter(field);
-    } catch(final IllegalAccessException e) {
+    } catch (final IllegalAccessException e) {
       return null;
     }
   }
@@ -343,11 +343,11 @@ public final class MinecraftReflection {
    * @return a handle, if accessible
    */
   public static @Nullable MethodHandle findGetterOf(final @Nullable Field field) {
-    if(field == null) return null;
+    if (field == null) return null;
 
     try {
       return LOOKUP.unreflectGetter(field);
-    } catch(final IllegalAccessException e) {
+    } catch (final IllegalAccessException e) {
       return null;
     }
   }
@@ -373,15 +373,15 @@ public final class MinecraftReflection {
    */
   @SuppressWarnings("unchecked")
   public static @Nullable Object findEnum(final @Nullable Class<?> enumClass, final @NotNull String enumName, final int enumFallbackOrdinal) {
-    if(enumClass == null || !Enum.class.isAssignableFrom(enumClass)) {
+    if (enumClass == null || !Enum.class.isAssignableFrom(enumClass)) {
       return null;
     }
 
     try {
       return Enum.valueOf(enumClass.asSubclass(Enum.class), enumName);
-    } catch(final IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       final Object[] constants = enumClass.getEnumConstants();
-      if(constants.length > enumFallbackOrdinal) {
+      if (constants.length > enumFallbackOrdinal) {
         return constants[enumFallbackOrdinal];
       }
     }
@@ -416,7 +416,7 @@ public final class MinecraftReflection {
    */
   public static @Nullable Class<?> findCraftClass(final @NotNull String className) {
     final String craftClassName = findCraftClassName(className);
-    if(craftClassName == null) {
+    if (craftClassName == null) {
       return null;
     }
 
@@ -433,7 +433,7 @@ public final class MinecraftReflection {
    */
   public static <T> @Nullable Class<? extends T> findCraftClass(final @NotNull String className, final @NotNull Class<T> superClass) {
     final Class<?> craftClass = findCraftClass(className);
-    if(craftClass == null || !requireNonNull(superClass, "superClass").isAssignableFrom(craftClass)) {
+    if (craftClass == null || !requireNonNull(superClass, "superClass").isAssignableFrom(craftClass)) {
       return null;
     }
     return craftClass.asSubclass(superClass);
@@ -468,7 +468,7 @@ public final class MinecraftReflection {
    */
   public static @Nullable Class<?> findNmsClass(final @NotNull String className) {
     final String nmsClassName = findNmsClassName(className);
-    if(nmsClassName == null) {
+    if (nmsClassName == null) {
       return null;
     }
 
@@ -503,11 +503,11 @@ public final class MinecraftReflection {
    * @return a class name or {@code null} if not found
    */
   public static @Nullable Class<?> findMcClass(final @NotNull String... classNames) {
-    for(final String clazz : classNames) {
+    for (final String clazz : classNames) {
       final String nmsClassName = findMcClassName(clazz);
-      if(nmsClassName != null) {
+      if (nmsClassName != null) {
         final Class<?> candidate = findClass(nmsClassName);
-        if(candidate != null) {
+        if (candidate != null) {
           return candidate;
         }
       }

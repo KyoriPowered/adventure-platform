@@ -92,7 +92,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
    * @since 4.0.0
    */
   public static BungeeComponentSerializer of(final GsonComponentSerializer serializer, final LegacyComponentSerializer legacySerializer) {
-    if(serializer == null || legacySerializer == null) return null;
+    if (serializer == null || legacySerializer == null) return null;
     return new BungeeComponentSerializer(serializer, legacySerializer);
   }
 
@@ -127,7 +127,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
     try {
       final Field gsonField = GsonInjections.field(net.md_5.bungee.chat.ComponentSerializer.class, "gson");
       inject((Gson) gsonField.get(null));
-    } catch(final Throwable error) {
+    } catch (final Throwable error) {
       SUPPORTED = false;
     }
   }
@@ -136,7 +136,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
   public @NotNull Component deserialize(final @NotNull BaseComponent@NotNull[] input) {
     requireNonNull(input, "input");
 
-    if(input.length == 1 && input[0] instanceof AdapterComponent) {
+    if (input.length == 1 && input[0] instanceof AdapterComponent) {
       return ((AdapterComponent) input[0]).component;
     } else {
       return this.serializer.deserialize(net.md_5.bungee.chat.ComponentSerializer.toString(input));
@@ -147,7 +147,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
   public @NotNull BaseComponent@NotNull[] serialize(final @NotNull Component component) {
     requireNonNull(component, "component");
 
-    if(SUPPORTED) {
+    if (SUPPORTED) {
       return new BaseComponent[]{new AdapterComponent(component)};
     } else {
       return net.md_5.bungee.chat.ComponentSerializer.parse(this.serializer.serialize(component));
@@ -165,7 +165,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
 
     @Override
     public String toLegacyText() {
-      if(this.legacy == null) {
+      if (this.legacy == null) {
         this.legacy = BungeeComponentSerializer.this.legacySerializer.serialize(this.component);
       }
       return this.legacy;

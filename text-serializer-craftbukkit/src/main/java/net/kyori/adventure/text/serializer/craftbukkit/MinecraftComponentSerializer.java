@@ -100,15 +100,15 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
     MethodHandle textSerializerSerialize = null;
 
     try {
-      if(CLASS_CHAT_COMPONENT != null) {
+      if (CLASS_CHAT_COMPONENT != null) {
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
           .filter(c -> {
-            if(CLASS_JSON_DESERIALIZER != null) {
+            if (CLASS_JSON_DESERIALIZER != null) {
               return CLASS_JSON_DESERIALIZER.isAssignableFrom(c);
             } else {
-              for(final Class<?> itf : c.getInterfaces()) {
-                if(itf.getSimpleName().equals("JsonDeserializer")) {
+              for (final Class<?> itf : c.getInterfaces()) {
+                if (itf.getSimpleName().equals("JsonDeserializer")) {
                   return true;
                 }
               }
@@ -117,13 +117,13 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
           })
           .findAny()
           .orElse(findNmsClass("ChatSerializer")); // 1.7.10 compat
-        if(chatSerializerClass != null) {
+        if (chatSerializerClass != null) {
           final Field gsonField = Arrays.stream(chatSerializerClass.getDeclaredFields())
             .filter(m -> Modifier.isStatic(m.getModifiers()))
             .filter(m -> m.getType().equals(Gson.class))
             .findFirst()
             .orElse(null);
-          if(gsonField != null) {
+          if (gsonField != null) {
             gsonField.setAccessible(true);
             gson = gsonField.get(null);
           } else {
@@ -140,16 +140,16 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
               .filter(m -> m.getParameterCount() == 1 && CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
               .findFirst()
               .orElse(null);
-            if(deserialize != null) {
+            if (deserialize != null) {
               textSerializerDeserialize = lookup().unreflect(deserialize);
             }
-            if(serialize != null) {
+            if (serialize != null) {
               textSerializerSerialize = lookup().unreflect(serialize);
             }
           }
         }
       }
-    } catch(final Throwable error) {
+    } catch (final Throwable error) {
       INITIALIZATION_ERROR.set(new UnsupportedOperationException("Error occurred during initialization", error));
     }
 
@@ -162,34 +162,34 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
 
   @Override
   public @NotNull Component deserialize(final @NotNull Object input) {
-    if(!SUPPORTED) throw INITIALIZATION_ERROR.get();
+    if (!SUPPORTED) throw INITIALIZATION_ERROR.get();
 
     try {
-      if(MC_TEXT_GSON != null) {
+      if (MC_TEXT_GSON != null) {
         final JsonElement element = ((Gson) MC_TEXT_GSON).toJsonTree(input);
         return gson().serializer().fromJson(element, Component.class);
       }
       return GsonComponentSerializer.gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
-    } catch(final Throwable error) {
+    } catch (final Throwable error) {
       throw new UnsupportedOperationException(error);
     }
   }
 
   @Override
   public @NotNull Object serialize(final @NotNull Component component) {
-    if(!SUPPORTED) throw INITIALIZATION_ERROR.get();
+    if (!SUPPORTED) throw INITIALIZATION_ERROR.get();
 
-    if(MC_TEXT_GSON != null) {
+    if (MC_TEXT_GSON != null) {
       final JsonElement json = gson().serializer().toJsonTree(component);
       try {
         return ((Gson) MC_TEXT_GSON).fromJson(json, CLASS_CHAT_COMPONENT);
-      } catch(final Throwable error) {
+      } catch (final Throwable error) {
         throw new UnsupportedOperationException(error);
       }
     } else {
       try {
         return TEXT_SERIALIZER_DESERIALIZE.invoke(gson().serialize(component));
-      } catch(final Throwable error) {
+      } catch (final Throwable error) {
         throw new UnsupportedOperationException(error);
       }
     }

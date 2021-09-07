@@ -103,7 +103,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
 
   void locale(final @Nullable Locale locale) {
     final boolean changed = this.locale != (this.locale = locale);
-    if(changed) {
+    if (changed) {
       this.refresh();
     }
   }

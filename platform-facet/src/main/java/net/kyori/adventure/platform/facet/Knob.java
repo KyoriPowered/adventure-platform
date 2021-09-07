@@ -50,7 +50,7 @@ public final class Knob {
   public static volatile BiConsumer<String, Throwable> ERR =
     (message, err) -> {
       System.err.println(message);
-      if(err != null) {
+      if (err != null) {
         err.printStackTrace(System.err);
       }
     };
@@ -79,7 +79,7 @@ public final class Knob {
    * @since 4.0.0
    */
   public static void logError(final @Nullable Throwable error, final @NotNull String format, final @NotNull Object... arguments) {
-    if(DEBUG) {
+    if (DEBUG) {
       ERR.accept(String.format(format, arguments), error);
     }
   }
@@ -92,7 +92,7 @@ public final class Knob {
    * @since 4.0.0
    */
   public static void logMessage(final @NotNull String format, final @NotNull Object... arguments) {
-    if(DEBUG) {
+    if (DEBUG) {
       OUT.accept(String.format(format, arguments));
     }
   }
@@ -105,7 +105,7 @@ public final class Knob {
    * @since 4.0.0
    */
   public static void logUnsupported(final @NotNull Object facet, final @NotNull Object value) {
-    if(DEBUG && UNSUPPORTED.add(value)) {
+    if (DEBUG && UNSUPPORTED.add(value)) {
       OUT.accept(String.format("Unsupported value '%s' for facet: %s", value, facet));
     }
   }
