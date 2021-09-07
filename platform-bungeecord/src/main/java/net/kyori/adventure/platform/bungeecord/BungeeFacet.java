@@ -23,18 +23,21 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
-import net.kyori.adventure.pointer.Pointers;
+import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -42,14 +45,9 @@ import net.md_5.bungee.chat.ComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
 import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.get;
+import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
 
 class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   static final BaseComponent[] EMPTY_COMPONENT_ARRAY = new BaseComponent[0];
@@ -301,6 +299,9 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
       builder.withDynamic(Identity.NAME, viewer::getName);
       // todo: bungee doesn't expose any sort of TriState/isPermissionSet value :((((
       builder.withStatic(PermissionChecker.POINTER, perm -> viewer.hasPermission(perm) ? TriState.TRUE : TriState.FALSE);
+      if(!(viewer instanceof ProxiedPlayer)) {
+        builder.withStatic(FacetPointers.TYPE, viewer == ProxyServer.getInstance().getConsole() ? FacetPointers.Type.CONSOLE : FacetPointers.Type.OTHER);
+      }
     }
   }
 
@@ -312,6 +313,9 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void contributePointers(final ProxiedPlayer viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       builder.withDynamic(Identity.UUID, viewer::getUniqueId);
+      builder.withDynamic(Identity.LOCALE, viewer::getLocale);
+      builder.withDynamic(FacetPointers.SERVER, () -> viewer.getServer().getInfo().getName());
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.PLAYER);
     }
   }
 }

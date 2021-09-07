@@ -24,15 +24,15 @@
 package net.kyori.adventure.platform.spongeapi;
 
 import com.google.inject.ImplementedBy;
+import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.channel.MessageReceiver;
-
-import java.util.function.Predicate;
 
 /**
  * A provider for creating {@link Audience}s for Sponge.
@@ -47,12 +47,26 @@ public interface SpongeAudiences extends AudienceProvider {
    * <p>There will only be one provider for each plugin.</p>
    *
    * @param plugin a plugin container
-   * @param game a game
+   * @param game   a game
    * @return an audience provider
    * @since 4.0.0
    */
   static @NotNull SpongeAudiences create(final @NotNull PluginContainer plugin, final @NotNull Game game) {
     return SpongeAudiencesImpl.instanceFor(plugin, game);
+  }
+
+  /**
+   * Creates an audience provider builder for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin container
+   * @param game a game
+   * @return an audience provider
+   * @since 4.0.0
+   */
+  static @NonNull Builder builder(final @NonNull PluginContainer plugin, final @NonNull Game game) {
+    return SpongeAudiencesImpl.builder(plugin, game);
   }
 
   /**
@@ -81,5 +95,13 @@ public interface SpongeAudiences extends AudienceProvider {
    * @since 4.0.0
    */
   @NotNull Audience filter(final @NotNull Predicate<MessageReceiver> filter);
+
+  /**
+   * A builder for {@link SpongeAudiences}.
+   *
+   * @since 4.0.0
+   */
+  interface Builder extends AudienceProvider.Builder<SpongeAudiences, Builder> {
+  }
 }
 

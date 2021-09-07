@@ -23,14 +23,13 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Predicate;
 
 /**
  * A provider for creating {@link Audience}s for BungeeCord.
@@ -49,6 +48,19 @@ public interface BungeeAudiences extends AudienceProvider {
    */
   static @NotNull BungeeAudiences create(final @NotNull Plugin plugin) {
     return BungeeAudiencesImpl.instanceFor(plugin);
+  }
+
+  /**
+   * Creates an audience provider builder for a plugin.
+   *
+   * <p>There will only be one provider for each plugin.</p>
+   *
+   * @param plugin a plugin
+   * @return an audience provider
+   * @since 4.0.0
+   */
+  static @NotNull Builder builder(final @NotNull Plugin plugin) {
+    return BungeeAudiencesImpl.builder(plugin);
   }
 
   /**
@@ -77,5 +89,13 @@ public interface BungeeAudiences extends AudienceProvider {
    * @since 4.0.0
    */
   @NotNull Audience filter(final @NotNull Predicate<CommandSender> filter);
+
+  /**
+   * A builder for {@link BungeeAudiences}.
+   *
+   * @since 4.0.0
+   */
+  interface Builder extends AudienceProvider.Builder<BungeeAudiences, Builder> {
+  }
 }
 

@@ -23,31 +23,33 @@
  */
 package net.kyori.adventure.platform.facet;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.pointer.Pointer;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
- * A base implementation of a facet that validates viewer type.
+ * Pointers for facet-specific data.
  *
- * <p>This is not supported API. Subject to change at any time.</p>
- *
- * @param <V> the viewer type
  * @since 4.0.0
  */
-public abstract class FacetBase<V> implements Facet<V> {
-  protected final Class<? extends V> viewerClass;
-
-  protected FacetBase(final @Nullable Class<? extends V> viewerClass) {
-    this.viewerClass = viewerClass;
+@ApiStatus.Internal
+public final class FacetPointers {
+  private FacetPointers() {
   }
 
-  @Override
-  public boolean isSupported() {
-    return this.viewerClass != null;
-  }
+  private static final String NAMESPACE = "adventure_platform";
+  public static final Pointer<String> SERVER = Pointer.pointer(String.class, Key.key(NAMESPACE, "server"));
+  public static final Pointer<Key> WORLD = Pointer.pointer(Key.class, Key.key(NAMESPACE, "world"));
+  public static final Pointer<Type> TYPE = Pointer.pointer(Type.class, Key.key(NAMESPACE, "type"));
 
-  @Override
-  public boolean isApplicable(final @NotNull V viewer) {
-    return this.viewerClass != null && this.viewerClass.isInstance(viewer);
+  /**
+   * Types of audience that may receive special handling.
+   *
+   * @since 4.0.0
+   */
+  public enum Type {
+    PLAYER,
+    CONSOLE,
+    OTHER
   }
 }

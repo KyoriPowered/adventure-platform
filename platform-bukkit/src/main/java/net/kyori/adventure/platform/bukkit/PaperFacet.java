@@ -24,6 +24,8 @@
 package net.kyori.adventure.platform.bukkit;
 
 import com.destroystokyo.paper.Title;
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.text.Component;
@@ -33,9 +35,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Method;
 
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logError;

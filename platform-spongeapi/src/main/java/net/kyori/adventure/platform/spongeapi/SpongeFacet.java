@@ -25,13 +25,15 @@ package net.kyori.adventure.platform.spongeapi;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.Lists;
+import java.util.Collection;
+import java.util.Set;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
-import net.kyori.adventure.pointer.Pointers;
+import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.Index;
@@ -46,6 +48,7 @@ import org.spongepowered.api.boss.BossBarOverlay;
 import org.spongepowered.api.boss.BossBarOverlays;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.effect.Viewer;
 import org.spongepowered.api.effect.sound.SoundCategory;
 import org.spongepowered.api.effect.sound.SoundType;
@@ -62,9 +65,6 @@ import org.spongepowered.api.util.Identifiable;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.Locatable;
 
-import java.util.Collection;
-import java.util.Set;
-
 import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 import static net.kyori.adventure.text.serializer.spongeapi.SpongeComponentSerializer.get;
@@ -76,20 +76,20 @@ class SpongeFacet<V> extends FacetBase<V> {
 
   public <K, S extends CatalogType> @Nullable S sponge(final @NotNull Class<S> spongeType, final @NotNull K value, final @NotNull Index<String, K> elements) {
     return Sponge.getRegistry()
-            .getType(spongeType, elements.key(requireNonNull(value, "value")))
-            .orElseGet(() -> {
-              logUnsupported(this, value);
-              return null;
-            });
+      .getType(spongeType, elements.key(requireNonNull(value, "value")))
+      .orElseGet(() -> {
+        logUnsupported(this, value);
+        return null;
+      });
   }
 
   public <S extends CatalogType> @Nullable S sponge(final @NotNull Class<S> spongeType, final @NotNull Key identifier) {
     return Sponge.getRegistry()
-            .getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
-            .orElseGet(() -> {
-              logUnsupported(this, identifier);
-              return null;
-            });
+      .getType(spongeType, requireNonNull(identifier, "Identifier must be non-null").asString())
+      .orElseGet(() -> {
+        logUnsupported(this, identifier);
+        return null;
+      });
   }
 
   static class Message<V> extends SpongeFacet<V> implements Facet.Message<V, Text> {
@@ -137,7 +137,7 @@ class SpongeFacet<V> extends FacetBase<V> {
       }
     }
   }
-  
+
   static class ActionBar extends Message<ChatTypeMessageReceiver> implements Facet.ActionBar<ChatTypeMessageReceiver, Text> {
     protected ActionBar() {
       super(ChatTypeMessageReceiver.class);
@@ -148,7 +148,7 @@ class SpongeFacet<V> extends FacetBase<V> {
       viewer.sendMessage(ChatTypes.ACTION_BAR, message);
     }
   }
-  
+
   static class Title extends Message<Viewer> implements Facet.Title<Viewer, Text, org.spongepowered.api.text.title.Title.Builder, org.spongepowered.api.text.title.Title> {
     protected Title() {
       super(Viewer.class);
@@ -395,7 +395,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
   }
 
-  static class SubjectPointers extends SpongeFacet<Subject> implements Facet.Pointers<Subject> {
+  static final class SubjectPointers extends SpongeFacet<Subject> implements Facet.Pointers<Subject> {
     SubjectPointers() {
       super(Subject.class);
     }
@@ -413,7 +413,18 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
   }
 
-  static class CommandSourcePointers extends SpongeFacet<CommandSource> implements Facet.Pointers<CommandSource> {
+  static final class ConsoleSourcePointers extends SpongeFacet<ConsoleSource> implements Facet.Pointers<ConsoleSource> {
+    ConsoleSourcePointers() {
+      super(ConsoleSource.class);
+    }
+
+    @Override
+    public void contributePointers(final ConsoleSource viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.CONSOLE);
+    }
+  }
+
+  static final class CommandSourcePointers extends SpongeFacet<CommandSource> implements Facet.Pointers<CommandSource> {
     CommandSourcePointers() {
       super(CommandSource.class);
     }
@@ -421,10 +432,33 @@ class SpongeFacet<V> extends FacetBase<V> {
     @Override
     public void contributePointers(final CommandSource viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       builder.withStatic(Identity.NAME, viewer.getName());
+      builder.withDynamic(Identity.LOCALE, viewer::getLocale);
     }
   }
 
-  static class IdentifiablePointers extends SpongeFacet<Identifiable> implements Facet.Pointers<Identifiable> {
+  static final class LocatablePointers extends SpongeFacet<Locatable> implements Facet.Pointers<Locatable> {
+    LocatablePointers() {
+      super(Locatable.class);
+    }
+
+    @Override
+    public void contributePointers(final Locatable viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withDynamic(FacetPointers.WORLD, () -> Key.key(viewer.getWorld().getName()));
+    }
+  }
+
+  static final class PlayerPointers extends SpongeFacet<Player> implements Facet.Pointers<Player> {
+    PlayerPointers() {
+      super(Player.class);
+    }
+
+    @Override
+    public void contributePointers(final Player viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
+      builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.PLAYER);
+    }
+  }
+
+  static final class IdentifiablePointers extends SpongeFacet<Identifiable> implements Facet.Pointers<Identifiable> {
     IdentifiablePointers() {
       super(Identifiable.class);
     }

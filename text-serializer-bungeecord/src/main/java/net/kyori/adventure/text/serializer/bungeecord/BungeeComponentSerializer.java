@@ -148,7 +148,7 @@ public final class BungeeComponentSerializer implements ComponentSerializer<Comp
     requireNonNull(component, "component");
 
     if(SUPPORTED) {
-      return new BaseComponent[] {new AdapterComponent(component)};
+      return new BaseComponent[]{new AdapterComponent(component)};
     } else {
       return net.md_5.bungee.chat.ComponentSerializer.parse(this.serializer.serialize(component));
     }

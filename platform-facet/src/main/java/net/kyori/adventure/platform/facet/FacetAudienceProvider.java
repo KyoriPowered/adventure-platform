@@ -23,18 +23,20 @@
  */
 package net.kyori.adventure.platform.facet;
 
+import java.util.Locale;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.pointer.Pointers;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.kyori.adventure.util.TriState;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -44,31 +46,38 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.kyori.adventure.text.renderer.ComponentRenderer;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 /**
  * An audience provider implementation using facets.
  *
+ * <p>This is not supported API. Subject to change at any time.</p>
+ *
  * @param <V> the viewer type
  * @param <A> the audience type
  * @since 4.0.0
  */
-public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> implements AudienceProvider, ForwardingAudience {
+@ApiStatus.Internal
+public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
+  implements AudienceProvider, ForwardingAudience {
+  protected static final Locale DEFAULT_LOCALE = Locale.US;
+  protected final ComponentRenderer<Pointered> componentRenderer;
+
   private final Audience console;
   private final Audience player;
-  private final Map<V, A> viewers;
+  protected final Map<V, A> viewers;
   private final Map<UUID, A> players;
   private final Set<A> consoles;
   private final A empty;
   private volatile boolean closed;
 
-  /**
-   * Create a new empty provider.
-   *
-   * @since 4.0.0
-   */
-  protected FacetAudienceProvider() {
+  protected FacetAudienceProvider(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
+    this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
     this.viewers = new ConcurrentHashMap<>();
     this.players = new ConcurrentHashMap<>();
     this.consoles = new CopyOnWriteArraySet<>();
@@ -80,7 +89,6 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
 
       @Override
       public @NotNull Pointers pointers() {
-
         if(FacetAudienceProvider.this.consoles.size() == 1) {
           return FacetAudienceProvider.this.consoles.iterator().next().pointers();
         } else {
@@ -101,12 +109,14 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    */
   public void addViewer(final @NotNull V viewer) {
     if(this.closed) return;
-    final A audience = this.viewers.computeIfAbsent(requireNonNull(viewer, "viewer"),
-      v -> this.createAudience(Collections.singletonList(v)));
-    final UUID playerId = this.hasId(viewer);
-    if(playerId != null) {
-      this.players.putIfAbsent(playerId, audience);
-    } else if(this.isConsole(viewer)) {
+    final A audience = this.viewers.computeIfAbsent(
+        requireNonNull(viewer, "viewer"),
+        v -> this.createAudience(Collections.singletonList(v)));
+    final FacetPointers.Type type = audience.getOrDefault(FacetPointers.TYPE, FacetPointers.Type.OTHER);
+    if(type == FacetPointers.Type.PLAYER) {
+      final @Nullable UUID id = audience.getOrDefault(Identity.UUID, null);
+      if(id != null) this.players.putIfAbsent(id, audience);
+    } else if(type == FacetPointers.Type.CONSOLE) {
       this.consoles.add(audience);
     }
   }
@@ -120,71 +130,30 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   public void removeViewer(final @NotNull V viewer) {
     final A audience = this.viewers.remove(viewer);
     if(audience == null) return;
-    final UUID playerId = this.hasId(viewer);
-    if(playerId != null) {
-      this.players.remove(playerId);
-    } else if(this.isConsole(viewer)) {
+    final FacetPointers.Type type = audience.getOrDefault(FacetPointers.TYPE, FacetPointers.Type.OTHER);
+    if(type == FacetPointers.Type.PLAYER) {
+      final @Nullable UUID id = audience.getOrDefault(Identity.UUID, null);
+      if(id != null) this.players.remove(id);
+    } else if(type == FacetPointers.Type.CONSOLE) {
       this.consoles.remove(audience);
     }
     audience.close();
   }
 
   /**
-   * Changes a viewer's locale.
+   * Refreshes a viewer's metadata.
+   *
+   * <p>Should be called after a viewer changes their locale, world, server, etc.</p>
    *
    * @param viewer a viewer
-   * @param locale a locale
    * @since 4.0.0
    */
-  public void changeViewer(final @NotNull V viewer, final @NotNull Locale locale) {
+  public void refreshViewer(final @NotNull V viewer) {
     final A audience = this.viewers.get(viewer);
     if(audience != null) {
-      audience.changeLocale(locale);
+      audience.refresh();
     }
   }
-
-  /**
-   * Gets the {@link UUID} of a viewer, if they are a player.
-   *
-   * @param viewer a viewer
-   * @return a player id or {@code null} if not a player
-   */
-  protected abstract @Nullable UUID hasId(final @NotNull V viewer);
-
-  /**
-   * Gets whether a viewer is considered console.
-   *
-   * @param viewer a viewer
-   * @return if the viewer is console
-   */
-  protected abstract boolean isConsole(final @NotNull V viewer);
-
-  /**
-   * Gets whether a viewer has permission.
-   *
-   * @param viewer a viewer
-   * @param permission a permission node
-   * @return if the viewer has permission
-   */
-  protected abstract boolean hasPermission(final @NotNull V viewer, final @NotNull String permission);
-
-  /**
-   * Gets whether a viewer is in a world.
-   *
-   * @param viewer a viewer
-   * @param world a world name
-   * @return if the viewer is in the world
-   */
-  protected abstract boolean isInWorld(final @NotNull V viewer, final @NotNull Key world);
-
-  /**
-   * Gets whether a viewer is on a server.
-   *
-   * @param viewer a viewer
-   * @param server a server name
-   * @return if the viewer is on the server
-   */
-  protected abstract boolean isOnServer(final @NotNull V viewer, final @NotNull String server);
 
   /**
    * Creates an audience for a collection of viewers.
@@ -227,22 +196,32 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
    * @since 4.0.0
    */
   public @NotNull Audience filter(final @NotNull Predicate<V> predicate) {
-    return Audience.audience(filter(this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
+    return Audience.audience(
+      filter(
+        this.viewers.entrySet(), entry -> predicate.test(entry.getKey()), Map.Entry::getValue));
+  }
+
+  private @NotNull Audience filterPointers(final @NotNull Predicate<Pointered> predicate) {
+    return Audience.audience(
+      filter(
+        this.viewers.entrySet(),
+        entry -> predicate.test(entry.getValue()),
+        Map.Entry::getValue));
   }
 
   @Override
   public @NotNull Audience permission(final @NotNull String permission) {
-    return this.filter(viewer -> this.hasPermission(viewer, permission));
+    return this.filterPointers(pointers -> pointers.get(PermissionChecker.POINTER).orElse(PermissionChecker.always(TriState.FALSE)).test(permission));
   }
 
   @Override
   public @NotNull Audience world(final @NotNull Key world) {
-    return this.filter(viewer -> this.isInWorld(viewer, world));
+    return this.filterPointers(pointers -> world.equals(pointers.getOrDefault(FacetPointers.WORLD, null)));
   }
 
   @Override
   public @NotNull Audience server(final @NotNull String serverName) {
-    return this.filter(viewer -> this.isOnServer(viewer, serverName));
+    return this.filterPointers(pointers -> serverName.equals(pointers.getOrDefault(FacetPointers.SERVER, null)));
   }
 
   @Override
@@ -256,12 +235,11 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>> imple
   /**
    * Return a live filtered view of the input {@link Iterable}.
    *
-   * <p>Only elements that match {@code filter} will be returned
-   * by {@linkplain Iterator Iterators} provided.</p>
+   * <p>Only elements that match {@code filter} will be returned by {@linkplain Iterator Iterators}
+   * provided.</p>
    *
-   * <p>Because this is a <em>live</em> view, any changes to the state of
-   * the parent {@linkplain Iterable} will be reflected in iterations over
-   * the return value.</p>
+   * <p>Because this is a <em>live</em> view, any changes to the state of the parent
+   * {@linkplain Iterable} will be reflected in iterations over the return value.</p>
    *
    * @param input The source iterator
    * @param filter predicate to filter on

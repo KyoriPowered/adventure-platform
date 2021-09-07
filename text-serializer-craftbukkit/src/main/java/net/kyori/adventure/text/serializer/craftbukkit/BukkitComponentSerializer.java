@@ -48,12 +48,12 @@ public final class BukkitComponentSerializer {
   static {
     if(IS_1_16) {
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
-              .hexColors()
-              .useUnusualXRepeatedCharacterHexFormat()
-              .build();
+        .hexColors()
+        .useUnusualXRepeatedCharacterHexFormat()
+        .build();
       GSON_SERIALIZER = GsonComponentSerializer.builder()
-              .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
-              .build();
+        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
+        .build();
     } else {
       LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
       GSON_SERIALIZER = GsonComponentSerializer.builder()

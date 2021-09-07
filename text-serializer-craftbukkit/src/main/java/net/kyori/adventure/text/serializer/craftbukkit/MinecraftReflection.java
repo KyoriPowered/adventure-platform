@@ -23,13 +23,13 @@
  */
 package net.kyori.adventure.text.serializer.craftbukkit;
 
+import com.google.common.annotations.Beta;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import com.google.common.annotations.Beta;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
