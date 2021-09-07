@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.platform.bukkit;
 
-import com.destroystokyo.paper.Title;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import net.kyori.adventure.platform.facet.Facet;

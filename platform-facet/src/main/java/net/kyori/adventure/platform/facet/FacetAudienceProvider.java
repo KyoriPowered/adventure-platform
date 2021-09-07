@@ -23,20 +23,10 @@
  */
 package net.kyori.adventure.platform.facet;
 
-import java.util.Locale;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.ForwardingAudience;
-import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.permission.PermissionChecker;
-import net.kyori.adventure.platform.AudienceProvider;
-import net.kyori.adventure.pointer.Pointered;
-import net.kyori.adventure.pointer.Pointers;
-import net.kyori.adventure.util.TriState;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -46,7 +36,16 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.permission.PermissionChecker;
+import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.pointer.Pointered;
+import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
+import net.kyori.adventure.util.TriState;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -60,7 +60,6 @@ import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
-import org.spongepowered.api.text.title.Title;
 import org.spongepowered.api.util.Identifiable;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.Locatable;
