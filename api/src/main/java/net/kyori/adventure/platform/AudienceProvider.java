@@ -144,6 +144,7 @@ public interface AudienceProvider extends AutoCloseable {
      *
      * @param componentRenderer a component renderer
      * @return this builder
+     * @see #componentRenderer(Function, ComponentRenderer)
      * @since 4.0.0
      */
     @NotNull B componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer);
@@ -167,6 +168,7 @@ public interface AudienceProvider extends AutoCloseable {
      *
      * @param partitionFunction the partition function to apply
      * @return this builder
+     * @see #componentRenderer(Function, ComponentRenderer)
      * @since 4.0.0
      */
     @NotNull B partition(final @NotNull Function<Pointered, ?> partitionFunction);
