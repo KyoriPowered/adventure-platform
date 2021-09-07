@@ -35,13 +35,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
@@ -142,17 +142,18 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
     Builder(final @NotNull Plugin plugin) {
       this.plugin = requireNonNull(plugin, "plugin");
-      this.componentRenderer(new ComponentRenderer<Pointered>() {
-        @Override
-        public @NotNull Component render(final @NotNull Component component, final @NotNull Pointered context) {
-          return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
-        }
-      });
+      this.componentRenderer(ptr -> ptr.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE), GlobalTranslator.renderer());
     }
 
     @Override
     public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
       this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+      return this;
+    }
+
+    @Override
+    public BukkitAudiences.@NotNull Builder partition(final @NotNull Function<Pointered, ?> partitionFunction) {
+      requireNonNull(partitionFunction, "partitionFunction"); // unused
       return this;
     }
 

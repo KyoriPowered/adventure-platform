@@ -29,13 +29,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -131,17 +131,18 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
 
     Builder(final @NotNull Plugin plugin) {
       this.plugin = requireNonNull(plugin, "plugin");
-      this.componentRenderer(new ComponentRenderer<Pointered>() {
-        @Override
-        public @NotNull Component render(final @NotNull Component component, final @NotNull Pointered context) {
-          return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
-        }
-      });
+      this.componentRenderer(ptr -> ptr.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE), GlobalTranslator.renderer());
     }
 
     @Override
     public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
       this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+      return this;
+    }
+
+    @Override
+    public BungeeAudiences.@NotNull Builder partition(final @NotNull Function<Pointered, ?> partitionFunction) {
+      requireNonNull(partitionFunction, "partitionFunction"); // unused
       return this;
     }
 

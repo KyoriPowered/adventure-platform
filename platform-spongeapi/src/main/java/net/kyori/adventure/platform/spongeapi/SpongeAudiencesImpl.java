@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
@@ -36,7 +37,6 @@ import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
 import org.jetbrains.annotations.NotNull;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.slf4j.Logger;
@@ -149,17 +149,18 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
       super();
       this.plugin = requireNonNull(plugin, "plugin");
       this.game = requireNonNull(game, "game");
-      this.componentRenderer(new ComponentRenderer<Pointered>() {
-        @Override
-        public @NotNull Component render(final @NotNull Component component, final @NotNull Pointered context) {
-          return GlobalTranslator.render(component, context.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE));
-        }
-      });
+      this.componentRenderer(ptr -> ptr.getOrDefault(Identity.LOCALE, DEFAULT_LOCALE), GlobalTranslator.renderer());
     }
 
     @Override
     public @NotNull Builder componentRenderer(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
       this.componentRenderer = requireNonNull(componentRenderer, "component renderer");
+      return this;
+    }
+
+    @Override
+    public SpongeAudiences.@NotNull Builder partition(final @NotNull Function<Pointered, ?> partitionFunction) {
+      requireNonNull(partitionFunction, "partitionFunction");
       return this;
     }
 
