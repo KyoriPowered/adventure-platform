@@ -87,6 +87,10 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final EventListener eventListener;
 
   @Inject
+  SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game) {
+    this(plugin, game, GlobalTranslator.renderer().mapContext(ptr -> ptr.getOrDefault(Identity.LOCALE, FacetAudienceProvider.DEFAULT_LOCALE)));
+  }
+
   SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
     super(componentRenderer);
     this.game = game;
