@@ -21,16 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.serializer.craftbukkit;
+package net.kyori.adventure.platform.bukkit;
 
-import com.google.common.annotations.Beta;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,13 +36,9 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Reflection utilities for accessing {@code net.minecraft.server}.
- *
- * <p>This is not an official API and can break at any time. You've been warned.</p>
  */
-@Beta // Causes users to see "UnstableApiUsage"
-@ApiStatus.Internal
 @SuppressWarnings("FilteringWriteTag") // NON-API, no compatibility information needs tracking
-public final class MinecraftReflection {
+final class MinecraftReflection {
   private MinecraftReflection() {
   }
 

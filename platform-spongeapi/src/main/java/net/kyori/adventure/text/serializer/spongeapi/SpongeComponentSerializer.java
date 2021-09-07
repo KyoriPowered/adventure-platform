@@ -26,6 +26,7 @@ package net.kyori.adventure.text.serializer.spongeapi;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.legacyimpl.NBTLegacyHoverEventSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.text.Text;
@@ -43,7 +44,7 @@ public final class SpongeComponentSerializer implements ComponentSerializer<Comp
   private static final GsonComponentSerializer LEGACY_GSON_SERIALIZER = GsonComponentSerializer.builder()
     .downsampleColors()
     .emitLegacyHoverEvent()
-    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
+    .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
     .build();
 
   /**

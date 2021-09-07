@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.serializer.craftbukkit;
+package net.kyori.adventure.platform.bukkit;
 
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.legacyimpl.NBTLegacyHoverEventSerializer;
@@ -29,7 +29,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findEnum;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findEnum;
 
 /**
  * A pair of component serializers for {@link org.bukkit.Bukkit}.

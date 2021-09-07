@@ -40,14 +40,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.gson;
+import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.legacy;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasMethod;
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.isNative;
-import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
-import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.legacy;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasMethod;
 
 class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("spigot", true) && isNative();

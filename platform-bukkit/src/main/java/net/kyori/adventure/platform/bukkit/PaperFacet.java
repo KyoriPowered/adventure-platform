@@ -35,13 +35,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findStaticMethod;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasField;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.lookup;
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logError;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findStaticMethod;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.hasField;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
 
 class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("paper", true);

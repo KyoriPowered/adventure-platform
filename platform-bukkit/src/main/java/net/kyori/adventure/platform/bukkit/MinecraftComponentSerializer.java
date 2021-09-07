@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.serializer.craftbukkit;
+package net.kyori.adventure.platform.bukkit;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -39,12 +39,12 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static net.kyori.adventure.text.serializer.craftbukkit.BukkitComponentSerializer.gson;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findMcClassName;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClass;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.findNmsClassName;
-import static net.kyori.adventure.text.serializer.craftbukkit.MinecraftReflection.lookup;
+import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.gson;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMcClassName;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClassName;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.lookup;
 
 /**
  * A component serializer for {@code net.minecraft.server.<version>.IChatBaseComponent}.

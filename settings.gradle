@@ -1,6 +1,6 @@
 rootProject.name = 'adventure-platform-parent'
 
-['bungeecord', 'spongeapi', 'legacy-text3', 'craftbukkit'].each {
+['bungeecord', 'legacy-text3'].each {
   include "text-serializer-$it"
   findProject(":text-serializer-$it")?.name = "adventure-text-serializer-$it"
 }
