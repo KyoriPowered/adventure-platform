@@ -33,9 +33,12 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
+import net.kyori.adventure.platform.facet.FacetComponentFlattener;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -52,6 +55,10 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
 final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudiences {
+
+  private static final Collection<? extends FacetComponentFlattener.Translator<ProxyServer>> TRANSLATORS = Facet.of(
+    BungeeFacet.Translator::new
+  );
 
   static {
     Knob.OUT = message -> ProxyServer.getInstance().getLogger().log(Level.INFO, message);
@@ -81,6 +88,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   }
 
   private final Plugin plugin;
+  private final ComponentFlattener flattener;
   private final Listener listener;
 
   BungeeAudiencesImpl(final Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
@@ -88,6 +96,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
     this.plugin = requireNonNull(plugin, "plugin");
     this.listener = new Listener();
     this.plugin.getProxy().getPluginManager().registerListener(this.plugin, this.listener);
+    this.flattener = FacetComponentFlattener.get(plugin.getProxy(), TRANSLATORS);
 
     final CommandSender console = this.plugin.getProxy().getConsole();
     this.addViewer(console);
@@ -117,6 +126,11 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   @Override
   protected @NotNull BungeeAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
     return new BungeeAudience(this, viewers);
+  }
+
+  @Override
+  public @NotNull ComponentFlattener flattener() {
+    return this.flattener;
   }
 
   @Override

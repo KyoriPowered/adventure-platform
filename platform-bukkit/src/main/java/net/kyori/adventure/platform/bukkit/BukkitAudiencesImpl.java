@@ -42,6 +42,7 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
@@ -134,6 +135,11 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   @Override
   protected @NotNull BukkitAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
     return new BukkitAudience(this.plugin, this, viewers);
+  }
+
+  @Override
+  public @NotNull ComponentFlattener flattener() {
+    return BukkitComponentSerializer.FLATTENER;
   }
 
   static final class Builder implements BukkitAudiences.Builder {

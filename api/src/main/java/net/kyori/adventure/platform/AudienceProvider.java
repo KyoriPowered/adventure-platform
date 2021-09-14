@@ -28,6 +28,7 @@ import java.util.function.Function;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.pointer.Pointered;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import org.jetbrains.annotations.NotNull;
 
@@ -124,6 +125,16 @@ public interface AudienceProvider extends AutoCloseable {
    * @since 4.0.0
    */
   @NotNull Audience server(final @NotNull String serverName);
+
+  /**
+   * Return a component flattener that can use game data to resolve extra information about components.
+   *
+   * <p>This can be used for displaying components, or with serializers including the plain and legacy serializers.</p>
+   *
+   * @return the flattener
+   * @since 4.0.0
+   */
+  @NotNull ComponentFlattener flattener();
 
   /**
    * Closes the provider and forces audiences to be empty.

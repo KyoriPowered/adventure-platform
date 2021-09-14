@@ -32,6 +32,7 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.permission.PermissionChecker;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.platform.facet.FacetComponentFlattener;
 import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
@@ -42,6 +43,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.chat.ComponentSerializer;
+import net.md_5.bungee.chat.TranslationRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -316,6 +318,36 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
       builder.withDynamic(Identity.LOCALE, viewer::getLocale);
       builder.withDynamic(FacetPointers.SERVER, () -> viewer.getServer().getInfo().getName());
       builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.PLAYER);
+    }
+  }
+
+  static class Translator extends FacetBase<ProxyServer> implements FacetComponentFlattener.Translator<ProxyServer> {
+    private static final boolean SUPPORTED;
+
+    static {
+      boolean supported;
+      try {
+        Class.forName("net.md_5.bungee.chat.TranslationRegistry");
+        supported = true;
+      } catch (final ClassNotFoundException ex) {
+        supported = false;
+      }
+
+      SUPPORTED = supported;
+    }
+
+    Translator() {
+      super(ProxyServer.class);
+    }
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && SUPPORTED;
+    }
+
+    @Override
+    public @NotNull String valueOrDefault(final @NotNull ProxyServer game, final @NotNull String key) {
+      return TranslationRegistry.INSTANCE.translate(key);
     }
   }
 }

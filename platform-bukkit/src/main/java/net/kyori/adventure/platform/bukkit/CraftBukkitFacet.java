@@ -37,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -55,10 +56,12 @@ import net.kyori.adventure.nbt.ListBinaryTag;
 import net.kyori.adventure.nbt.StringBinaryTag;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.platform.facet.FacetComponentFlattener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Damageable;
@@ -1312,6 +1315,65 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         this.sendPacket(viewer, packet);
       } catch (final Throwable thr) {
         logError(thr, "Failed to send tab list header and footer to %s", viewer);
+      }
+    }
+  }
+
+  static final class Translator extends FacetBase<Server> implements FacetComponentFlattener.Translator<Server> {
+    private static final Class<?> CLASS_LANGUAGE = MinecraftReflection.findClass(
+      findNmsClassName("LocaleLanguage"),
+      findMcClassName("locale.LocaleLanguage"),
+      findMcClassName("locale.Language")
+    );
+    private static final MethodHandle LANGUAGE_GET_INSTANCE;
+    private static final MethodHandle LANGUAGE_GET_OR_DEFAULT;
+
+    static {
+      if (CLASS_LANGUAGE == null) {
+        LANGUAGE_GET_INSTANCE = null;
+        LANGUAGE_GET_OR_DEFAULT = null;
+      } else {
+        LANGUAGE_GET_INSTANCE = Arrays.stream(CLASS_LANGUAGE.getMethods())
+          .filter(m -> Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers())
+            && m.getReturnType().equals(CLASS_LANGUAGE)
+            && m.getParameterCount() == 0)
+          .findFirst()
+          .map(Translator::unreflectUnchecked)
+          .orElse(null);
+
+        LANGUAGE_GET_OR_DEFAULT = Arrays.stream(CLASS_LANGUAGE.getMethods())
+          .filter(m -> !Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers())
+            && m.getParameterCount() == 1 && m.getParameterTypes()[0] == String.class && m.getReturnType().equals(String.class))
+          .findFirst()
+          .map(Translator::unreflectUnchecked)
+          .orElse(null);
+      }
+    }
+
+    private static MethodHandle unreflectUnchecked(final Method m) {
+      try {
+        return MinecraftReflection.lookup().unreflect(m);
+      } catch (final IllegalAccessException ex) {
+        return null;
+      }
+    }
+
+    Translator() {
+      super(Server.class);
+    }
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && LANGUAGE_GET_INSTANCE != null && LANGUAGE_GET_OR_DEFAULT != null;
+    }
+
+    @Override
+    public @NotNull String valueOrDefault(final @NotNull Server game, final @NotNull String key) {
+      try {
+        return (String) LANGUAGE_GET_OR_DEFAULT.invoke(LANGUAGE_GET_INSTANCE.invoke(), key);
+      } catch (final Throwable ex) {
+        logError(ex, "Failed to transate key '%s'", key);
+        return key;
       }
     }
   }
