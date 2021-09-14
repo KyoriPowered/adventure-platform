@@ -1333,15 +1333,15 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         LANGUAGE_GET_INSTANCE = null;
         LANGUAGE_GET_OR_DEFAULT = null;
       } else {
-        LANGUAGE_GET_INSTANCE = Arrays.stream(CLASS_LANGUAGE.getMethods())
-          .filter(m -> Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers())
+        LANGUAGE_GET_INSTANCE = Arrays.stream(CLASS_LANGUAGE.getDeclaredMethods())
+          .filter(m -> Modifier.isStatic(m.getModifiers()) && !Modifier.isPrivate(m.getModifiers())
             && m.getReturnType().equals(CLASS_LANGUAGE)
             && m.getParameterCount() == 0)
           .findFirst()
           .map(Translator::unreflectUnchecked)
           .orElse(null);
 
-        LANGUAGE_GET_OR_DEFAULT = Arrays.stream(CLASS_LANGUAGE.getMethods())
+        LANGUAGE_GET_OR_DEFAULT = Arrays.stream(CLASS_LANGUAGE.getDeclaredMethods())
           .filter(m -> !Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers())
             && m.getParameterCount() == 1 && m.getParameterTypes()[0] == String.class && m.getReturnType().equals(String.class))
           .findFirst()
@@ -1352,6 +1352,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     private static MethodHandle unreflectUnchecked(final Method m) {
       try {
+        m.setAccessible(true);
         return MinecraftReflection.lookup().unreflect(m);
       } catch (final IllegalAccessException ex) {
         return null;
