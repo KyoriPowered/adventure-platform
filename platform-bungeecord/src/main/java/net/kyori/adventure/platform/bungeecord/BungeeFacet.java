@@ -113,6 +113,36 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
+  static class ChatPlayerSenderId extends ChatPlayer implements Facet.Chat<ProxiedPlayer, BaseComponent[]> {
+    private static final boolean SUPPORTED;
+
+    static {
+      boolean supported;
+      try {
+        ProxiedPlayer.class.getMethod("sendMessage", UUID.class, BaseComponent.class);
+        supported = true;
+      } catch (final NoSuchMethodException ex) {
+        supported = false;
+      }
+
+      SUPPORTED = supported;
+    }
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && SUPPORTED;
+    }
+
+    @Override
+    public void sendMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull MessageType type) {
+      if (type == MessageType.CHAT) {
+        viewer.sendMessage(source.uuid(), message);
+      } else {
+        super.sendMessage(viewer, source, message, type);
+      }
+    }
+  }
+
   static class ChatPlayer extends Message implements Facet.Chat<ProxiedPlayer, BaseComponent[]> {
     public @Nullable ChatMessageType createType(final @NotNull MessageType type) {
       if (type == MessageType.CHAT) {

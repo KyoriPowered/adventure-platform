@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 final class BungeeAudience extends FacetAudience<CommandSender> {
   private static final Collection<Facet.Chat<? extends CommandSender, ?>> CHAT = Facet.of(
+    BungeeFacet.ChatPlayerSenderId::new,
     BungeeFacet.ChatPlayer::new,
     BungeeFacet.ChatConsole::new);
   private static final Collection<Facet.ActionBar<ProxiedPlayer, ?>> ACTION_BAR = Facet.of(
