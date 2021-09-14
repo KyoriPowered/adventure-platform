@@ -33,9 +33,12 @@ import javax.inject.Singleton;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
+import net.kyori.adventure.platform.facet.FacetComponentFlattener;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.jetbrains.annotations.NotNull;
@@ -70,6 +73,9 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   }
 
   private static final Map<String, SpongeAudiences> INSTANCES = Collections.synchronizedMap(new HashMap<>(4));
+  private static final Collection<FacetComponentFlattener.Translator<Game>> TRANSLATORS = Facet.of(
+    SpongeFacet.Translator::new
+  );
 
   static SpongeAudiences instanceFor(final @NotNull PluginContainer plugin, final @NotNull Game game) {
     return builder(
@@ -85,6 +91,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   private final Game game;
   private final EventManager eventManager;
   private final EventListener eventListener;
+  private final ComponentFlattener flattener;
 
   @Inject
   SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game) {
@@ -97,6 +104,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
     this.eventManager.registerListeners(plugin, this.eventListener);
+    this.flattener = FacetComponentFlattener.get(game, TRANSLATORS);
     if (game.isServerAvailable() && game.getState().compareTo(GameState.POST_INITIALIZATION) > 0) { // if we've already post-initialized
       this.addViewer(game.getServer().getConsole());
       for (final Player player : game.getServer().getOnlinePlayers()) {
@@ -132,6 +140,11 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
   @Override
   protected @NotNull SpongeAudience createAudience(final @NotNull Collection<MessageReceiver> viewers) {
     return new SpongeAudience(this, viewers);
+  }
+
+  @Override
+  public @NotNull ComponentFlattener flattener() {
+    return this.flattener;
   }
 
   @Override

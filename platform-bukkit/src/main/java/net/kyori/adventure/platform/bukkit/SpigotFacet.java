@@ -27,11 +27,14 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
+import net.kyori.adventure.platform.facet.FacetComponentFlattener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.TranslationRegistry;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -167,6 +170,24 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void openBook(final @NotNull Player viewer, final @NotNull ItemStack book) {
       viewer.openBook(book);
+    }
+  }
+
+  static class Translator extends FacetBase<Server> implements FacetComponentFlattener.Translator<Server> {
+    private static final boolean SUPPORTED = MinecraftReflection.hasClass("net.md_5.bungee.chat.TranslationRegistry");
+
+    Translator() {
+      super(Server.class);
+    }
+
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && SUPPORTED;
+    }
+
+    @Override
+    public @NotNull String valueOrDefault(final @NotNull Server game, final @NotNull String key) {
+      return TranslationRegistry.INSTANCE.translate(key);
     }
   }
 }

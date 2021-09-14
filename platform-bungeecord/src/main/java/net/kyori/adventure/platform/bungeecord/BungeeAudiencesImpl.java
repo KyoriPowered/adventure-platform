@@ -36,6 +36,7 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.facet.FacetAudienceProvider;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.pointer.Pointered;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -52,7 +53,6 @@ import static java.util.Objects.requireNonNull;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
 final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, BungeeAudience> implements BungeeAudiences {
-
   static {
     Knob.OUT = message -> ProxyServer.getInstance().getLogger().log(Level.INFO, message);
     Knob.ERR = (message, error) -> ProxyServer.getInstance().getLogger().log(Level.WARNING, message, error);
@@ -117,6 +117,11 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
   @Override
   protected @NotNull BungeeAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
     return new BungeeAudience(this, viewers);
+  }
+
+  @Override
+  public @NotNull ComponentFlattener flattener() {
+    return BungeeFacet.FLATTENER;
   }
 
   @Override
