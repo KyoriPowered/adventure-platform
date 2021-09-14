@@ -1,4 +1,36 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 rootProject.name = 'adventure-platform-parent'
+
+dependencyResolutionManagement {
+  repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+  repositories {
+    mavenCentral()
+    maven {
+      name "sonatypeSnapshots"
+      url "https://oss.sonatype.org/content/repositories/snapshots/"
+      mavenContent { snapshotsOnly() }
+    }
+    maven {
+      name "sponge"
+      url 'https://repo.spongepowered.org/repository/maven-public/'
+      mavenContent { includeGroup "org.spongepowered" }
+    }
+    maven {
+      name 'viaversion'
+      url 'https://repo.viaversion.com'
+      mavenContent { includeGroup "com.viaversion" }
+    }
+    maven {
+      name "papermc"
+      url 'https://papermc.io/repo/repository/maven-public/'
+      mavenContent {
+        includeGroup "io.papermc.paper"
+        includeGroup "com.destroystokyo.paper"
+      }
+    }
+  }
+}
 
 ['bungeecord', 'legacy-text3'].each {
   include "text-serializer-$it"
