@@ -35,6 +35,10 @@ import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.platform.facet.FacetComponentFlattener;
 import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
@@ -48,11 +52,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.get;
-import static net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer.legacy;
 
 class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   static final BaseComponent[] EMPTY_COMPONENT_ARRAY = new BaseComponent[0];
+
+  private static final Collection<? extends FacetComponentFlattener.Translator<ProxyServer>> TRANSLATORS = Facet.of(
+    BungeeFacet.Translator::new
+  );
+  static final ComponentFlattener FLATTENER = FacetComponentFlattener.get(ProxyServer.getInstance(), TRANSLATORS);
+  static final BungeeComponentSerializer MODERN = BungeeComponentSerializer.of(
+    GsonComponentSerializer.gson(),
+    LegacyComponentSerializer.builder()
+      .hexColors()
+      .useUnusualXRepeatedCharacterHexFormat()
+      .flattener(FLATTENER)
+      .build()
+  );
+  static final BungeeComponentSerializer LEGACY = BungeeComponentSerializer.of(
+    GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(),
+    LegacyComponentSerializer.builder().flattener(FLATTENER).build()
+  );
 
   protected BungeeFacet(final @Nullable Class<? extends V> viewerClass) {
     super(viewerClass);
@@ -70,7 +89,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public BaseComponent @NotNull[] createMessage(final @NotNull CommandSender viewer, final @NotNull Component message) {
-      return legacy().serialize(message);
+      return LEGACY.serialize(message);
     }
 
     @Override
@@ -87,9 +106,9 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public BaseComponent @NotNull[] createMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Component message) {
       if (viewer.getPendingConnection().getVersion() >= PROTOCOL_HEX_COLOR) {
-        return get().serialize(message);
+        return MODERN.serialize(message);
       } else {
-        return legacy().serialize(message);
+        return LEGACY.serialize(message);
       }
     }
   }
