@@ -14,7 +14,7 @@ plugins {
 ext.adventure = "4.9.1"
 
 group 'net.kyori'
-version '4.0.0'
+version '4.0.1-SNAPSHOT'
 description 'Platform integrations for the adventure UI library'
 
 
