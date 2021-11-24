@@ -88,6 +88,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
     return new Builder(plugin, game);
   }
 
+  private final PluginContainer plugin;
   private final Game game;
   private final EventManager eventManager;
   private final EventListener eventListener;
@@ -100,6 +101,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
 
   SpongeAudiencesImpl(final @NotNull PluginContainer plugin, final @NotNull Game game, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
     super(componentRenderer);
+    this.plugin = plugin;
     this.game = game;
     this.eventManager = game.getEventManager();
     this.eventListener = new EventListener();
@@ -149,6 +151,7 @@ final class SpongeAudiencesImpl extends FacetAudienceProvider<MessageReceiver, S
 
   @Override
   public void close() {
+    INSTANCES.remove(this.plugin.getId());
     this.eventManager.unregisterListeners(this.eventListener);
     super.close();
   }
