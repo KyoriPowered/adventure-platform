@@ -138,6 +138,12 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   }
 
   @Override
+  public void close() {
+    INSTANCES.remove(this.plugin.getName());
+    super.close();
+  }
+
+  @Override
   public @NotNull ComponentFlattener flattener() {
     return BukkitComponentSerializer.FLATTENER;
   }

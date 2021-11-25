@@ -126,6 +126,7 @@ final class BungeeAudiencesImpl extends FacetAudienceProvider<CommandSender, Bun
 
   @Override
   public void close() {
+    BungeeAudiencesImpl.INSTANCES.remove(this.plugin.getDescription().getName());
     this.plugin.getProxy().getPluginManager().unregisterListener(this.listener);
     super.close();
   }
