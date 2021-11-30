@@ -27,6 +27,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -139,6 +140,65 @@ final class MinecraftReflection {
       }
     }
     return null;
+  }
+
+  /**
+   * Search a handle for a class method.
+   *
+   * @param holderClass a class
+   * @param methodModifiers method modifiers
+   * @param methodName a method name
+   * @param returnClass a method return class
+   * @param parameterClasses an array of method parameter classes
+   * @return a method handle or {@code null} if not found
+   */
+  public static MethodHandle searchMethod(final @Nullable Class<?> holderClass, final @Nullable int[] methodModifiers, final String methodName, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+    return searchMethod(holderClass, methodModifiers, new String[] {methodName}, returnClass, parameterClasses);
+  }
+
+  /**
+   * Search a handle for a class method.
+   *
+   * @param holderClass a class
+   * @param methodModifiers method modifiers
+   * @param methodNames a method names
+   * @param returnClass a method return class
+   * @param parameterClasses an array of method parameter classes
+   * @return a method handle or {@code null} if not found
+   */
+  public static MethodHandle searchMethod(final @Nullable Class<?> holderClass, final @Nullable int[] methodModifiers, final @Nullable String@NotNull[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+    if (holderClass == null || returnClass == null) return null;
+    for (final Class<?> parameterClass : parameterClasses) {
+      if (parameterClass == null) return null;
+    }
+
+    for (final String methodName : methodNames) {
+      if (methodName == null) continue;
+      try {
+        return LOOKUP.findVirtual(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
+      } catch (final NoSuchMethodException | IllegalAccessException e) {
+      }
+    }
+
+    for (final Method method : holderClass.getDeclaredMethods()) {
+      if (!matchModifiers(method.getModifiers(), methodModifiers)
+              || !Arrays.equals(method.getParameterTypes(), parameterClasses)) continue;
+      try {
+        return LOOKUP.findVirtual(holderClass, method.getName(), MethodType.methodType(returnClass, parameterClasses));
+      } catch (final NoSuchMethodException | IllegalAccessException e) {
+      }
+    }
+    return null;
+  }
+
+  private static boolean matchModifiers(final int modifier, final @Nullable int[] modifiers) {
+    if (modifiers == null || modifiers.length == 0) return true;
+    for (final Integer mod : modifiers) {
+      if ((mod & modifier) == 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
