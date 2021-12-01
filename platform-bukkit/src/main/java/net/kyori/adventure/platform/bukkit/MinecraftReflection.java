@@ -146,27 +146,27 @@ final class MinecraftReflection {
    * Search a handle for a class method.
    *
    * @param holderClass a class
-   * @param methodModifiers method modifiers
+   * @param modifier method modifiers
    * @param methodName a method name
    * @param returnClass a method return class
    * @param parameterClasses an array of method parameter classes
    * @return a method handle or {@code null} if not found
    */
-  public static MethodHandle searchMethod(final @Nullable Class<?> holderClass, final @Nullable int[] methodModifiers, final String methodName, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
-    return searchMethod(holderClass, methodModifiers, new String[] {methodName}, returnClass, parameterClasses);
+  public static MethodHandle searchMethod(final @Nullable Class<?> holderClass, final @Nullable Integer modifier, final String methodName, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+    return searchMethod(holderClass, modifier, new String[] {methodName}, returnClass, parameterClasses);
   }
 
   /**
    * Search a handle for a class method.
    *
    * @param holderClass a class
-   * @param methodModifiers method modifiers
+   * @param modifier method modifiers
    * @param methodNames a method names
    * @param returnClass a method return class
    * @param parameterClasses an array of method parameter classes
    * @return a method handle or {@code null} if not found
    */
-  public static MethodHandle searchMethod(final @Nullable Class<?> holderClass, final @Nullable int[] methodModifiers, final @Nullable String@NotNull[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
+  public static MethodHandle searchMethod(final @Nullable Class<?> holderClass, final @Nullable Integer modifier, final @Nullable String@NotNull[] methodNames, final @Nullable Class<?> returnClass, final Class<?>... parameterClasses) {
     if (holderClass == null || returnClass == null) return null;
     for (final Class<?> parameterClass : parameterClasses) {
       if (parameterClass == null) return null;
@@ -181,7 +181,7 @@ final class MinecraftReflection {
     }
 
     for (final Method method : holderClass.getDeclaredMethods()) {
-      if (!matchModifiers(method.getModifiers(), methodModifiers)
+      if ((modifier == null || (method.getModifiers() & modifier) == 0)
               || !Arrays.equals(method.getParameterTypes(), parameterClasses)) continue;
       try {
         return LOOKUP.findVirtual(holderClass, method.getName(), MethodType.methodType(returnClass, parameterClasses));
@@ -189,16 +189,6 @@ final class MinecraftReflection {
       }
     }
     return null;
-  }
-
-  private static boolean matchModifiers(final int modifier, final @Nullable int[] modifiers) {
-    if (modifiers == null || modifiers.length == 0) return true;
-    for (final Integer mod : modifiers) {
-      if ((mod & modifier) == 0) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**
