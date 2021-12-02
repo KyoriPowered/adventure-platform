@@ -99,6 +99,7 @@ import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findStatic
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.lookup;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.needClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.needField;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.searchMethod;
 import static net.kyori.adventure.platform.facet.Knob.isEnabled;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
@@ -159,7 +160,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
             }
           }
         }
-        playerConnectionSendPacket = findMethod(playerConnectionClass, new String[]{"sendPacket", "send"}, void.class, packetClass);
+        playerConnectionSendPacket = searchMethod(playerConnectionClass, Modifier.PUBLIC, new String[]{"sendPacket", "send"}, void.class, packetClass);
       } catch (final Throwable error) {
         logError(error, "Failed to initialize CraftBukkit sendPacket");
       }
@@ -395,7 +396,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final MethodHandle NEW_CLIENTBOUND_CUSTOM_SOUND = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class);
     private static final MethodHandle NEW_VEC3 = findConstructor(CLASS_VEC3, double.class, double.class, double.class);
     private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
-    private static final MethodHandle REGISTRY_GET_OPTIONAL = findMethod(CLASS_REGISTRY, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
+    private static final MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
     private static final MethodHandle SOUND_SOURCE_GET_NAME;
     private static final Object REGISTRY_SOUND_EVENT;
 
@@ -806,8 +807,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       findMcClassName("world.item.ItemStack")
     );
 
-    private static final MethodHandle MC_ITEMSTACK_SET_TAG = findMethod(CLASS_MC_ITEMSTACK, "setTag", void.class, CLASS_NBT_TAG_COMPOUND);
-    private static final MethodHandle MC_ITEMSTACK_GET_TAG = findMethod(CLASS_MC_ITEMSTACK, "getTag", CLASS_NBT_TAG_COMPOUND);
+    private static final MethodHandle MC_ITEMSTACK_SET_TAG = searchMethod(CLASS_MC_ITEMSTACK, Modifier.PUBLIC, "setTag", void.class, CLASS_NBT_TAG_COMPOUND);
 
     private static final MethodHandle CRAFT_ITEMSTACK_NMS_COPY = findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asNMSCopy", CLASS_MC_ITEMSTACK, ItemStack.class);
     private static final MethodHandle CRAFT_ITEMSTACK_CRAFT_MIRROR = findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asCraftMirror", CLASS_CRAFT_ITEMSTACK, CLASS_MC_ITEMSTACK);
