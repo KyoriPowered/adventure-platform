@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>KyoriPowered/.github:renovate-config"
+  ],
+  "ignoreDeps": [
+    "io.netty:netty-all",
+    "net.md-5:bungeecord-chat"
+  ]
+}
