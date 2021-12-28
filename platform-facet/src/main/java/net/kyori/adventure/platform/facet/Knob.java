@@ -43,7 +43,7 @@ public final class Knob {
 
   private static final String NAMESPACE =
     "net.kyo".concat("ri.adventure"); // Concat is used to trick package relocations
-  private static final boolean DEBUG = isEnabled("debug", false);
+  public static final boolean DEBUG = isEnabled("debug", false);
   private static final Set<Object> UNSUPPORTED = new CopyOnWriteArraySet<>();
 
   public static volatile Consumer<String> OUT = System.out::println;

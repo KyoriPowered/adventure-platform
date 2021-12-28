@@ -103,9 +103,13 @@ public interface Facet<V> {
         if (facet.isApplicable(viewer)) {
           logMessage("Selected facet: %s for %s", facet, viewer);
           return facet;
+        } else if (Knob.DEBUG) {
+          logMessage("Not selecting %s for %s", facet, viewer);
         }
       } catch (final ClassCastException error) {
-        // Continue along
+        if (Knob.DEBUG) {
+          logMessage("Exception while getting facet %s for %s: %s", facet, viewer, error.getMessage());
+        }
       }
     }
     return null;
