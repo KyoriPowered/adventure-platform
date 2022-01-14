@@ -94,7 +94,6 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   BukkitAudiencesImpl(final @NotNull Plugin plugin, final @NotNull ComponentRenderer<Pointered> componentRenderer) {
     super(componentRenderer);
     this.plugin = requireNonNull(plugin, "plugin");
-    this.softDepend("ViaVersion");
 
     final CommandSender console = this.plugin.getServer().getConsoleSender();
     this.addViewer(console);
@@ -134,6 +133,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
   @Override
   protected @NotNull BukkitAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
+    this.softDepend("ViaVersion");
     return new BukkitAudience(this.plugin, this, viewers);
   }
 
