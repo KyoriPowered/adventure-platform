@@ -133,7 +133,6 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
   @Override
   protected @NotNull BukkitAudience createAudience(final @NotNull Collection<CommandSender> viewers) {
-    this.softDepend("ViaVersion");
     return new BukkitAudience(this.plugin, this, viewers);
   }
 
@@ -171,44 +170,47 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
     @Override
     public @NotNull BukkitAudiences build() {
-      return INSTANCES.computeIfAbsent(this.plugin.getName(), name -> new BukkitAudiencesImpl(this.plugin, this.componentRenderer));
+      return INSTANCES.computeIfAbsent(this.plugin.getName(), name -> {
+        this.softDepend("ViaVersion");
+        return new BukkitAudiencesImpl(this.plugin, this.componentRenderer);
+      });
     }
-  }
 
-  /**
-   * Add the provided plugin as a soft-depend of ourselves.
-   *
-   * <p>This removes the PluginClassLoader warning added by Spigot without
-   * requiring every user to add ViaVersion to their own plugin.yml.</p>
-   *
-   * <p>We do assume here that each copy of Adventure belongs to a JavaPlugin.
-   * If that is not true, we will silently fail to inject.</p>
-   *
-   * @param pluginName a plugin name
-   */
-  @SuppressWarnings("unchecked")
-  private void softDepend(final @NotNull String pluginName) {
-    final PluginDescriptionFile file = this.plugin.getDescription();
-    if (file.getName().equals(pluginName)) return;
+    /**
+     * Add the provided plugin as a soft-depend of ourselves.
+     *
+     * <p>This removes the PluginClassLoader warning added by Spigot without
+     * requiring every user to add ViaVersion to their own plugin.yml.</p>
+     *
+     * <p>We do assume here that each copy of Adventure belongs to a JavaPlugin.
+     * If that is not true, we will silently fail to inject.</p>
+     *
+     * @param pluginName a plugin name
+     */
+    @SuppressWarnings("unchecked")
+    private void softDepend(final @NotNull String pluginName) {
+      final PluginDescriptionFile file = this.plugin.getDescription();
+      if (file.getName().equals(pluginName)) return;
 
-    try {
-      final Field softDepend = needField(file.getClass(), "softDepend");
-      final List<String> dependencies = (List<String>) softDepend.get(file);
-      if (!dependencies.contains(pluginName)) {
-        final List<String> newList = ImmutableList.<String>builder().addAll(dependencies).add(pluginName).build();
-        softDepend.set(file, newList);
+      try {
+        final Field softDepend = needField(file.getClass(), "softDepend");
+        final List<String> dependencies = (List<String>) softDepend.get(file);
+        if (!dependencies.contains(pluginName)) {
+          final List<String> newList = ImmutableList.<String>builder().addAll(dependencies).add(pluginName).build();
+          softDepend.set(file, newList);
+        }
+      } catch (final Throwable error) {
+        logError(error, "Failed to inject softDepend in plugin.yml: %s %s", this.plugin, pluginName);
       }
-    } catch (final Throwable error) {
-      logError(error, "Failed to inject softDepend in plugin.yml: %s %s", this.plugin, pluginName);
-    }
 
-    try {
-      final PluginManager manager = this.plugin.getServer().getPluginManager();
-      final Field dependencyGraphField = needField(manager.getClass(), "dependencyGraph");
-      final MutableGraph<String> graph = (MutableGraph<String>) dependencyGraphField.get(manager);
-      graph.putEdge(file.getName(), pluginName);
-    } catch (final Throwable error) {
-      // Fail silently, dependency graphs were added in 1.15, but the previous method still works
+      try {
+        final PluginManager manager = this.plugin.getServer().getPluginManager();
+        final Field dependencyGraphField = needField(manager.getClass(), "dependencyGraph");
+        final MutableGraph<String> graph = (MutableGraph<String>) dependencyGraphField.get(manager);
+        graph.putEdge(file.getName(), pluginName);
+      } catch (final Throwable error) {
+        // Fail silently, dependency graphs were added in 1.15, but the previous method still works
+      }
     }
   }
 
