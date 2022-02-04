@@ -72,7 +72,7 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
   protected final Map<V, A> viewers;
   private final Map<UUID, A> players;
   private final Set<A> consoles;
-  private final A empty;
+  private A empty;
   private volatile boolean closed;
 
   protected FacetAudienceProvider(final @NotNull ComponentRenderer<Pointered> componentRenderer) {
@@ -96,7 +96,6 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
       }
     };
     this.player = Audience.audience(this.players.values());
-    this.empty = this.createAudience(Collections.emptyList());
     this.closed = false;
   }
 
@@ -184,7 +183,14 @@ public abstract class FacetAudienceProvider<V, A extends FacetAudience<V>>
 
   @Override
   public @NotNull Audience player(final @NotNull UUID playerId) {
-    return this.players.getOrDefault(playerId, this.empty);
+    return this.players.getOrDefault(playerId, this.empty());
+  }
+
+  private @NotNull A empty() {
+    if (this.empty == null) {
+      this.empty = this.createAudience(Collections.emptyList());
+    }
+    return this.empty;
   }
 
   /**
