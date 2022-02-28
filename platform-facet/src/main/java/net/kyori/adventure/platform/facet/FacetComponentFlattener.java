@@ -65,7 +65,7 @@ public final class FacetComponentFlattener {
     final ComponentFlattener.Builder flattenerBuilder = ComponentFlattener.basic().toBuilder();
     flattenerBuilder.complexMapper(TranslatableComponent.class, (translatable, consumer) -> {
       final String key = translatable.key();
-      for (final net.kyori.adventure.translation.Translator registry : GlobalTranslator.get().sources()) {
+      for (final net.kyori.adventure.translation.Translator registry : GlobalTranslator.translator().sources()) {
         if (registry instanceof TranslationRegistry && ((TranslationRegistry) registry).contains(key)) {
           consumer.accept(GlobalTranslator.render(translatable, Locale.getDefault()));
           return;
