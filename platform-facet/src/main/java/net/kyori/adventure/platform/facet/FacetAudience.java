@@ -83,13 +83,17 @@ public class FacetAudience<V> implements Audience, Closeable {
   /**
    * Create a new facet-based audience.
    *
+   * @param provider for this audience
    * @param viewers the viewers receiving content sent to this audience
    * @param chat chat facet candidates
    * @param actionBar action bar facet candidates
    * @param title title facet candidates
    * @param sound sound facet candidates
+   * @param entitySound entity sound facet candidates
    * @param book book facet candidates
    * @param bossBar boss bar facet candidates
+   * @param tabList tab list facet candidates
+   * @param pointerProviders facets that provide pointers to this audience
    * @since 4.0.0
    */
   @SuppressWarnings({

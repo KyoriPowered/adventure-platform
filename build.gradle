@@ -1,6 +1,6 @@
 buildscript {
   ext {
-    indraVersion = '2.0.6'
+    indraVersion = '2.1.1'
   }
 }
 
@@ -17,6 +17,9 @@ group 'net.kyori'
 version '4.1.1-SNAPSHOT'
 description 'Legacy platform integrations for the adventure UI library'
 
+indraSonatype {
+  useAlternateSonatypeOSSHost("s01")
+}
 
 /**
  * Bukkit and its dependencies have metadata that is incorrect and excludes some annotation APIs.

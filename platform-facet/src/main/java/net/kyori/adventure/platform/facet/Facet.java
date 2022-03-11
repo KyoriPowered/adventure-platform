@@ -349,6 +349,7 @@ public interface Facet<V> {
    *
    * @param <V> a viewer type
    * @param <M> a message type
+   * @param <C> a collection type
    * @param <T> a title type
    * @since 4.0.0
    */
@@ -426,10 +427,33 @@ public interface Facet<V> {
    * @since 4.0.0
    */
   interface EntitySound<V, M> extends Facet<V> {
+    /**
+     * Create a sound packet following the viewer themself.
+     *
+     * @param viewer the receiver of the sound
+     * @param sound the sound to play
+     * @return a new packet
+     * @since 4.0.0
+     */
     M createForSelf(final V viewer, final net.kyori.adventure.sound.@NotNull Sound sound);
 
+    /**
+     * Create a sound packet following a specific emitter.
+     *
+     * @param sound the sound to play
+     * @param emitter the emitter to track
+     * @return a new packet
+     * @since 4.0.0
+     */
     M createForEmitter(final net.kyori.adventure.sound.@NotNull Sound sound, final net.kyori.adventure.sound.Sound.@NotNull Emitter emitter);
 
+    /**
+     * Play a created sound message to a viewer.
+     *
+     * @param viewer the viewer to receive the sound
+     * @param message the sound message to send
+     * @since 4.0.0
+     */
     void playSound(final @NotNull V viewer, final M message);
   }
 
@@ -745,6 +769,7 @@ public interface Facet<V> {
     /**
      * Update the tab list header and footer.
      *
+     * @param viewer receiving the tab list update
      * @param header header, null if should be left unchanged
      * @param footer footer, null if should be left unchanged
      * @since 4.0.0

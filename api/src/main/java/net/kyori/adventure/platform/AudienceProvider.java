@@ -147,6 +147,8 @@ public interface AudienceProvider extends AutoCloseable {
   /**
    * A builder for {@link AudienceProvider}.
    *
+   * @param <P> provider type
+   * @param <B> self type of the specific builder
    * @since 4.0.0
    */
   interface Builder<P extends AudienceProvider, B extends Builder<P, B>> {
@@ -189,6 +191,8 @@ public interface AudienceProvider extends AutoCloseable {
      *
      * <p>This variant validates that the component renderer only depends on information included in the partition.</p>
      *
+     * @param <T> element type
+     * @param partition the partition function to extract information from audiences
      * @param componentRenderer a component renderer
      * @return this builder
      * @since 4.0.0
