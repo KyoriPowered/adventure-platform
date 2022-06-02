@@ -9,5 +9,5 @@ dependencies {
   }
   implementation project(":adventure-platform-facet")
   // implementation project(":adventure-platform-viaversion")
-  compileOnly 'org.spongepowered:spongeapi:7.1.0'
+  compileOnly 'org.spongepowered:spongeapi:9.0.0'
 }
