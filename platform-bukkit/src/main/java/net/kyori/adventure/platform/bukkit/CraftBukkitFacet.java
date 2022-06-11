@@ -217,9 +217,21 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     findMcClassName("network.chat.ChatMessageType"),
     findMcClassName("network.chat.ChatType")
   );
-  private static final @Nullable Object MESSAGE_TYPE_CHAT = findEnum(CLASS_MESSAGE_TYPE, "CHAT", 0);
-  private static final @Nullable Object MESSAGE_TYPE_SYSTEM = findEnum(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
-  private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR = findEnum(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
+  private static final @Nullable Object MESSAGE_TYPE_CHAT;
+  private static final @Nullable Object MESSAGE_TYPE_SYSTEM;
+  private static final @Nullable Object MESSAGE_TYPE_ACTIONBAR;
+
+  static {
+    if (CLASS_MESSAGE_TYPE != null && !CLASS_MESSAGE_TYPE.isEnum()) {
+      MESSAGE_TYPE_CHAT = 0;
+      MESSAGE_TYPE_SYSTEM = 1;
+      MESSAGE_TYPE_ACTIONBAR = 2;
+    } else {
+      MESSAGE_TYPE_CHAT = findEnum(CLASS_MESSAGE_TYPE, "CHAT", 0);
+      MESSAGE_TYPE_SYSTEM = findEnum(CLASS_MESSAGE_TYPE, "SYSTEM", 1);
+      MESSAGE_TYPE_ACTIONBAR = findEnum(CLASS_MESSAGE_TYPE, "GAME_INFO", 2);
+    }
+  }
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
   private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
@@ -233,17 +245,27 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         final Class<?> chatPacketClass = needClass(
           findNmsClassName("PacketPlayOutChat"),
           findMcClassName("network.protocol.game.PacketPlayOutChat"),
-          findMcClassName("network.protocol.game.ClientboundChatPacket")
+          findMcClassName("network.protocol.game.ClientboundChatPacket"),
+          findMcClassName("network.protocol.game.ClientboundSystemChatPacket")
         );
-        // ClientboundChatPacket constructor changed for 1.16
-        chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
+        // ClientboundSystemChatPacket constructor changed for 1.19
+        chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, int.class);
+        if (chatPacketConstructor == null) {
+          // ClientboundChatPacket constructor changed for 1.16
+          chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
+        }
         if (chatPacketConstructor == null) {
           if (CLASS_MESSAGE_TYPE != null) {
             chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, CLASS_MESSAGE_TYPE, UUID.class);
           }
         } else {
-          // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
-          chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
+          if (MESSAGE_TYPE_CHAT == Integer.valueOf(0)) {
+            // for 1.19, create a function that drops the last UUID argument while keeping the integer message type argument
+            chatPacketConstructor = dropArguments(chatPacketConstructor, 2, UUID.class);
+          } else {
+            // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
+            chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
+          }
         }
         legacyChatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, byte.class);
         if (legacyChatPacketConstructor == null) { // 1.7 paper protocol hack?
