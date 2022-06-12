@@ -31,7 +31,9 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -48,6 +50,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.nbt.BinaryTagIO;
@@ -972,17 +975,63 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static final class BossBar extends BukkitFacet.BossBar {
     private static final Class<?> CLASS_CRAFT_BOSS_BAR = findCraftClass("boss.CraftBossBar");
-    private static final Class<?> CLASS_BOSS_BAR_ACTION = findClass(
-      findNmsClassName("PacketPlayOutBoss$Action"),
-      findMcClassName("network.protocol.game.PacketPlayOutBoss$Action"),
-      findMcClassName("network.protocol.game.ClientboundBossEventPacket$Operation")
-    );
-    private static final Object BOSS_BAR_ACTION_TITLE = findEnum(CLASS_BOSS_BAR_ACTION, "UPDATE_NAME", 3);
+    private static final Class<?> CLASS_BOSS_BAR_ACTION;
+    private static final Object BOSS_BAR_ACTION_TITLE;
     private static final MethodHandle CRAFT_BOSS_BAR_HANDLE;
     private static final MethodHandle NMS_BOSS_BATTLE_SET_NAME;
     private static final MethodHandle NMS_BOSS_BATTLE_SEND_UPDATE;
 
     static {
+      Class<?> classBossBarAction = null;
+      Object bossBarActionTitle = null;
+      classBossBarAction = findClass(
+              findNmsClassName("PacketPlayOutBoss$Action"),
+              findMcClassName("network.protocol.game.PacketPlayOutBoss$Action"),
+              findMcClassName("network.protocol.game.ClientboundBossEventPacket$Operation")
+      );
+      if (classBossBarAction == null || !classBossBarAction.isEnum()) {
+        classBossBarAction = null;
+        final Class<?> packetClass = findClass(
+                findNmsClassName("PacketPlayOutBoss"),
+                findMcClassName("network.protocol.game.PacketPlayOutBoss"),
+                findMcClassName("network.protocol.game.ClientboundBossEventPacket")
+        );
+        final Class<?> bossEventClass = findClass(
+                findNmsClassName("BossBattle"),
+                findMcClassName("world.BossBattle"),
+                findMcClassName("world.BossEvent")
+        );
+        if (packetClass != null && bossEventClass != null) { // 1.17+
+          try {
+            final MethodType methodType = methodType(packetClass, bossEventClass);
+            String methodName;
+            try {
+              packetClass.getDeclaredMethod("createUpdateNamePacket", bossEventClass);
+              methodName = "createUpdateNamePacket";
+            } catch (final NoSuchMethodException ignored) {
+              methodName = "c"; // is same for 1.17, 1.18, 1.19
+            }
+            final MethodHandle factoryMethod = lookup().findStatic(packetClass, methodName, methodType);
+            bossBarActionTitle = LambdaMetafactory.metafactory(
+                    lookup(),
+                    "apply",
+                    methodType(Function.class),
+                    methodType.generic(),
+                    factoryMethod,
+                    methodType
+            ).getTarget().invoke();
+            classBossBarAction = Function.class;
+          } catch (final Throwable error) {
+            logError(error, "Failed to initialize CraftBossBar constructor");
+          }
+        }
+      } else {
+        bossBarActionTitle = findEnum(classBossBarAction, "UPDATE_NAME", 3);
+      }
+
+      CLASS_BOSS_BAR_ACTION = classBossBarAction;
+      BOSS_BAR_ACTION_TITLE = bossBarActionTitle;
+
       MethodHandle craftBossBarHandle = null;
       MethodHandle nmsBossBattleSetName = null;
       MethodHandle nmsBossBattleSendUpdate = null;
@@ -998,7 +1047,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
               break;
             }
           }
-          nmsBossBattleSendUpdate = lookup().findVirtual(nmsBossBattleType, "sendUpdate", methodType(void.class, CLASS_BOSS_BAR_ACTION));
+          nmsBossBattleSendUpdate = findMethod(nmsBossBattleType, new String[]{"sendUpdate", "a", "broadcast"}, void.class, CLASS_BOSS_BAR_ACTION);
         } catch (final Throwable error) {
           logError(error, "Failed to initialize CraftBossBar constructor");
         }
