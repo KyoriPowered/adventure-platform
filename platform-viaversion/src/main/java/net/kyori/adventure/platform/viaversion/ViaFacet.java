@@ -29,6 +29,7 @@ import com.viaversion.viaversion.api.protocol.Protocol;
 import com.viaversion.viaversion.api.protocol.packet.ClientboundPacketType;
 import com.viaversion.viaversion.api.protocol.packet.PacketWrapper;
 import com.viaversion.viaversion.api.type.Type;
+import com.viaversion.viaversion.libs.gson.JsonParser;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,14 +56,15 @@ import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.g
 @SuppressWarnings({"checkstyle:FilteringWriteTag", "checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})
 public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String> {
   private static final String PACKAGE = "com.viaversion.viaversion";
+  private static final int SUPPORTED_VIA_MAJOR_VERSION = 4;
   private static final boolean SUPPORTED;
 
   static {
     boolean supported = false;
     try {
-      // Check if the ViaVersion API is present
-      Class.forName(PACKAGE + ".api.ViaManager");
-      supported = true;
+      // Check if the ViaVersion API is present and is a supported major version
+      Class.forName(PACKAGE + ".api.ViaAPI").getDeclaredMethod("majorVersion");
+      supported = Via.getAPI().majorVersion() == SUPPORTED_VIA_MAJOR_VERSION;
     } catch (final Throwable error) {
       // ignore
     }
@@ -179,7 +181,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     @Override
     public void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull String message, final @NotNull MessageType type) {
       final PacketWrapper packet = this.createPacket(viewer);
-      packet.write(Type.STRING, message);
+      packet.write(Type.COMPONENT, JsonParser.parseString(message));
       packet.write(Type.BYTE, this.createMessageType(type));
       packet.write(Type.UUID, source.uuid());
       this.sendPacket(packet);
@@ -211,7 +213,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void sendMessage(final @NotNull V viewer, final @NotNull String message) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.VAR_INT, TitlePacket.ACTION_ACTIONBAR);
-      packet.write(Type.STRING, message);
+      packet.write(Type.COMPONENT, JsonParser.parseString(message));
       this.sendPacket(packet);
     }
   }
@@ -234,7 +236,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void contributeTitle(final @NotNull List<Consumer<PacketWrapper>> coll, final @NotNull String title) {
       coll.add(packet -> {
         packet.write(Type.VAR_INT, ACTION_TITLE);
-        packet.write(Type.STRING, title);
+        packet.write(Type.COMPONENT, JsonParser.parseString(title));
       });
     }
 
@@ -242,7 +244,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void contributeSubtitle(final @NotNull List<Consumer<PacketWrapper>> coll, final @NotNull String subtitle) {
       coll.add(packet -> {
         packet.write(Type.VAR_INT, ACTION_SUBTITLE);
-        packet.write(Type.STRING, subtitle);
+        packet.write(Type.COMPONENT, JsonParser.parseString(subtitle));
       });
     }
 
@@ -367,7 +369,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
       packet.write(Type.UUID, this.id);
       packet.write(Type.VAR_INT, action);
       if (action == ACTION_ADD || action == ACTION_TITLE) {
-        packet.write(Type.STRING, this.title);
+        packet.write(Type.COMPONENT, JsonParser.parseString(this.title));
       }
       if (action == ACTION_ADD || action == ACTION_HEALTH) {
         packet.write(Type.FLOAT, this.health);
@@ -424,8 +426,8 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     @Override
     public void send(final V viewer, final @Nullable String header, final @Nullable String footer) {
       final PacketWrapper packet = this.createPacket(viewer);
-      packet.write(Type.STRING, header);
-      packet.write(Type.STRING, footer);
+      packet.write(Type.COMPONENT, JsonParser.parseString(header));
+      packet.write(Type.COMPONENT, JsonParser.parseString(footer));
       this.sendPacket(packet);
     }
   }
