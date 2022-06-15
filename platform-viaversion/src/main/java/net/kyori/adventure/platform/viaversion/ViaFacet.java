@@ -166,7 +166,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void sendPacket(final @NotNull PacketWrapper packet) {
       if (packet.user() == null) return;
       try {
-        packet.send(this.protocolClass);
+        packet.scheduleSend(this.protocolClass);
       } catch (final Throwable error) {
         logError(error, "Failed to send ViaVersion packet: %s %s", packet.user(), packet);
       }
