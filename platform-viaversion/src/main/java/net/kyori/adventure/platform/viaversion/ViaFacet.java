@@ -29,6 +29,7 @@ import com.viaversion.viaversion.api.protocol.Protocol;
 import com.viaversion.viaversion.api.protocol.packet.ClientboundPacketType;
 import com.viaversion.viaversion.api.protocol.packet.PacketWrapper;
 import com.viaversion.viaversion.api.type.Type;
+import com.viaversion.viaversion.libs.gson.JsonElement;
 import com.viaversion.viaversion.libs.gson.JsonParser;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -171,6 +172,10 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
         logError(error, "Failed to send ViaVersion packet: %s %s", packet.user(), packet);
       }
     }
+
+    public @NotNull JsonElement parse(final @NotNull String message) {
+      return JsonParser.parseString(message);
+    }
   }
 
   public static class Chat<V> extends ProtocolBased<V> implements ChatPacket<V, String> {
@@ -181,7 +186,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     @Override
     public void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull String message, final @NotNull MessageType type) {
       final PacketWrapper packet = this.createPacket(viewer);
-      packet.write(Type.COMPONENT, JsonParser.parseString(message));
+      packet.write(Type.COMPONENT, this.parse(message));
       packet.write(Type.BYTE, this.createMessageType(type));
       packet.write(Type.UUID, source.uuid());
       this.sendPacket(packet);
@@ -213,7 +218,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void sendMessage(final @NotNull V viewer, final @NotNull String message) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.VAR_INT, TitlePacket.ACTION_ACTIONBAR);
-      packet.write(Type.COMPONENT, JsonParser.parseString(message));
+      packet.write(Type.COMPONENT, this.parse(message));
       this.sendPacket(packet);
     }
   }
@@ -236,7 +241,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void contributeTitle(final @NotNull List<Consumer<PacketWrapper>> coll, final @NotNull String title) {
       coll.add(packet -> {
         packet.write(Type.VAR_INT, ACTION_TITLE);
-        packet.write(Type.COMPONENT, JsonParser.parseString(title));
+        packet.write(Type.COMPONENT, this.parse(title));
       });
     }
 
@@ -244,7 +249,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     public void contributeSubtitle(final @NotNull List<Consumer<PacketWrapper>> coll, final @NotNull String subtitle) {
       coll.add(packet -> {
         packet.write(Type.VAR_INT, ACTION_SUBTITLE);
-        packet.write(Type.COMPONENT, JsonParser.parseString(subtitle));
+        packet.write(Type.COMPONENT, this.parse(subtitle));
       });
     }
 
@@ -369,7 +374,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
       packet.write(Type.UUID, this.id);
       packet.write(Type.VAR_INT, action);
       if (action == ACTION_ADD || action == ACTION_TITLE) {
-        packet.write(Type.COMPONENT, JsonParser.parseString(this.title));
+        packet.write(Type.COMPONENT, this.parse(this.title));
       }
       if (action == ACTION_ADD || action == ACTION_HEALTH) {
         packet.write(Type.FLOAT, this.health);
@@ -426,8 +431,8 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     @Override
     public void send(final V viewer, final @Nullable String header, final @Nullable String footer) {
       final PacketWrapper packet = this.createPacket(viewer);
-      packet.write(Type.COMPONENT, JsonParser.parseString(header));
-      packet.write(Type.COMPONENT, JsonParser.parseString(footer));
+      packet.write(Type.COMPONENT, this.parse(header));
+      packet.write(Type.COMPONENT, this.parse(footer));
       this.sendPacket(packet);
     }
   }
