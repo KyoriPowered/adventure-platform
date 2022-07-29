@@ -81,6 +81,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodType.methodType;
 import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.gson;
 import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.legacy;
@@ -248,8 +249,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           findMcClassName("network.protocol.game.ClientboundChatPacket"),
           findMcClassName("network.protocol.game.ClientboundSystemChatPacket")
         );
-        // ClientboundSystemChatPacket constructor changed for 1.19
-        chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, int.class);
+        // ClientboundSystemChatPacket constructor changed for 1.19.1
+        chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, boolean.class);
+        if (chatPacketConstructor == null) {
+          // ClientboundSystemChatPacket constructor changed for 1.19
+          chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, int.class);
+        }
         if (chatPacketConstructor == null) {
           // ClientboundChatPacket constructor changed for 1.16
           chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT);
@@ -260,8 +265,14 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           }
         } else {
           if (MESSAGE_TYPE_CHAT == Integer.valueOf(0)) {
-            // for 1.19, create a function that drops the last UUID argument while keeping the integer message type argument
-            chatPacketConstructor = dropArguments(chatPacketConstructor, 2, UUID.class);
+            if (chatPacketConstructor.type().parameterType(1).equals(boolean.class)) {
+              // 1.19.1
+              chatPacketConstructor = insertArguments(chatPacketConstructor, 1, Boolean.FALSE);
+              chatPacketConstructor = dropArguments(chatPacketConstructor, 1, Integer.class, UUID.class);
+            } else {
+              // for 1.19, create a function that drops the last UUID argument while keeping the integer message type argument
+              chatPacketConstructor = dropArguments(chatPacketConstructor, 2, UUID.class);
+            }
           } else {
             // Create a function that ignores the message type and sender id arguments to call the underlying one-argument constructor
             chatPacketConstructor = dropArguments(chatPacketConstructor, 1, CLASS_MESSAGE_TYPE == null ? Object.class : CLASS_MESSAGE_TYPE, UUID.class);
