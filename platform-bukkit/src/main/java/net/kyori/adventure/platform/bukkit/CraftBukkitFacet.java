@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.nbt.BinaryTagIO;
@@ -425,8 +426,8 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       findMcClassName("world.phys.Vec3")
     );
 
-    private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class);
-    private static final MethodHandle NEW_CLIENTBOUND_CUSTOM_SOUND = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class);
+    private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND;
+    private static final MethodHandle NEW_CLIENTBOUND_CUSTOM_SOUND;
     private static final MethodHandle NEW_VEC3 = findConstructor(CLASS_VEC3, double.class, double.class, double.class);
     private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
     private static final MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
@@ -434,6 +435,28 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final Object REGISTRY_SOUND_EVENT;
 
     static {
+      {
+        MethodHandle entitySoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class, long.class);
+        if (entitySoundPacketConstructor == null) {
+          // 1.18 (no seed)
+          entitySoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class);
+          if (entitySoundPacketConstructor != null) {
+            entitySoundPacketConstructor = dropArguments(entitySoundPacketConstructor, 5, long.class);
+          }
+        }
+        NEW_CLIENTBOUND_ENTITY_SOUND = entitySoundPacketConstructor;
+      }
+      {
+        MethodHandle customSoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class, long.class);
+        if (customSoundPacketConstructor == null) {
+          // 1.18 (no seed)
+          customSoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class);
+          if (customSoundPacketConstructor != null) {
+            customSoundPacketConstructor = dropArguments(customSoundPacketConstructor, 5, long.class);
+          }
+        }
+        NEW_CLIENTBOUND_CUSTOM_SOUND = customSoundPacketConstructor;
+      }
       Object registrySoundEvent = null;
       MethodHandle soundSourceGetName = null;
       if (CLASS_SOUND_SOURCE != null) {
@@ -524,10 +547,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         final Object nameRl = NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
         final java.util.Optional<?> event = (Optional<?>) REGISTRY_GET_OPTIONAL.invoke(REGISTRY_SOUND_EVENT, nameRl);
         if (event.isPresent()) {
-          return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch());
+          return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch(), ThreadLocalRandom.current().nextLong() /* TODO replace with sound seed when 4.12.X releases */);
         } else if (NEW_CLIENTBOUND_CUSTOM_SOUND != null && NEW_VEC3 != null) {
           final Location loc = entity.getLocation();
-          return NEW_CLIENTBOUND_CUSTOM_SOUND.invoke(nameRl, soundCategory, NEW_VEC3.invoke(loc.getX(), loc.getY(), loc.getZ()), sound.volume(), sound.pitch());
+          return NEW_CLIENTBOUND_CUSTOM_SOUND.invoke(nameRl, soundCategory, NEW_VEC3.invoke(loc.getX(), loc.getY(), loc.getZ()), sound.volume(), sound.pitch(), ThreadLocalRandom.current().nextLong() /* TODO replace with sound seed when 4.12.X releases */);
         }
       } catch (final Throwable error) {
         logError(error, "Failed to send sound tracking an entity");
