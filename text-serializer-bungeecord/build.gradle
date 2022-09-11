@@ -12,3 +12,9 @@ jar {
     'Automatic-Module-Name': 'net.kyori.adventure.text.serializer.bungeecord'
   )
 }
+
+indraCrossdoc {
+  nameBasedDocumentationUrlProvider {
+      projectNamePrefix = "adventure-"
+  }
+}

@@ -11,3 +11,9 @@ jar {
     'Automatic-Module-Name': 'net.kyori.adventure.text.serializer.legacytext3'
   )
 }
+
+indraCrossdoc {
+  nameBasedDocumentationUrlProvider {
+      projectNamePrefix = "adventure-"
+  }
+}

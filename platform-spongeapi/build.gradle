@@ -11,3 +11,9 @@ dependencies {
   // implementation project(":adventure-platform-viaversion")
   compileOnly 'org.spongepowered:spongeapi:7.1.0'
 }
+
+javadoc {
+  options.links(
+    "https://jd.spongepowered.org/spongeapi/7.2.0/"
+  )
+}

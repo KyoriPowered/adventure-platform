@@ -15,3 +15,9 @@ dependencies {
   compileOnly 'io.netty:netty-all:4.0.23.Final' // for pre-1.13 book sending
   testImplementation compileOnly('com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT')
 }
+
+javadoc {
+  options.links(
+    "https://jd.papermc.io/paper/1.15"
+  )
+}

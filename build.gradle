@@ -8,6 +8,7 @@ plugins {
   id 'net.kyori.indra' version "$indraVersion" apply false
   id 'net.kyori.indra.publishing.sonatype' version "$indraVersion"
   id 'net.kyori.indra.license-header' version "$indraVersion" apply false
+  id 'net.kyori.indra.crossdoc' version "$indraVersion" apply false
 }
 
 // Adventure version
@@ -46,6 +47,7 @@ subprojects {
   apply plugin: 'net.kyori.indra.publishing'
   apply plugin: 'net.kyori.indra.checkstyle'
   apply plugin: 'net.kyori.indra.license-header'
+  apply plugin: 'net.kyori.indra.crossdoc'
 
   dependencies {
     components {
@@ -55,6 +57,17 @@ subprojects {
     checkstyle 'ca.stellardrift:stylecheck:0.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+  }
+  
+  tasks.withType(Javadoc).configureEach {
+    options {
+      links(
+        "https://jd.adventure.kyori.net/api/$adventure",
+        "https://jd.adventure.kyori.net/text-serializer-legacy/$adventure",
+        "https://jd.adventure.kyori.net/text-serializer-gson/$adventure",
+        "https://jd.adventure.kyori.net/nbt/$adventure"
+      )
+    }
   }
 
   indra {
@@ -94,5 +107,12 @@ subprojects {
         }
       }
     }
+  }
+  
+  indraCrossdoc {
+      baseUrl().set(providers.gradleProperty('javadocPublishRoot'))
+      nameBasedDocumentationUrlProvider {
+          projectNamePrefix = "adventure-platform-"
+      }
   }
 }
