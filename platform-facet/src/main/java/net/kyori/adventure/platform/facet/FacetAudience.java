@@ -406,6 +406,16 @@ public class FacetAudience<V> implements Audience, Closeable {
     }
   }
 
+  /**
+   * Check if this audience has been shown this BossBar
+   * @param bar The BossBar instance
+   * @return A boolean value
+   * @since 4.1.3
+   */
+  public boolean hasBossBar(final @NotNull BossBar bar) {
+    return this.bossBars != null && this.bossBars.containsKey(bar);
+  }
+
   @Override
   public void sendPlayerListHeader(final @NotNull Component header) {
     if (this.tabList != null) {
