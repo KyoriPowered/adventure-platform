@@ -368,7 +368,7 @@ public class FacetAudience<V> implements Audience, Closeable {
     if (this.bossBar == null || this.bossBars == null) return;
 
     Facet.BossBar<V> listener;
-    synchronized(this.bossBars) {
+    synchronized (this.bossBars) {
       listener = this.bossBars.get(bar);
       if (listener == null) {
         listener =
