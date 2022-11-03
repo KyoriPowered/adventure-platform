@@ -310,7 +310,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     private void broadcastPacket(final int action) {
       if (this.isEmpty()) return;
 
-      synchronized(this.bar) {
+      synchronized (this.bar) {
         this.bar.setAction(action);
         for (final ProxiedPlayer viewer : this.viewers) {
           viewer.unsafe().sendPacket(this.bar);
@@ -319,7 +319,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     private void sendPacket(final int action, final ProxiedPlayer... viewers) {
-      synchronized(this.bar) {
+      synchronized (this.bar) {
         final int lastAction = this.bar.getAction();
         this.bar.setAction(action);
         for (final ProxiedPlayer viewer : viewers) {
