@@ -23,10 +23,13 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.connection.UserConnection;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Function;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.permission.PermissionChecker;
@@ -397,6 +400,13 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public @NotNull String valueOrDefault(final @NotNull ProxyServer game, final @NotNull String key) {
       return TranslationRegistry.INSTANCE.translate(key);
+    }
+  }
+
+  static final class ViaHook implements Function<ProxiedPlayer, UserConnection> {
+    @Override
+    public UserConnection apply(final @NotNull ProxiedPlayer player) {
+      return Via.getManager().getConnectionManager().getConnectedClient(player.getUniqueId());
     }
   }
 }

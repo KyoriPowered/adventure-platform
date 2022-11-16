@@ -4,6 +4,7 @@ dependencies {
   api("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
   }
+  implementation project(":adventure-platform-viaversion")
   implementation project(":adventure-platform-facet")
   api project(":adventure-text-serializer-bungeecord")
   compileOnly 'net.md-5:bungeecord-api:1.16-R0.4'
