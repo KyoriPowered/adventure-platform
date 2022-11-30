@@ -549,11 +549,12 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         if (soundCategory == null) return null;
         final Object nameRl = NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
         final java.util.Optional<?> event = (Optional<?>) REGISTRY_GET_OPTIONAL.invoke(REGISTRY_SOUND_EVENT, nameRl);
+        final long seed = sound.seed().orElseGet(() -> ThreadLocalRandom.current().nextLong());
         if (event.isPresent()) {
-          return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch(), ThreadLocalRandom.current().nextLong() /* TODO replace with sound seed when 4.12.X releases */);
+          return NEW_CLIENTBOUND_ENTITY_SOUND.invoke(event.get(), soundCategory, nmsEntity, sound.volume(), sound.pitch(), seed);
         } else if (NEW_CLIENTBOUND_CUSTOM_SOUND != null && NEW_VEC3 != null) {
           final Location loc = entity.getLocation();
-          return NEW_CLIENTBOUND_CUSTOM_SOUND.invoke(nameRl, soundCategory, NEW_VEC3.invoke(loc.getX(), loc.getY(), loc.getZ()), sound.volume(), sound.pitch(), ThreadLocalRandom.current().nextLong() /* TODO replace with sound seed when 4.12.X releases */);
+          return NEW_CLIENTBOUND_CUSTOM_SOUND.invoke(nameRl, soundCategory, NEW_VEC3.invoke(loc.getX(), loc.getY(), loc.getZ()), sound.volume(), sound.pitch(), seed);
         }
       } catch (final Throwable error) {
         logError(error, "Failed to send sound tracking an entity");
