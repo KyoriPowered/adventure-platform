@@ -93,7 +93,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull Object type) {
       viewer.sendMessage(message);
     }
   }
@@ -134,7 +134,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull MessageType type) {
+    public void sendMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull Object type) {
       if (type == MessageType.CHAT) {
         viewer.sendMessage(source.uuid(), message);
       } else {
@@ -155,8 +155,8 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull MessageType type) {
-      final ChatMessageType chat = this.createType(type);
+    public void sendMessage(final @NotNull ProxiedPlayer viewer, final @NotNull Identity source, final BaseComponent @NotNull [] message, final @NotNull Object type) {
+      final ChatMessageType chat = type instanceof MessageType ? this.createType((MessageType) type) : ChatMessageType.SYSTEM; // if it's not a legacy adventure MessageType it doesn't matter cause its not used
       if (chat != null) {
         viewer.sendMessage(chat, message);
       }

@@ -28,6 +28,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -175,7 +176,11 @@ final class MinecraftReflection {
     for (final String methodName : methodNames) {
       if (methodName == null) continue;
       try {
-        return LOOKUP.findVirtual(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
+        if (modifier != null && Modifier.isStatic(modifier)) {
+          return LOOKUP.findStatic(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
+        } else {
+          return LOOKUP.findVirtual(holderClass, methodName, MethodType.methodType(returnClass, parameterClasses));
+        }
       } catch (final NoSuchMethodException | IllegalAccessException e) {
       }
     }
@@ -184,7 +189,11 @@ final class MinecraftReflection {
       if ((modifier == null || (method.getModifiers() & modifier) == 0)
               || !Arrays.equals(method.getParameterTypes(), parameterClasses)) continue;
       try {
-        return LOOKUP.findVirtual(holderClass, method.getName(), MethodType.methodType(returnClass, parameterClasses));
+        if (Modifier.isStatic(modifier)) {
+          return LOOKUP.findStatic(holderClass, method.getName(), MethodType.methodType(returnClass, parameterClasses));
+        } else {
+          return LOOKUP.findVirtual(holderClass, method.getName(), MethodType.methodType(returnClass, parameterClasses));
+        }
       } catch (final NoSuchMethodException | IllegalAccessException e) {
       }
     }

@@ -40,6 +40,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,7 +94,7 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final BaseComponent @NotNull[] message, final @NotNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final BaseComponent @NotNull[] message, final @NotNull Object type) {
       viewer.spigot().sendMessage(message);
     }
   }
@@ -123,8 +124,8 @@ class SpigotFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void sendMessage(final @NotNull Player viewer, final @NotNull Identity source, final BaseComponent @NotNull[] message, final @NotNull MessageType type) {
-      final ChatMessageType chat = this.createType(type);
+    public void sendMessage(final @NotNull Player viewer, final @NotNull Identity source, final BaseComponent @NotNull[] message, final @NotNull Object type) {
+      final ChatMessageType chat = type instanceof MessageType ? this.createType((MessageType) type) : ChatMessageType.SYSTEM; // if it's not a legacy adventure MessageType it doesn't matter cause its not used
       if (chat != null) {
         viewer.spigot().sendMessage(chat, message);
       }

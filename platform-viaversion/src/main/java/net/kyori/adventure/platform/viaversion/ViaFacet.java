@@ -184,10 +184,10 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
     }
 
     @Override
-    public void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull String message, final @NotNull MessageType type) {
+    public void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull String message, final @NotNull Object type) {
       final PacketWrapper packet = this.createPacket(viewer);
       packet.write(Type.COMPONENT, this.parse(message));
-      packet.write(Type.BYTE, this.createMessageType(type));
+      packet.write(Type.BYTE, this.createMessageType(type instanceof MessageType ? (MessageType) type : MessageType.SYSTEM));
       packet.write(Type.UUID, source.uuid());
       this.sendPacket(packet);
     }
