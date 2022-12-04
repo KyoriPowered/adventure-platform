@@ -3,6 +3,7 @@
 /.idea/
 /run/
 /*.iml
+/build/
 
 # Per-subproject build folders
 /*/*/build/
