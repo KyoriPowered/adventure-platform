@@ -127,7 +127,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   private static final Class<?> CLASS_CRAFT_ENTITY = findCraftClass("entity.CraftEntity");
   private static final MethodHandle CRAFT_ENTITY_GET_HANDLE = findMethod(CLASS_CRAFT_ENTITY, "getHandle", CLASS_NMS_ENTITY);
   static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
-  private static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
+  static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
   private static final @Nullable MethodHandle ENTITY_PLAYER_GET_CONNECTION;
   private static final @Nullable MethodHandle PLAYER_CONNECTION_SEND_PACKET;
 
@@ -298,79 +298,9 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class Chat1_19_3 extends Chat {
-    private static final Class<?> CLASS_REGISTRY = needClass(
-        findMcClassName("core.IRegistry"),
-        findMcClassName("core.Registry")
-    );
-    private static final Class<?> CLASS_SERVER_LEVEL = needClass(
-        findMcClassName("server.level.WorldServer"),
-        findMcClassName("server.level.ServerLevel")
-    );
-    private static final Class<?> CLASS_REGISTRY_ACCESS = needClass(
-        findMcClassName("core.IRegistryCustom"),
-        findMcClassName("core.RegistryAccess")
-    );
-    private static final Class<?> CLASS_RESOURCE_KEY = needClass(findMcClassName("resources.ResourceKey"));
-    private static final Class<?> CLASS_RESOURCE_LOCATION = needClass(
-        findMcClassName("resources.MinecraftKey"),
-        findMcClassName("resources.ResourceLocation")
-    );
-
-    private static final @Nullable MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
-    private static final @Nullable MethodHandle RESOURCE_KEY_CREATE = searchMethod(CLASS_RESOURCE_KEY, Modifier.PUBLIC | Modifier.STATIC, "create", CLASS_RESOURCE_KEY, CLASS_RESOURCE_KEY, CLASS_RESOURCE_LOCATION);
-    private static final @Nullable MethodHandle SERVER_PLAYER_GET_LEVEL = searchMethod(CRAFT_PLAYER_GET_HANDLE.type().returnType(), Modifier.PUBLIC, "getLevel", CLASS_SERVER_LEVEL);
-    private static final @Nullable MethodHandle SERVER_LEVEL_GET_REGISTRY_ACCESS = searchMethod(CLASS_SERVER_LEVEL, Modifier.PUBLIC, "registryAccess", CLASS_REGISTRY_ACCESS);
-    private static final @Nullable MethodHandle REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL = searchMethod(CLASS_REGISTRY_ACCESS, Modifier.PUBLIC, "registry", Optional.class, CLASS_RESOURCE_KEY);
-    private static final @Nullable MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
-    private static final @Nullable MethodHandle REGISTRY_GET_ID = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getId", int.class, Object.class);
-    private static final @Nullable MethodHandle DISGUISED_CHAT_PACKET_CONSTRUCTOR;
-    private static final @Nullable MethodHandle CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR;
-
-    private static final @Nullable Object CHAT_TYPE_RESOURCE_KEY;
-
-    static {
-      MethodHandle boundNetworkConstructor = null;
-      MethodHandle disguisedChatPacketConstructor = null;
-      Object chatTypeResourceKey = null;
-
-      try {
-        Class<?> classChatTypeBoundNetwork = findClass(findMcClassName("network.chat.ChatType$BoundNetwork"));
-        if (classChatTypeBoundNetwork == null) {
-          final Class<?> parentClass = findClass(findMcClassName("network.chat.ChatMessageType"));
-          if (parentClass != null) {
-            for (final Class<?> childClass : parentClass.getClasses()) {
-              boundNetworkConstructor = findConstructor(childClass, int.class, CLASS_CHAT_COMPONENT, CLASS_CHAT_COMPONENT);
-              if (boundNetworkConstructor != null) {
-                classChatTypeBoundNetwork = childClass;
-                break;
-              }
-            }
-          }
-        }
-
-        final Class<?> disguisedChatPacketClass = findClass(findMcClassName("network.protocol.game.ClientboundDisguisedChatPacket"));
-        if (disguisedChatPacketClass != null && classChatTypeBoundNetwork != null) {
-          disguisedChatPacketConstructor = findConstructor(disguisedChatPacketClass, CLASS_CHAT_COMPONENT, classChatTypeBoundNetwork);
-        }
-
-        if (NEW_RESOURCE_LOCATION != null && RESOURCE_KEY_CREATE != null) {
-          final MethodHandle createRegistryKey = searchMethod(CLASS_RESOURCE_KEY, Modifier.PUBLIC | Modifier.STATIC, "createRegistryKey", CLASS_RESOURCE_KEY, CLASS_RESOURCE_LOCATION);
-          if (createRegistryKey != null) {
-            chatTypeResourceKey = createRegistryKey.invoke(NEW_RESOURCE_LOCATION.invoke("minecraft", "chat_type"));
-          }
-        }
-      } catch (final Throwable error) {
-        logError(error, "Failed to initialize 1.19.3 chat support");
-      }
-
-      DISGUISED_CHAT_PACKET_CONSTRUCTOR = disguisedChatPacketConstructor;
-      CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR = boundNetworkConstructor;
-      CHAT_TYPE_RESOURCE_KEY = chatTypeResourceKey;
-    }
-
     @Override
     public boolean isSupported() {
-      return super.isSupported() && SERVER_LEVEL_GET_REGISTRY_ACCESS != null && REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL != null && REGISTRY_GET_OPTIONAL != null && CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null && DISGUISED_CHAT_PACKET_CONSTRUCTOR != null && CHAT_TYPE_RESOURCE_KEY != null;
+      return super.isSupported() && CraftBukkitAccess.Chat1_19_3.isSupported();
     }
 
     @Override
@@ -380,19 +310,19 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       } else {
         final ChatType.Bound bound = (ChatType.Bound) type;
         try {
-          final Object registryAccess = SERVER_LEVEL_GET_REGISTRY_ACCESS.invoke(SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
-          final Object chatTypeRegistry = ((Optional<?>) REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
-          final Object typeResourceLocation = NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
-          final Object chatTypeObject = ((Optional<?>) REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
-          final int networkId = (int) REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
+          final Object registryAccess = CraftBukkitAccess.Chat1_19_3.SERVER_LEVEL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
+          final Object chatTypeRegistry = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
+          final Object typeResourceLocation = CraftBukkitAccess.Chat1_19_3.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
+          final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
+          final int networkId = (int) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
           if (networkId < 0) {
             throw new IllegalArgumentException("Could not get a valid network id from " + type);
           }
           final Object nameComponent = this.createMessage(viewer, bound.name());
           final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
-          final Object boundNetwork = CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
+          final Object boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
 
-          this.sendMessage(viewer, DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
+          this.sendMessage(viewer, CraftBukkitAccess.Chat1_19_3.DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
         } catch (final Throwable error) {
           logError(error, "Failed to send a 1.19.3+ message: %s %s", message, type);
         }
