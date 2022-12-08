@@ -370,7 +370,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public boolean isSupported() {
-      return super.isSupported() && SERVER_LEVEL_GET_REGISTRY_ACCESS != null && REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL != null && REGISTRY_GET_OPTIONAL != null && CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null /*&& DISGUISED_CHAT_PACKET_CONSTRUCTOR != null TODO add back for 1.19.3*/ && CHAT_TYPE_RESOURCE_KEY != null;
+      return super.isSupported() && SERVER_LEVEL_GET_REGISTRY_ACCESS != null && REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL != null && REGISTRY_GET_OPTIONAL != null && CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null && DISGUISED_CHAT_PACKET_CONSTRUCTOR != null && CHAT_TYPE_RESOURCE_KEY != null;
     }
 
     @Override
@@ -392,8 +392,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
           final Object boundNetwork = CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
 
-          // TODO uncomment on 1.19.3
-          // this.sendMessage(viewer, DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
+          this.sendMessage(viewer, DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
         } catch (final Throwable error) {
           logError(error, "Failed to send a 1.19.3+ message: %s %s", message, type);
         }
