@@ -182,10 +182,6 @@ public interface Facet<V> {
      * @since 4.0.0
      */
     void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull M message, final @NotNull Object type);
-
-    default Object createMessageType(final Object type) {
-      return type;
-    }
   }
 
   /**
