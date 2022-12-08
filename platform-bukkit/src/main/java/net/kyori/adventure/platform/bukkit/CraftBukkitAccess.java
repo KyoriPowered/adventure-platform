@@ -9,40 +9,37 @@ import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findConstructor;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMcClassName;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClassName;
-import static net.kyori.adventure.platform.bukkit.MinecraftReflection.needClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.searchMethod;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
 final class CraftBukkitAccess {
-
   static final @Nullable Class<?> CLASS_CHAT_COMPONENT = findClass(
     findNmsClassName("IChatBaseComponent"),
     findMcClassName("network.chat.IChatBaseComponent"),
     findMcClassName("network.chat.Component")
+  );
+  static final @Nullable Class<?> CLASS_REGISTRY = findClass(
+    findMcClassName("core.IRegistry"),
+    findMcClassName("core.Registry")
+  );
+  static final @Nullable Class<?> CLASS_SERVER_LEVEL = findClass(
+    findMcClassName("server.level.WorldServer"),
+    findMcClassName("server.level.ServerLevel")
+  );
+  static final @Nullable Class<?> CLASS_REGISTRY_ACCESS = findClass(
+    findMcClassName("core.IRegistryCustom"),
+    findMcClassName("core.RegistryAccess")
+  );
+  static final @Nullable Class<?> CLASS_RESOURCE_KEY = findClass(findMcClassName("resources.ResourceKey"));
+  static final @Nullable Class<?> CLASS_RESOURCE_LOCATION = findClass(
+    findMcClassName("resources.MinecraftKey"),
+    findMcClassName("resources.ResourceLocation")
   );
 
   private CraftBukkitAccess() {
   }
 
   static final class Chat1_19_3 {
-    static final Class<?> CLASS_REGISTRY = needClass(
-      findMcClassName("core.IRegistry"),
-      findMcClassName("core.Registry")
-    );
-    static final Class<?> CLASS_SERVER_LEVEL = needClass(
-      findMcClassName("server.level.WorldServer"),
-      findMcClassName("server.level.ServerLevel")
-    );
-    static final Class<?> CLASS_REGISTRY_ACCESS = needClass(
-      findMcClassName("core.IRegistryCustom"),
-      findMcClassName("core.RegistryAccess")
-    );
-    static final Class<?> CLASS_RESOURCE_KEY = needClass(findMcClassName("resources.ResourceKey"));
-    static final Class<?> CLASS_RESOURCE_LOCATION = needClass(
-      findMcClassName("resources.MinecraftKey"),
-      findMcClassName("resources.ResourceLocation")
-    );
-
     static final @Nullable MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
     static final @Nullable MethodHandle RESOURCE_KEY_CREATE = searchMethod(CLASS_RESOURCE_KEY, Modifier.PUBLIC | Modifier.STATIC, "create", CLASS_RESOURCE_KEY, CLASS_RESOURCE_KEY, CLASS_RESOURCE_LOCATION);
     static final @Nullable MethodHandle SERVER_PLAYER_GET_LEVEL = searchMethod(CraftBukkitFacet.CRAFT_PLAYER_GET_HANDLE.type().returnType(), Modifier.PUBLIC, "getLevel", CLASS_SERVER_LEVEL);
@@ -53,7 +50,7 @@ final class CraftBukkitAccess {
     static final @Nullable MethodHandle DISGUISED_CHAT_PACKET_CONSTRUCTOR;
     static final @Nullable MethodHandle CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR;
 
-    static final @Nullable Object CHAT_TYPE_RESOURCE_KEY;
+    static final Object CHAT_TYPE_RESOURCE_KEY;
 
     static {
       MethodHandle boundNetworkConstructor = null;
