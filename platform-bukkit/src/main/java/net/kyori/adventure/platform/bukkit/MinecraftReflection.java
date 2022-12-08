@@ -28,7 +28,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import net.kyori.adventure.platform.facet.Knob;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -362,6 +364,40 @@ final class MinecraftReflection {
     }
 
     return null;
+  }
+
+  /**
+   * Gets a class field if possible and makes it accessible.
+   *
+   * @param holderClass a class
+   * @param fieldName a field name
+   * @return a field value
+   */
+  public static @Nullable Object findConstantFieldValue(final @Nullable Class<?> holderClass, final @NotNull String... fieldName) {
+    return findField(holderClass, null, fieldName);
+  }
+
+  /**
+   * Gets the value of a constant field in a class
+   *
+   * @param holderClass a class
+   * @param expectedType the expected type of the field
+   * @param fieldNames a field name
+   * @return a field value
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> @Nullable T findConnstantFieldValue(final @Nullable Class<?> holderClass, final @Nullable Class<T> expectedType, final @NotNull String... fieldNames) {
+    final Field f = findField(holderClass, expectedType, fieldNames);
+    if (f == null) return null;
+    final int mod = f.getModifiers();
+    if (!Modifier.isStatic(mod) || !Modifier.isFinal(mod)) return null;
+
+    try {
+      return (T) f.get(null);
+    } catch (IllegalArgumentException | IllegalAccessException ex) {
+      Knob.logError(ex, "While getting value of field {}.{}", f.getDeclaringClass().getName(), f.getName());
+      return null;
+    }
   }
 
   /**

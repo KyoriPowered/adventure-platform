@@ -45,42 +45,44 @@ import org.jetbrains.annotations.Nullable;
 final class BukkitAudience extends FacetAudience<CommandSender> {
   static final ThreadLocal<Plugin> PLUGIN = new ThreadLocal<>();
   private static final Function<Player, UserConnection> VIA = new BukkitFacet.ViaHook();
-  private static final Collection<Facet.Chat<? extends CommandSender, ?>> CHAT = Facet.of(
+  private static final Collection<Facet.Chat<?, ?>> CHAT = Facet.of(
     () -> new ViaFacet.Chat<>(Player.class, VIA),
-    //    () -> new SpigotFacet.ChatWithType(),
-    //    () -> new SpigotFacet.Chat(),
+    () -> new PaperFacet.Chat(),
     () -> new CraftBukkitFacet.Chat(),
     () -> new BukkitFacet.Chat());
-  private static final Collection<Facet.ActionBar<Player, ?>> ACTION_BAR = Facet.of(
+  private static final Collection<Facet.ActionBar<?, ?>> ACTION_BAR = Facet.of(
     () -> new ViaFacet.ActionBarTitle<>(Player.class, VIA),
     () -> new ViaFacet.ActionBar<>(Player.class, VIA),
-    //    () -> new SpigotFacet.ActionBar(),
+    () -> new PaperFacet.ActionBar(),
     () -> new CraftBukkitFacet.ActionBar_1_17(),
     () -> new CraftBukkitFacet.ActionBar(),
     () -> new CraftBukkitFacet.ActionBarLegacy());
-  private static final Collection<Facet.Title<Player, ?, ?, ?>> TITLE = Facet.of(
+  private static final Collection<Facet.Title<?, ?, ?, ?>> TITLE = Facet.of(
     () -> new ViaFacet.Title<>(Player.class, VIA),
-    // () -> new PaperFacet.Title(),
+    () -> new PaperFacet.Title(),
     () -> new CraftBukkitFacet.Title_1_17(),
     () -> new CraftBukkitFacet.Title());
-  private static final Collection<Facet.Sound<Player, Vector>> SOUND = Facet.of(
+  private static final Collection<Facet.Sound<?, Vector>> SOUND = Facet.of(
+    () -> new PaperFacet.Sound(),
     () -> new BukkitFacet.SoundWithCategory(),
     () -> new BukkitFacet.Sound());
-  private static final Collection<Facet.EntitySound<Player, Object>> ENTITY_SOUND = Facet.of(
+  private static final Collection<Facet.EntitySound<?, ?>> ENTITY_SOUND = Facet.of(
+    () -> new PaperFacet.EntitySound(),
     () -> new CraftBukkitFacet.EntitySound()
   );
-  private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(
-    //    () -> new SpigotFacet.Book(),
+  private static final Collection<Facet.Book<?, ?, ?>> BOOK = Facet.of(
+    () -> new PaperFacet.Book(),
     () -> new CraftBukkitFacet.BookPost1_13(),
     () -> new CraftBukkitFacet.Book1_13(),
     () -> new CraftBukkitFacet.BookPre1_13());
-  private static final Collection<Facet.BossBar.Builder<Player, ?>> BOSS_BAR = Facet.of(
+  private static final Collection<Facet.BossBar.Builder<?, ?>> BOSS_BAR = Facet.of(
     () -> new ViaFacet.BossBar.Builder<>(Player.class, VIA),
     () -> new ViaFacet.BossBar.Builder1_9_To_1_15<>(Player.class, VIA),
+    () -> new PaperFacet.BossBarBuilder(),
     () -> new CraftBukkitFacet.BossBar.Builder(),
     () -> new BukkitFacet.BossBarBuilder(),
     () -> new CraftBukkitFacet.BossBarWither.Builder());
-  private static final Collection<Facet.TabList<Player, ?>> TAB_LIST = Facet.of(
+  private static final Collection<Facet.TabList<?, ?>> TAB_LIST = Facet.of(
     () -> new ViaFacet.TabList<>(Player.class, VIA),
     () -> new PaperFacet.TabList(),
     () -> new CraftBukkitFacet.TabList(),
