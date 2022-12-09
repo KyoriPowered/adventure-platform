@@ -125,6 +125,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
           } catch (final Throwable error) {
             logError(error, "Could not invoke stopAllSounds on %s", viewer);
           }
+          return;
         }
         viewer.stopSound(name);
       }
