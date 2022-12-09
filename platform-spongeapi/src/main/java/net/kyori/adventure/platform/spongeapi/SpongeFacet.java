@@ -112,7 +112,7 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull MessageReceiver viewer, final @NotNull Identity source, final @NotNull Text message, final @NotNull MessageType type) {
+    public void sendMessage(final @NotNull MessageReceiver viewer, final @NotNull Identity source, final @NotNull Text message, final @NotNull Object type) {
       viewer.sendMessage(message);
     }
   }
@@ -133,8 +133,8 @@ class SpongeFacet<V> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull ChatTypeMessageReceiver viewer, final @NotNull Identity source, final @NotNull Text message, final @NotNull MessageType type) {
-      final ChatType chat = this.type(type);
+    public void sendMessage(final @NotNull ChatTypeMessageReceiver viewer, final @NotNull Identity source, final @NotNull Text message, final @NotNull Object type) {
+      final ChatType chat = type instanceof MessageType ? this.type((MessageType) type) : ChatTypes.SYSTEM;
       if (chat != null) {
         viewer.sendMessage(chat, message);
       }

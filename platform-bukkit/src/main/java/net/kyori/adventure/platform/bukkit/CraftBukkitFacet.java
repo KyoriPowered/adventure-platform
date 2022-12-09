@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.chat.ChatType;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.nbt.BinaryTagIO;
 import net.kyori.adventure.nbt.BinaryTagTypes;
@@ -125,7 +127,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   private static final Class<?> CLASS_CRAFT_ENTITY = findCraftClass("entity.CraftEntity");
   private static final MethodHandle CRAFT_ENTITY_GET_HANDLE = findMethod(CLASS_CRAFT_ENTITY, "getHandle", CLASS_NMS_ENTITY);
   static final @Nullable Class<? extends Player> CLASS_CRAFT_PLAYER = findCraftClass("entity.CraftPlayer", Player.class);
-  private static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
+  static final @Nullable MethodHandle CRAFT_PLAYER_GET_HANDLE;
   private static final @Nullable MethodHandle ENTITY_PLAYER_GET_CONNECTION;
   private static final @Nullable MethodHandle PLAYER_CONNECTION_SEND_PACKET;
 
@@ -239,7 +241,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   private static final @Nullable MethodHandle LEGACY_CHAT_PACKET_CONSTRUCTOR; // (IChatBaseComponent, byte)
-  private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) -> PacketPlayOutChat
+  private static final @Nullable MethodHandle CHAT_PACKET_CONSTRUCTOR; // (ChatMessageType, IChatBaseComponent, UUID) / (IChatBaseComponent, boolean) -> PacketPlayOutChat
 
   static {
     MethodHandle legacyChatPacketConstructor = null;
@@ -295,6 +297,39 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     LEGACY_CHAT_PACKET_CONSTRUCTOR = legacyChatPacketConstructor;
   }
 
+  static class Chat1_19_3 extends Chat {
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && CraftBukkitAccess.Chat1_19_3.isSupported();
+    }
+
+    @Override
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final @NotNull Object message, final @NotNull Object type) {
+      if (!(type instanceof ChatType.Bound)) {
+        super.sendMessage(viewer, source, message, type);
+      } else {
+        final ChatType.Bound bound = (ChatType.Bound) type;
+        try {
+          final Object registryAccess = CraftBukkitAccess.Chat1_19_3.SERVER_LEVEL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
+          final Object chatTypeRegistry = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
+          final Object typeResourceLocation = CraftBukkitAccess.Chat1_19_3.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
+          final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
+          final int networkId = (int) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
+          if (networkId < 0) {
+            throw new IllegalArgumentException("Could not get a valid network id from " + type);
+          }
+          final Object nameComponent = this.createMessage(viewer, bound.name());
+          final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
+          final Object boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
+
+          this.sendMessage(viewer, CraftBukkitAccess.Chat1_19_3.DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
+        } catch (final Throwable error) {
+          logError(error, "Failed to send a 1.19.3+ message: %s %s", message, type);
+        }
+      }
+    }
+  }
+
   static class Chat extends PacketFacet<CommandSender> implements Facet.Chat<CommandSender, Object> {
     @Override
     public boolean isSupported() {
@@ -302,7 +337,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     @Override
-    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final @NotNull Object message, final @NotNull MessageType type) {
+    public void sendMessage(final @NotNull CommandSender viewer, final @NotNull Identity source, final @NotNull Object message, final @NotNull Object type) {
       final Object messageType = type == MessageType.CHAT ? MESSAGE_TYPE_CHAT : MESSAGE_TYPE_SYSTEM;
       try {
         this.sendMessage(viewer, CHAT_PACKET_CONSTRUCTOR.invoke(message, messageType, source.uuid()));

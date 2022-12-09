@@ -181,7 +181,7 @@ public interface Facet<V> {
      * @param type a message type
      * @since 4.0.0
      */
-    void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull M message, final @NotNull MessageType type);
+    void sendMessage(final @NotNull V viewer, final @NotNull Identity source, final @NotNull M message, final @NotNull Object type);
   }
 
   /**

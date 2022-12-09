@@ -36,6 +36,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.chat.ChatType;
+import net.kyori.adventure.chat.SignedMessage;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.sound.Sound;
@@ -191,6 +193,34 @@ public class FacetAudience<V> implements Audience, Closeable {
 
     for (final V viewer : this.viewers) {
       this.chat.sendMessage(viewer, source, message, type);
+    }
+  }
+
+  @Override
+  public void sendMessage(final @NotNull Component original, final ChatType.@NotNull Bound boundChatType) {
+    if (this.chat == null) return;
+    final Object message = this.createMessage(original, this.chat);
+    if (message == null) return;
+
+    final Component name = this.provider.componentRenderer.render(boundChatType.name(), this);
+    Component target = null;
+    if (boundChatType.target() != null) {
+      target = this.provider.componentRenderer.render(boundChatType.target(), this);
+    }
+    final Object renderedType = boundChatType.type().bind(name, target);
+
+    for (final V viewer : this.viewers) {
+      this.chat.sendMessage(viewer, Identity.nil(), message, renderedType);
+    }
+  }
+
+  @Override
+  public void sendMessage(final @NotNull SignedMessage signedMessage, final ChatType.@NotNull Bound boundChatType) {
+    if (signedMessage.isSystem()) {
+      final Component content = signedMessage.unsignedContent() != null ? signedMessage.unsignedContent() : Component.text(signedMessage.message());
+      this.sendMessage(content, boundChatType);
+    } else {
+      Audience.super.sendMessage(signedMessage, boundChatType);
     }
   }
 
