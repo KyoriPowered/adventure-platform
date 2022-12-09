@@ -68,6 +68,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new BukkitFacet.SoundWithCategory(),
     () -> new BukkitFacet.Sound());
   private static final Collection<Facet.EntitySound<Player, Object>> ENTITY_SOUND = Facet.of(
+    () -> new CraftBukkitFacet.EntitySound_1_19_3(),
     () -> new CraftBukkitFacet.EntitySound()
   );
   private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(

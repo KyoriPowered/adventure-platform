@@ -24,14 +24,18 @@
 package net.kyori.adventure.platform.bukkit;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findConstructor;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findField;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMcClassName;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClassName;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.lookup;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.searchMethod;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
@@ -42,6 +46,7 @@ final class CraftBukkitAccess {
     findMcClassName("network.chat.Component")
   );
   static final @Nullable Class<?> CLASS_REGISTRY = findClass(
+    findNmsClassName("IRegistry"),
     findMcClassName("core.IRegistry"),
     findMcClassName("core.Registry")
   );
@@ -55,8 +60,20 @@ final class CraftBukkitAccess {
   );
   static final @Nullable Class<?> CLASS_RESOURCE_KEY = findClass(findMcClassName("resources.ResourceKey"));
   static final @Nullable Class<?> CLASS_RESOURCE_LOCATION = findClass(
+    findNmsClassName("MinecraftKey"),
     findMcClassName("resources.MinecraftKey"),
     findMcClassName("resources.ResourceLocation")
+  );
+  static final @Nullable Class<?> CLASS_NMS_ENTITY = findClass(
+    findNmsClassName("Entity"),
+    findMcClassName("world.entity.Entity")
+  );
+  static final @Nullable Class<?> CLASS_BUILT_IN_REGISTRIES = findClass(findMcClassName("core.registries.BuiltInRegistries"));
+  static final @Nullable Class<?> CLASS_HOLDER = findClass(findMcClassName("core.Holder"));
+  static final @Nullable Class<?> CLASS_WRITABLE_REGISTRY = findClass(
+    findNmsClassName("IRegistryWritable"),
+    findMcClassName("core.IRegistryWritable"),
+    findMcClassName("core.WritableRegistry")
   );
 
   private CraftBukkitAccess() {
@@ -120,6 +137,99 @@ final class CraftBukkitAccess {
 
     static boolean isSupported() {
       return SERVER_LEVEL_GET_REGISTRY_ACCESS != null && REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL != null && REGISTRY_GET_OPTIONAL != null && CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null && DISGUISED_CHAT_PACKET_CONSTRUCTOR != null && CHAT_TYPE_RESOURCE_KEY != null;
+    }
+  }
+
+  static final class EntitySound {
+    static final @Nullable Class<?> CLASS_CLIENTBOUND_ENTITY_SOUND = findClass(
+      findNmsClassName("PacketPlayOutEntitySound"),
+      findMcClassName("network.protocol.game.PacketPlayOutEntitySound"),
+      findMcClassName("network.protocol.game.ClientboundSoundEntityPacket")
+    );
+    static final @Nullable Class<?> CLASS_SOUND_SOURCE = findClass(
+      findNmsClassName("SoundCategory"),
+      findMcClassName("sounds.SoundCategory"),
+      findMcClassName("sounds.SoundSource")
+    );
+    static final @Nullable Class<?> CLASS_SOUND_EVENT = findClass(
+      findNmsClassName("SoundEffect"),
+      findMcClassName("sounds.SoundEffect"),
+      findMcClassName("sounds.SoundEvent")
+    );
+
+    static final @Nullable MethodHandle SOUND_SOURCE_GET_NAME;
+
+    static {
+      MethodHandle soundSourceGetName = null;
+      if (CLASS_SOUND_SOURCE != null) {
+        for (final Method method : CLASS_SOUND_SOURCE.getDeclaredMethods()) {
+          if (method.getReturnType().equals(String.class)
+            && method.getParameterCount() == 0
+            && !"name".equals(method.getName())
+            && Modifier.isPublic(method.getModifiers())
+          ) {
+            try {
+              soundSourceGetName = lookup().unreflect(method);
+            } catch (final IllegalAccessException ex) {
+              // ignored, getName is public
+            }
+            break;
+          }
+        }
+      }
+      SOUND_SOURCE_GET_NAME = soundSourceGetName;
+    }
+
+    private EntitySound() {
+    }
+
+    static boolean isSupported() {
+      return SOUND_SOURCE_GET_NAME != null;
+    }
+  }
+
+  static final class EntitySound_1_19_3 {
+
+    static final @Nullable MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
+    static final @Nullable MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
+    static final @Nullable MethodHandle REGISTRY_WRAP_AS_HOLDER = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "wrapAsHolder", CLASS_HOLDER, Object.class);
+    static final @Nullable MethodHandle SOUND_EVENT_CREATE_VARIABLE_RANGE = searchMethod(EntitySound.CLASS_SOUND_EVENT, Modifier.PUBLIC | Modifier.STATIC, "createVariableRangeEvent", EntitySound.CLASS_SOUND_EVENT, CLASS_RESOURCE_LOCATION);
+    static final @Nullable MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND = findConstructor(EntitySound.CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_HOLDER, EntitySound.CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class, long.class);
+
+    static final @Nullable Object SOUND_EVENT_REGISTRY;
+
+    static {
+      Object soundEventRegistry = null;
+      try {
+        final Field soundEventRegistryField = findField(CLASS_BUILT_IN_REGISTRIES, CLASS_REGISTRY, "SOUND_EVENT");
+        if (soundEventRegistryField != null) {
+          soundEventRegistry = soundEventRegistryField.get(null);
+        } else if (CLASS_BUILT_IN_REGISTRIES != null && REGISTRY_GET_OPTIONAL != null && NEW_RESOURCE_LOCATION != null) {
+          Object rootRegistry = null;
+          for (final Field field : CLASS_BUILT_IN_REGISTRIES.getDeclaredFields()) {
+            final int mask = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;
+            if ((field.getModifiers() & mask) == mask
+              && field.getType().equals(CLASS_WRITABLE_REGISTRY)) {
+              field.setAccessible(true);
+              rootRegistry = field.get(null);
+              break;
+            }
+          }
+          if (rootRegistry != null) {
+            soundEventRegistry = ((Optional<?>) REGISTRY_GET_OPTIONAL.invoke(rootRegistry, NEW_RESOURCE_LOCATION.invoke("minecraft", "sound_event"))).orElse(null);
+          }
+        }
+      } catch (final Throwable error) {
+        logError(error, "Failed to initialize EntitySound_1_19_3 CraftBukkit facet");
+      }
+      SOUND_EVENT_REGISTRY = soundEventRegistry;
+    }
+
+    private EntitySound_1_19_3() {
+    }
+
+    static boolean isSupported() {
+      return NEW_CLIENTBOUND_ENTITY_SOUND != null && SOUND_EVENT_REGISTRY != null && NEW_RESOURCE_LOCATION != null && REGISTRY_GET_OPTIONAL != null && REGISTRY_WRAP_AS_HOLDER != null && SOUND_EVENT_CREATE_VARIABLE_RANGE != null;
     }
   }
 }
