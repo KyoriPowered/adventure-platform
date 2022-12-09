@@ -422,41 +422,85 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
-  static class EntitySound extends PacketFacet<Player> implements Facet.EntitySound<Player, Object> {
-    private static final Class<?> CLASS_CLIENTBOUND_ENTITY_SOUND = findClass(
-      findNmsClassName("PacketPlayOutEntitySound"),
-      findMcClassName("network.protocol.game.PacketPlayOutEntitySound"),
-      findMcClassName("network.protocol.game.ClientboundEntitySoundPacket")
-    );
+  private interface PartialEntitySound extends Facet.EntitySound<Player, Object> {
+
+    Map<String, Object> MC_SOUND_SOURCE_BY_NAME = new ConcurrentHashMap<>();
+
+    @Override
+    default Object createForSelf(final Player viewer, final net.kyori.adventure.sound.@NotNull Sound sound) {
+      return this.createForEntity(sound, viewer);
+    }
+
+    @Override
+    default Object createForEmitter(final net.kyori.adventure.sound.@NotNull Sound sound, final net.kyori.adventure.sound.Sound.@NotNull Emitter emitter) {
+      final Entity entity;
+      if (emitter instanceof BukkitEmitter) {
+        entity = ((BukkitEmitter) emitter).entity;
+      } else if (emitter instanceof Entity) { // how? but just in case
+        entity = (Entity) emitter;
+      } else {
+        return null;
+      }
+      return this.createForEntity(sound, entity);
+    }
+
+    default Object toNativeEntity(final Entity entity) throws Throwable {
+      if (!CLASS_CRAFT_ENTITY.isInstance(entity)) return null;
+
+      return CRAFT_ENTITY_GET_HANDLE.invoke(entity);
+    }
+
+    default Object toVanilla(final net.kyori.adventure.sound.Sound.Source source) throws Throwable {
+      if (MC_SOUND_SOURCE_BY_NAME.isEmpty()) {
+        for (final Object enumConstant : CraftBukkitAccess.EntitySound.CLASS_SOUND_SOURCE.getEnumConstants()) {
+          MC_SOUND_SOURCE_BY_NAME.put((String) CraftBukkitAccess.EntitySound.SOUND_SOURCE_GET_NAME.invoke(enumConstant), enumConstant);
+        }
+      }
+
+      return MC_SOUND_SOURCE_BY_NAME.get(net.kyori.adventure.sound.Sound.Source.NAMES.key(source));
+    }
+
+    Object createForEntity(net.kyori.adventure.sound.Sound sound, Entity entity);
+  }
+
+  static class EntitySound_1_19_3 extends PacketFacet<Player> implements PartialEntitySound {
+
+    @Override
+    public boolean isSupported() {
+      return CraftBukkitAccess.EntitySound_1_19_3.isSupported() && super.isSupported();
+    }
+
+    @Override
+    public Object createForEntity(final net.kyori.adventure.sound.Sound sound, final Entity entity) {
+      try {
+        final Object resLoc = CraftBukkitAccess.EntitySound_1_19_3.NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
+        final Optional<?> possibleSoundEvent = (Optional<?>) CraftBukkitAccess.EntitySound_1_19_3.REGISTRY_GET_OPTIONAL.invoke(CraftBukkitAccess.EntitySound_1_19_3.SOUND_EVENT_REGISTRY, resLoc);
+        final Object soundEvent;
+        if (possibleSoundEvent.isPresent()) {
+          soundEvent = possibleSoundEvent.get();
+        } else {
+          soundEvent = CraftBukkitAccess.EntitySound_1_19_3.SOUND_EVENT_CREATE_VARIABLE_RANGE.invoke(resLoc);
+        }
+        final Object soundEventHolder = CraftBukkitAccess.EntitySound_1_19_3.REGISTRY_WRAP_AS_HOLDER.invoke(CraftBukkitAccess.EntitySound_1_19_3.SOUND_EVENT_REGISTRY, soundEvent);
+        final long seed = sound.seed().orElseGet(() -> ThreadLocalRandom.current().nextLong());
+        return CraftBukkitAccess.EntitySound_1_19_3.NEW_CLIENTBOUND_ENTITY_SOUND.invoke(soundEventHolder, this.toVanilla(sound.source()), this.toNativeEntity(entity), sound.volume(), sound.pitch(), seed);
+      } catch (final Throwable error) {
+        logError(error, "Failed to send sound tracking an entity");
+      }
+      return null;
+    }
+
+    @Override
+    public void playSound(final @NotNull Player viewer, final Object packet) {
+      this.sendPacket(viewer, packet);
+    }
+  }
+
+  static class EntitySound extends PacketFacet<Player> implements PartialEntitySound {
     private static final Class<?> CLASS_CLIENTBOUND_CUSTOM_SOUND = findClass(
       findNmsClassName("PacketPlayOutCustomSoundEffect"),
       findMcClassName("network.protocol.game.ClientboundCustomSoundPacket"),
       findMcClassName("network.protocol.game.PacketPlayOutCustomSoundEffect")
-    );
-    private static final Class<?> CLASS_REGISTRY = findClass(
-      findNmsClassName("IRegistry"),
-      findMcClassName("core.IRegistry"),
-      findMcClassName("core.Registry")
-    );
-    private static final Class<?> CLASS_RESOURCE_LOCATION = findClass(
-      findNmsClassName("MinecraftKey"),
-      findMcClassName("resources.MinecraftKey"),
-      findMcClassName("resources.ResourceLocation")
-    );
-    private static final Class<?> CLASS_WRITABLE_REGISTRY = findClass(
-      findNmsClassName("IRegistryWritable"),
-      findMcClassName("core.IRegistryWritable"),
-      findMcClassName("core.WritableRegistry")
-    );
-    private static final Class<?> CLASS_SOUND_EFFECT = findClass(
-      findNmsClassName("SoundEffect"),
-      findMcClassName("sounds.SoundEffect"),
-      findMcClassName("sounds.SoundEvent")
-    );
-    private static final Class<?> CLASS_SOUND_SOURCE = findClass(
-      findNmsClassName("SoundCategory"),
-      findMcClassName("sounds.SoundCategory"),
-      findMcClassName("sounds.SoundSource")
     );
     private static final Class<?> CLASS_VEC3 = findClass(
       findNmsClassName("Vec3D"),
@@ -467,17 +511,16 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     private static final MethodHandle NEW_CLIENTBOUND_ENTITY_SOUND;
     private static final MethodHandle NEW_CLIENTBOUND_CUSTOM_SOUND;
     private static final MethodHandle NEW_VEC3 = findConstructor(CLASS_VEC3, double.class, double.class, double.class);
-    private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
-    private static final MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
-    private static final MethodHandle SOUND_SOURCE_GET_NAME;
+    private static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CraftBukkitAccess.CLASS_RESOURCE_LOCATION, String.class, String.class);
+    private static final MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CraftBukkitAccess.CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CraftBukkitAccess.CLASS_RESOURCE_LOCATION);
     private static final Object REGISTRY_SOUND_EVENT;
 
     static {
       {
-        MethodHandle entitySoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class, long.class);
+        MethodHandle entitySoundPacketConstructor = findConstructor(CraftBukkitAccess.EntitySound.CLASS_CLIENTBOUND_ENTITY_SOUND, CraftBukkitAccess.EntitySound.CLASS_SOUND_EVENT, CraftBukkitAccess.EntitySound.CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class, long.class);
         if (entitySoundPacketConstructor == null) {
           // 1.18 (no seed)
-          entitySoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_ENTITY_SOUND, CLASS_SOUND_EFFECT, CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class);
+          entitySoundPacketConstructor = findConstructor(CraftBukkitAccess.EntitySound.CLASS_CLIENTBOUND_ENTITY_SOUND, CraftBukkitAccess.EntitySound.CLASS_SOUND_EVENT, CraftBukkitAccess.EntitySound.CLASS_SOUND_SOURCE, CLASS_NMS_ENTITY, float.class, float.class);
           if (entitySoundPacketConstructor != null) {
             entitySoundPacketConstructor = dropArguments(entitySoundPacketConstructor, 5, long.class);
           }
@@ -485,10 +528,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         NEW_CLIENTBOUND_ENTITY_SOUND = entitySoundPacketConstructor;
       }
       {
-        MethodHandle customSoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class, long.class);
+        MethodHandle customSoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CraftBukkitAccess.CLASS_RESOURCE_LOCATION, CraftBukkitAccess.EntitySound.CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class, long.class);
         if (customSoundPacketConstructor == null) {
           // 1.18 (no seed)
-          customSoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CLASS_RESOURCE_LOCATION, CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class);
+          customSoundPacketConstructor = findConstructor(CLASS_CLIENTBOUND_CUSTOM_SOUND, CraftBukkitAccess.CLASS_RESOURCE_LOCATION, CraftBukkitAccess.EntitySound.CLASS_SOUND_SOURCE, CLASS_VEC3, float.class, float.class);
           if (customSoundPacketConstructor != null) {
             customSoundPacketConstructor = dropArguments(customSoundPacketConstructor, 5, long.class);
           }
@@ -496,29 +539,11 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         NEW_CLIENTBOUND_CUSTOM_SOUND = customSoundPacketConstructor;
       }
       Object registrySoundEvent = null;
-      MethodHandle soundSourceGetName = null;
-      if (CLASS_SOUND_SOURCE != null) {
-        for (final Method method : CLASS_SOUND_SOURCE.getDeclaredMethods()) {
-          if (
-            method.getReturnType().equals(String.class)
-              && method.getParameterCount() == 0
-              && !"name".equals(method.getName())
-              && Modifier.isPublic(method.getModifiers())
-          ) {
-            try {
-              soundSourceGetName = lookup().unreflect(method);
-            } catch (final IllegalAccessException ex) {
-              // ignored, getName is public
-            }
-            break;
-          }
-        }
-      }
-      if (CLASS_REGISTRY != null) {
+      if (CraftBukkitAccess.CLASS_REGISTRY != null) {
         // we don't have always field names, so:
         // first: try to find SOUND_EVENT field
         try {
-          final Field soundEventField = findField(CLASS_REGISTRY, "SOUND_EVENT");
+          final Field soundEventField = findField(CraftBukkitAccess.CLASS_REGISTRY, "SOUND_EVENT");
           if (soundEventField != null) {
             registrySoundEvent = soundEventField.get(null);
           } else {
@@ -527,10 +552,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
             // it's IRegistryWritable, the registry root
             // then we'll getOptional(NEW_RESOURCE_LOCATION.invoke("minecraft", "sound_event"))
             Object rootRegistry = null;
-            for (final Field field : CLASS_REGISTRY.getDeclaredFields()) {
+            for (final Field field : CraftBukkitAccess.CLASS_REGISTRY.getDeclaredFields()) {
               final int mask = Modifier.PROTECTED | Modifier.STATIC | Modifier.FINAL;
               if ((field.getModifiers() & mask) == mask
-                && field.getType().equals(CLASS_WRITABLE_REGISTRY)) {
+                && field.getType().equals(CraftBukkitAccess.CLASS_WRITABLE_REGISTRY)) {
                 // we've found the root registry
                 field.setAccessible(true);
                 rootRegistry = field.get(null);
@@ -547,35 +572,15 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         }
       }
       REGISTRY_SOUND_EVENT = registrySoundEvent;
-      SOUND_SOURCE_GET_NAME = soundSourceGetName;
     }
-
-    private static final Map<String, Object> MC_SOUND_SOURCE_BY_NAME = new ConcurrentHashMap<>();
 
     @Override
     public boolean isSupported() {
-      return super.isSupported() && NEW_CLIENTBOUND_ENTITY_SOUND != null && NEW_RESOURCE_LOCATION != null && REGISTRY_SOUND_EVENT != null && REGISTRY_GET_OPTIONAL != null && CRAFT_ENTITY_GET_HANDLE != null && SOUND_SOURCE_GET_NAME != null;
+      return super.isSupported() && NEW_CLIENTBOUND_ENTITY_SOUND != null && NEW_RESOURCE_LOCATION != null && REGISTRY_SOUND_EVENT != null && REGISTRY_GET_OPTIONAL != null && CRAFT_ENTITY_GET_HANDLE != null && CraftBukkitAccess.EntitySound.isSupported();
     }
 
     @Override
-    public Object createForSelf(final Player viewer, final net.kyori.adventure.sound.@NotNull Sound sound) {
-      return this.createForEntity(sound, viewer);
-    }
-
-    @Override
-    public Object createForEmitter(final net.kyori.adventure.sound.@NotNull Sound sound, final net.kyori.adventure.sound.Sound.@NotNull Emitter emitter) {
-      final Entity entity;
-      if (emitter instanceof BukkitEmitter) {
-        entity = ((BukkitEmitter) emitter).entity;
-      } else if (emitter instanceof Entity) { // how? but just in case
-        entity = (Entity) emitter;
-      } else {
-        return null;
-      }
-      return this.createForEntity(sound, entity);
-    }
-
-    private Object createForEntity(final net.kyori.adventure.sound.Sound sound, final Entity entity) {
+    public Object createForEntity(final net.kyori.adventure.sound.Sound sound, final Entity entity) {
       try {
         final Object nmsEntity = this.toNativeEntity(entity);
         if (nmsEntity == null) return null;
@@ -595,22 +600,6 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         logError(error, "Failed to send sound tracking an entity");
       }
       return null;
-    }
-
-    private Object toNativeEntity(final Entity entity) throws Throwable {
-      if (!CLASS_CRAFT_ENTITY.isInstance(entity)) return null;
-
-      return CRAFT_ENTITY_GET_HANDLE.invoke(entity);
-    }
-
-    private Object toVanilla(final net.kyori.adventure.sound.Sound.Source source) throws Throwable {
-      if (MC_SOUND_SOURCE_BY_NAME.isEmpty()) {
-        for (final Object enumConstant : CLASS_SOUND_SOURCE.getEnumConstants()) {
-          MC_SOUND_SOURCE_BY_NAME.put((String) SOUND_SOURCE_GET_NAME.invoke(enumConstant), enumConstant);
-        }
-      }
-
-      return MC_SOUND_SOURCE_BY_NAME.get(net.kyori.adventure.sound.Sound.Source.NAMES.key(source));
     }
 
     @Override

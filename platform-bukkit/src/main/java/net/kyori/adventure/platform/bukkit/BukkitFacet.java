@@ -25,6 +25,7 @@ package net.kyori.adventure.platform.bukkit;
 
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.connection.UserConnection;
+import java.lang.invoke.MethodHandle;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
@@ -52,8 +53,10 @@ import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.legacy;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMethod;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasMethod;
+import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 
 class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
@@ -102,6 +105,7 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
   static class Sound extends Position implements Facet.Sound<Player, Vector> {
     private static final boolean KEY_SUPPORTED = hasClass("org.bukkit.NamespacedKey"); // Added MC 1.13
     private static final boolean STOP_SUPPORTED = hasMethod(Player.class, "stopSound", String.class); // Added MC 1.9
+    private static final MethodHandle STOP_ALL_SUPPORTED = findMethod(Player.class, "stopAllSounds", void.class);
 
     @Override
     public void playSound(final @NotNull Player viewer, final net.kyori.adventure.sound.@NotNull Sound sound, final @NotNull Vector vector) {
@@ -115,6 +119,14 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     public void stopSound(final @NotNull Player viewer, final @NotNull SoundStop stop) {
       if (STOP_SUPPORTED) {
         final String name = name(stop.sound());
+        if (name.isEmpty() && STOP_ALL_SUPPORTED != null) {
+          try {
+            STOP_ALL_SUPPORTED.invoke(viewer);
+          } catch (final Throwable error) {
+            logError(error, "Could not invoke stopAllSounds on %s", viewer);
+          }
+          return;
+        }
         viewer.stopSound(name);
       }
     }
