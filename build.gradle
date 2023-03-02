@@ -36,7 +36,7 @@ class BukkitAnnotationsRule implements ComponentMetadataRule {
     componentMetadataContext.details.withVariant("compile") {
       withDependencies {
         add("com.google.errorprone:error_prone_annotations:2.18.0")
-        add("org.jetbrains:annotations:24.0.0")
+        add("org.jetbrains:annotations:24.0.1")
       }
     }
   }
