@@ -62,10 +62,10 @@ subprojects {
   tasks.withType(Javadoc).configureEach {
     options {
       links(
-        "https://jd.adventure.kyori.net/api/$adventure",
-        "https://jd.adventure.kyori.net/text-serializer-legacy/$adventure",
-        "https://jd.adventure.kyori.net/text-serializer-gson/$adventure",
-        "https://jd.adventure.kyori.net/nbt/$adventure"
+        "https://jd.advntr.dev/api/$adventure",
+        "https://jd.advntr.dev/text-serializer-legacy/$adventure",
+        "https://jd.advntr.dev/text-serializer-gson/$adventure",
+        "https://jd.advntr.dev/nbt/$adventure"
       )
     }
   }
