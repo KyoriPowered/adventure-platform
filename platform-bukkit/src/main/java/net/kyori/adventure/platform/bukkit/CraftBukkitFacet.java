@@ -310,7 +310,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       } else {
         final ChatType.Bound bound = (ChatType.Bound) type;
         try {
-          final Object registryAccess = CraftBukkitAccess.Chat1_19_3.SERVER_LEVEL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
+          final Object registryAccess = CraftBukkitAccess.Chat1_19_3.ACTUAL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
           final Object chatTypeRegistry = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
           final Object typeResourceLocation = CraftBukkitAccess.Chat1_19_3.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
           final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
