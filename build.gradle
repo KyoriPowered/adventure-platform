@@ -81,6 +81,7 @@ subprojects {
     }
     mitLicense()
 
+    signWithKeyFromPrefixedProperties 'kyori'
     configurePublications {
       pom {
         developers {
