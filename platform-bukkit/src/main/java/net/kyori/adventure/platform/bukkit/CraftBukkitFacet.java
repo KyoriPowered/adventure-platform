@@ -167,6 +167,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
             }
           }
         }
+        final Class<?> serverCommonPacketListenerImpl = findClass(findMcClassName("server.network.ServerCommonPacketListenerImpl"));
+        if (serverCommonPacketListenerImpl != null) {
+          playerConnectionClass = serverCommonPacketListenerImpl;
+        }
         playerConnectionSendPacket = searchMethod(playerConnectionClass, Modifier.PUBLIC, new String[]{"sendPacket", "send"}, void.class, packetClass);
       } catch (final Throwable error) {
         logError(error, "Failed to initialize CraftBukkit sendPacket");
