@@ -1,6 +1,6 @@
 buildscript {
   ext {
-    indraVersion = '3.0.1'
+    indraVersion = '3.1.3'
   }
 }
 
@@ -9,6 +9,7 @@ plugins {
   id 'net.kyori.indra.publishing.sonatype' version "$indraVersion"
   id 'net.kyori.indra.licenser.spotless' version "$indraVersion" apply false
   id 'net.kyori.indra.crossdoc' version "$indraVersion" apply false
+  id 'io.github.gradle-nexus.publish-plugin' version "2.0.0-rc-1"
 }
 
 // Adventure version
