@@ -29,8 +29,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
@@ -131,7 +133,12 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
             gson = gsonField.get(null);
           }
         }
-        for (final Class<?> serializerClass : CLASS_CHAT_COMPONENT.getClasses()) {
+        final List<Class<?>> candidates = new ArrayList<>();
+        if (chatSerializerClass != null) {
+          candidates.add(chatSerializerClass);
+        }
+        candidates.addAll(Arrays.asList(CLASS_CHAT_COMPONENT.getClasses()));
+        for (final Class<?> serializerClass : candidates) {
           final Method[] declaredMethods = serializerClass.getDeclaredMethods();
           final Method deserialize = Arrays.stream(declaredMethods)
             .filter(m -> Modifier.isStatic(m.getModifiers()))
