@@ -259,8 +259,10 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           findMcClassName("network.protocol.game.ClientboundChatPacket"),
           findMcClassName("network.protocol.game.ClientboundSystemChatPacket")
         );
-        // ClientboundSystemChatPacket constructor changed for 1.19.1
-        chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, boolean.class);
+        if (MESSAGE_TYPE_CHAT == Integer.valueOf(0)) {
+          // ClientboundSystemChatPacket constructor changed for 1.19.1
+          chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, boolean.class);
+        }
         if (chatPacketConstructor == null) {
           // ClientboundSystemChatPacket constructor changed for 1.19
           chatPacketConstructor = findConstructor(chatPacketClass, CLASS_CHAT_COMPONENT, int.class);

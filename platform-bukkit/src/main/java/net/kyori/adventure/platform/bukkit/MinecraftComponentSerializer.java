@@ -29,12 +29,13 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -93,11 +94,15 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
   private static final Object MC_TEXT_GSON;
   private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE;
   private static final MethodHandle TEXT_SERIALIZER_SERIALIZE;
+  private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE_TREE;
+  private static final MethodHandle TEXT_SERIALIZER_SERIALIZE_TREE;
 
   static {
     Object gson = null;
     MethodHandle textSerializerDeserialize = null;
     MethodHandle textSerializerSerialize = null;
+    MethodHandle textSerializerDeserializeTree = null;
+    MethodHandle textSerializerSerializeTree = null;
 
     try {
       if (CLASS_CHAT_COMPONENT != null) {
@@ -126,26 +131,50 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
           if (gsonField != null) {
             gsonField.setAccessible(true);
             gson = gsonField.get(null);
-          } else {
-            final Method[] declaredMethods = chatSerializerClass.getDeclaredMethods();
-            final Method deserialize = Arrays.stream(declaredMethods)
-              .filter(m -> Modifier.isStatic(m.getModifiers()))
-              .filter(m -> CLASS_CHAT_COMPONENT.isAssignableFrom(m.getReturnType()))
-              .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
-              .min(Comparator.comparing(Method::getName)) // prefer the #a method
-              .orElse(null);
-            final Method serialize = Arrays.stream(declaredMethods)
-              .filter(m -> Modifier.isStatic(m.getModifiers()))
-              .filter(m -> m.getReturnType().equals(String.class))
-              .filter(m -> m.getParameterCount() == 1 && CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
-              .findFirst()
-              .orElse(null);
-            if (deserialize != null) {
-              textSerializerDeserialize = lookup().unreflect(deserialize);
-            }
-            if (serialize != null) {
-              textSerializerSerialize = lookup().unreflect(serialize);
-            }
+          }
+        }
+        final List<Class<?>> candidates = new ArrayList<>();
+        if (chatSerializerClass != null) {
+          candidates.add(chatSerializerClass);
+        }
+        candidates.addAll(Arrays.asList(CLASS_CHAT_COMPONENT.getClasses()));
+        for (final Class<?> serializerClass : candidates) {
+          final Method[] declaredMethods = serializerClass.getDeclaredMethods();
+          final Method deserialize = Arrays.stream(declaredMethods)
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> CLASS_CHAT_COMPONENT.isAssignableFrom(m.getReturnType()))
+            .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(String.class))
+            .min(Comparator.comparing(Method::getName)) // prefer the #a method
+            .orElse(null);
+          final Method serialize = Arrays.stream(declaredMethods)
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> m.getReturnType().equals(String.class))
+            .filter(m -> m.getParameterCount() == 1 && CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
+            .findFirst()
+            .orElse(null);
+          final Method deserializeTree = Arrays.stream(declaredMethods)
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> CLASS_CHAT_COMPONENT.isAssignableFrom(m.getReturnType()))
+            .filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(JsonElement.class))
+            .findFirst()
+            .orElse(null);
+          final Method serializeTree = Arrays.stream(declaredMethods)
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> m.getReturnType().equals(JsonElement.class))
+            .filter(m -> m.getParameterCount() == 1 && CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
+            .findFirst()
+            .orElse(null);
+          if (deserialize != null) {
+            textSerializerDeserialize = lookup().unreflect(deserialize);
+          }
+          if (serialize != null) {
+            textSerializerSerialize = lookup().unreflect(serialize);
+          }
+          if (deserializeTree != null) {
+            textSerializerDeserializeTree = lookup().unreflect(deserializeTree);
+          }
+          if (serializeTree != null) {
+            textSerializerSerializeTree = lookup().unreflect(serializeTree);
           }
         }
       }
@@ -156,20 +185,26 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
     MC_TEXT_GSON = gson;
     TEXT_SERIALIZER_DESERIALIZE = textSerializerDeserialize;
     TEXT_SERIALIZER_SERIALIZE = textSerializerSerialize;
+    TEXT_SERIALIZER_DESERIALIZE_TREE = textSerializerDeserializeTree;
+    TEXT_SERIALIZER_SERIALIZE_TREE = textSerializerSerializeTree;
   }
 
-  private static final boolean SUPPORTED = MC_TEXT_GSON != null || (TEXT_SERIALIZER_DESERIALIZE != null && TEXT_SERIALIZER_SERIALIZE != null);
+  private static final boolean SUPPORTED = MC_TEXT_GSON != null || (TEXT_SERIALIZER_DESERIALIZE != null && TEXT_SERIALIZER_SERIALIZE != null) || (TEXT_SERIALIZER_DESERIALIZE_TREE != null && TEXT_SERIALIZER_SERIALIZE_TREE != null);
 
   @Override
   public @NotNull Component deserialize(final @NotNull Object input) {
     if (!SUPPORTED) throw INITIALIZATION_ERROR.get();
 
     try {
-      if (MC_TEXT_GSON != null) {
-        final JsonElement element = ((Gson) MC_TEXT_GSON).toJsonTree(input);
-        return gson().serializer().fromJson(element, Component.class);
+      final JsonElement element;
+      if (TEXT_SERIALIZER_SERIALIZE_TREE != null) {
+        element = (JsonElement) TEXT_SERIALIZER_SERIALIZE_TREE.invoke(input);
+      } else if (MC_TEXT_GSON != null) {
+        element = ((Gson) MC_TEXT_GSON).toJsonTree(input);
+      } else {
+        return gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
       }
-      return GsonComponentSerializer.gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
+      return gson().serializer().fromJson(element, Component.class);
     } catch (final Throwable error) {
       throw new UnsupportedOperationException(error);
     }
@@ -179,9 +214,12 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
   public @NotNull Object serialize(final @NotNull Component component) {
     if (!SUPPORTED) throw INITIALIZATION_ERROR.get();
 
-    if (MC_TEXT_GSON != null) {
+    if (TEXT_SERIALIZER_DESERIALIZE_TREE != null || MC_TEXT_GSON != null) {
       final JsonElement json = gson().serializer().toJsonTree(component);
       try {
+        if (TEXT_SERIALIZER_DESERIALIZE_TREE != null) {
+          return TEXT_SERIALIZER_DESERIALIZE_TREE.invoke(json);
+        }
         return ((Gson) MC_TEXT_GSON).fromJson(json, CLASS_CHAT_COMPONENT);
       } catch (final Throwable error) {
         throw new UnsupportedOperationException(error);
