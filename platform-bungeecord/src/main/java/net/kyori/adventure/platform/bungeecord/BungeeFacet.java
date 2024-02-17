@@ -44,9 +44,9 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.chat.TranslationRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -255,7 +255,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if (!this.viewers.isEmpty()) {
-        this.bar.setTitle(ComponentSerializer.toString(this.createMessage(this.viewers.iterator().next(), newName)));
+        this.bar.setTitle(TextComponent.fromArray(this.createMessage(this.viewers.iterator().next(), newName)));
         this.broadcastPacket(ACTION_TITLE);
       }
     }
