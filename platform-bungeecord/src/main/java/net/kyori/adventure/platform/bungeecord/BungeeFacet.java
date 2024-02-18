@@ -23,6 +23,8 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -47,6 +49,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.chat.TranslationRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -255,8 +258,25 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if (!this.viewers.isEmpty()) {
-        this.bar.setTitle(TextComponent.fromArray(this.createMessage(this.viewers.iterator().next(), newName)));
+        BaseComponent[] message = this.createMessage(this.viewers.iterator().next(), newName);
+        updateBarTitle(message);
         this.broadcastPacket(ACTION_TITLE);
+      }
+    }
+
+    private void updateBarTitle(BaseComponent[] message) {
+      if (!tryUpdateTitleWithMethod("setTitle", String.class, ComponentSerializer.toString(message))) {
+        tryUpdateTitleWithMethod("setTitle", BaseComponent.class, TextComponent.fromArray(message));
+      }
+    }
+
+    private boolean tryUpdateTitleWithMethod(String methodName, Class<?> parameterType, Object argument) {
+      try {
+        Method setTitleMethod = net.md_5.bungee.protocol.packet.BossBar.class.getMethod(methodName, parameterType);
+        setTitleMethod.invoke(this.bar, argument);
+        return true;
+      } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        return false;
       }
     }
 
