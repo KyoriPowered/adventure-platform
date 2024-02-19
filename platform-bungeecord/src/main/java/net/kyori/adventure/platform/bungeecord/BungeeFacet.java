@@ -23,8 +23,7 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -54,6 +53,9 @@ import net.md_5.bungee.chat.TranslationRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static net.kyori.adventure.platform.bungeecord.BungeeReflection.findMethod;
+import static net.kyori.adventure.platform.bungeecord.BungeeReflection.hasMethod;
+import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 
 class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
@@ -222,6 +224,18 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class BossBar extends Message implements BossBarPacket<ProxiedPlayer> {
+    private static MethodHandle SET_TITLE_STRING;
+    private static MethodHandle SET_TITLE_COMPONENT;
+
+    static {
+        Class<?> bossBarClass = net.md_5.bungee.protocol.packet.BossBar.class;
+        if (hasMethod(bossBarClass, "setTitle", String.class)) {
+          SET_TITLE_STRING = findMethod(bossBarClass, "setTitle", void.class, String.class);
+        } else {
+          SET_TITLE_COMPONENT = findMethod(bossBarClass, "setTitle", void.class, BaseComponent.class);
+        }
+    }
+
     private final Set<ProxiedPlayer> viewers;
     private final net.md_5.bungee.protocol.packet.BossBar bar;
     private volatile boolean initialized = false;
@@ -265,19 +279,15 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     }
 
     private void updateBarTitle(BaseComponent[] message) {
-      if (!tryUpdateTitleWithMethod("setTitle", String.class, ComponentSerializer.toString(message))) {
-        tryUpdateTitleWithMethod("setTitle", BaseComponent.class, TextComponent.fromArray(message));
-      }
-    }
-
-    private boolean tryUpdateTitleWithMethod(String methodName, Class<?> parameterType, Object argument) {
-      try {
-        Method setTitleMethod = net.md_5.bungee.protocol.packet.BossBar.class.getMethod(methodName, parameterType);
-        setTitleMethod.invoke(this.bar, argument);
-        return true;
-      } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-        return false;
-      }
+        try {
+            if (SET_TITLE_STRING != null) {
+                SET_TITLE_STRING.invoke(ComponentSerializer.toString(message));
+            } else {
+                SET_TITLE_COMPONENT.invoke(TextComponent.fromArray(message));
+            }
+        } catch (Throwable throwable) {
+            logError(throwable, "Cannot update the BossBar title");
+        }
     }
 
     @Override
