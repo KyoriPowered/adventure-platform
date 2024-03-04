@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.platform.bungeecord;
 
+import java.lang.invoke.MethodHandle;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +45,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -51,6 +53,9 @@ import net.md_5.bungee.chat.TranslationRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static net.kyori.adventure.platform.bungeecord.BungeeReflection.findMethod;
+import static net.kyori.adventure.platform.bungeecord.BungeeReflection.hasMethod;
+import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.platform.facet.Knob.logUnsupported;
 
 class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
@@ -219,6 +224,18 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
   }
 
   static class BossBar extends Message implements BossBarPacket<ProxiedPlayer> {
+    private static MethodHandle SET_TITLE_STRING;
+    private static MethodHandle SET_TITLE_COMPONENT;
+
+    static {
+      final Class<?> bossBarClass = net.md_5.bungee.protocol.packet.BossBar.class;
+      if (hasMethod(bossBarClass, "setTitle", String.class)) {
+        SET_TITLE_STRING = findMethod(bossBarClass, "setTitle", void.class, String.class);
+      } else {
+        SET_TITLE_COMPONENT = findMethod(bossBarClass, "setTitle", void.class, BaseComponent.class);
+      }
+    }
+
     private final Set<ProxiedPlayer> viewers;
     private final net.md_5.bungee.protocol.packet.BossBar bar;
     private volatile boolean initialized = false;
@@ -255,7 +272,8 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if (!this.viewers.isEmpty()) {
-        this.bar.setTitle(ComponentSerializer.toString(this.createMessage(this.viewers.iterator().next(), newName)));
+        final BaseComponent[] message = this.createMessage(this.viewers.iterator().next(), newName);
+        this.updateBarTitle(message);
         this.broadcastPacket(ACTION_TITLE);
       }
     }
@@ -315,6 +333,18 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
         for (final ProxiedPlayer viewer : this.viewers) {
           viewer.unsafe().sendPacket(this.bar);
         }
+      }
+    }
+
+    private void updateBarTitle(final BaseComponent[] message) {
+      try {
+        if (SET_TITLE_STRING != null) {
+          SET_TITLE_STRING.invoke(this.bar, ComponentSerializer.toString(message));
+        } else {
+          SET_TITLE_COMPONENT.invoke(this.bar, TextComponent.fromArray(message));
+        }
+      } catch (final Throwable throwable) {
+        logError(throwable, "Cannot update the BossBar title");
       }
     }
 
