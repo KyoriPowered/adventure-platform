@@ -228,7 +228,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     private static MethodHandle SET_TITLE_COMPONENT;
 
     static {
-      Class<?> bossBarClass = net.md_5.bungee.protocol.packet.BossBar.class;
+      final Class<?> bossBarClass = net.md_5.bungee.protocol.packet.BossBar.class;
       if (hasMethod(bossBarClass, "setTitle", String.class)) {
         SET_TITLE_STRING = findMethod(bossBarClass, "setTitle", void.class, String.class);
       } else {
@@ -272,7 +272,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public void bossBarNameChanged(final net.kyori.adventure.bossbar.@NotNull BossBar bar, final @NotNull Component oldName, final @NotNull Component newName) {
       if (!this.viewers.isEmpty()) {
-        BaseComponent[] message = this.createMessage(this.viewers.iterator().next(), newName);
+        final BaseComponent[] message = this.createMessage(this.viewers.iterator().next(), newName);
         this.updateBarTitle(message);
         this.broadcastPacket(ACTION_TITLE);
       }
@@ -336,14 +336,14 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
       }
     }
 
-    private void updateBarTitle(BaseComponent[] message) {
+    private void updateBarTitle(final BaseComponent[] message) {
       try {
         if (SET_TITLE_STRING != null) {
           SET_TITLE_STRING.invoke(ComponentSerializer.toString(message));
         } else {
           SET_TITLE_COMPONENT.invoke(TextComponent.fromArray(message));
         }
-      } catch (Throwable throwable) {
+      } catch (final Throwable throwable) {
         logError(throwable, "Cannot update the BossBar title");
       }
     }
