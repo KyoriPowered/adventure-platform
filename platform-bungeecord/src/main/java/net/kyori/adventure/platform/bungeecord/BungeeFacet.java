@@ -339,9 +339,9 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
     private void updateBarTitle(final BaseComponent[] message) {
       try {
         if (SET_TITLE_STRING != null) {
-          SET_TITLE_STRING.invoke(ComponentSerializer.toString(message));
+          SET_TITLE_STRING.invoke(this.bar, ComponentSerializer.toString(message));
         } else {
-          SET_TITLE_COMPONENT.invoke(TextComponent.fromArray(message));
+          SET_TITLE_COMPONENT.invoke(this.bar, TextComponent.fromArray(message));
         }
       } catch (final Throwable throwable) {
         logError(throwable, "Cannot update the BossBar title");
