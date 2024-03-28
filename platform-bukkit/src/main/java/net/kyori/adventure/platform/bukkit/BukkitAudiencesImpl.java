@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -127,8 +128,45 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   }
 
   @Override
+  public @NotNull Audience player(final @NotNull UUID playerId) {
+    final Player player = Bukkit.getPlayer(playerId);
+    if (player != null) {
+      return this.player(playerId, this.playerLocale(player));
+    }
+    return this.player(playerId, null);
+  }
+
+  @Override
   public @NotNull Audience player(final @NotNull Player player) {
-    return this.player(player.getUniqueId());
+    return this.player(player.getUniqueId(), this.playerLocale(player));
+  }
+
+  private @NotNull Audience player(final @NotNull UUID playerId, final @Nullable String locale) {
+    final Audience audience = super.player(playerId);
+    if (locale != null) {
+      if (audience instanceof BukkitAudience) {
+        ((BukkitAudience) audience).locale(Translator.parseLocale(locale));
+      }
+    }
+    return audience;
+  }
+
+  private @Nullable String playerLocale(final Player player) {
+    final Class<?> playerClass = Player.class;
+
+    MethodHandle getMethod = findMethod(playerClass, "locale", String.class);
+    if (getMethod == null) {
+      getMethod = findMethod(playerClass, "getLocale", String.class);
+    }
+    if (getMethod == null) {
+      return null;
+    }
+    try {
+      return (String) getMethod.invoke(player);
+    } catch (final Throwable error) {
+      logError(error, "Failed to call %s for %s", getMethod, player);
+    }
+    return null;
   }
 
   @Override
