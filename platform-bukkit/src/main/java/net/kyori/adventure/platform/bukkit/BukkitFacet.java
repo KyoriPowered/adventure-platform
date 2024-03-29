@@ -27,6 +27,7 @@ import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.connection.UserConnection;
 import java.lang.invoke.MethodHandle;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import net.kyori.adventure.identity.Identity;
@@ -37,6 +38,7 @@ import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.platform.facet.FacetPointers;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.translation.Translator;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -418,6 +420,8 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static final class PlayerPointers extends BukkitFacet<Player> implements Facet.Pointers<Player> {
 
+    private static final MethodHandle LOCALE_SUPPORTED = findMethod(Player.class, "getLocale", String.class);
+
     PlayerPointers() {
       super(Player.class);
     }
@@ -426,6 +430,16 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
     public void contributePointers(final Player viewer, final net.kyori.adventure.pointer.Pointers.Builder builder) {
       builder.withDynamic(Identity.UUID, viewer::getUniqueId);
       builder.withDynamic(Identity.DISPLAY_NAME, () -> BukkitComponentSerializer.legacy().deserializeOrNull(viewer.getDisplayName()));
+      builder.withDynamic(Identity.LOCALE, () -> {
+        if (LOCALE_SUPPORTED != null) {
+          try {
+            return Translator.parseLocale((String) LOCALE_SUPPORTED.invoke(viewer));
+          } catch (final Throwable error) {
+            logError(error, "Failed to call getLocale() for %s", viewer);
+          }
+        }
+        return Locale.getDefault();
+      });
       builder.withStatic(FacetPointers.TYPE, FacetPointers.Type.PLAYER);
       builder.withDynamic(FacetPointers.WORLD, () -> Key.key(viewer.getWorld().getName())); // :(
     }
