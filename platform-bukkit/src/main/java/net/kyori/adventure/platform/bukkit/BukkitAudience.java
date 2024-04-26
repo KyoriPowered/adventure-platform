@@ -73,6 +73,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
   );
   private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(
     //    () -> new SpigotFacet.Book(),
+    () -> new CraftBukkitFacet.Book_1_20_5(),
     () -> new CraftBukkitFacet.BookPost1_13(),
     () -> new CraftBukkitFacet.Book1_13(),
     () -> new CraftBukkitFacet.BookPre1_13());

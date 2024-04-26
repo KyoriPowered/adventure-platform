@@ -27,14 +27,20 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Optional;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findConstructor;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findCraftClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findEnum;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findField;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMcClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMcClassName;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClassName;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findStaticMethod;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.lookup;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.searchMethod;
 import static net.kyori.adventure.platform.facet.Knob.logError;
@@ -258,6 +264,60 @@ final class CraftBukkitAccess {
 
     static boolean isSupported() {
       return NEW_CLIENTBOUND_ENTITY_SOUND != null && SOUND_EVENT_REGISTRY != null && NEW_RESOURCE_LOCATION != null && REGISTRY_GET_OPTIONAL != null && REGISTRY_WRAP_AS_HOLDER != null && SOUND_EVENT_CREATE_VARIABLE_RANGE != null;
+    }
+  }
+
+  static final class Book_1_20_5 {
+    static final Class<?> CLASS_CRAFT_ITEMSTACK = findCraftClass("inventory.CraftItemStack");
+    static final Class<?> CLASS_MC_ITEMSTACK = findMcClass("world.item.ItemStack");
+    static final Class<?> CLASS_MC_DATA_COMPONENT_TYPE = findMcClass("core.component.DataComponentType");
+    static final Class<?> CLASS_MC_BOOK_CONTENT = findMcClass("world.item.component.WrittenBookContent");
+    static final Class<?> CLASS_MC_FILTERABLE = findMcClass("server.network.Filterable");
+    static final Class<?> CLASS_CRAFT_REGISTRY = findCraftClass("CraftRegistry");
+    static final MethodHandle CREATE_FILTERABLE = searchMethod(CLASS_MC_FILTERABLE, Modifier.PUBLIC | Modifier.STATIC, "passThrough", CLASS_MC_FILTERABLE, Object.class);
+    static final MethodHandle GET_REGISTRY = findStaticMethod(CLASS_CRAFT_REGISTRY, "getMinecraftRegistry", CLASS_REGISTRY, CLASS_RESOURCE_KEY);
+    static final MethodHandle CREATE_REGISTRY_KEY = searchMethod(CLASS_RESOURCE_KEY, Modifier.PUBLIC | Modifier.STATIC, "createRegistryKey", CLASS_RESOURCE_KEY, CLASS_RESOURCE_LOCATION);
+    static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
+    static final MethodHandle NEW_BOOK_CONTENT = findConstructor(CLASS_MC_BOOK_CONTENT, CLASS_MC_FILTERABLE, String.class, Integer.TYPE, List.class, Boolean.TYPE);
+    static final MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
+    static final Class<?> CLASS_ENUM_HAND = findClass(
+            findNmsClassName("EnumHand"),
+            findMcClassName("world.EnumHand"),
+            findMcClassName("world.InteractionHand")
+    );
+    static final Object HAND_MAIN = findEnum(CLASS_ENUM_HAND, "MAIN_HAND", 0);
+    static final MethodHandle MC_ITEMSTACK_SET = searchMethod(CLASS_MC_ITEMSTACK, Modifier.PUBLIC, "set", Object.class, CLASS_MC_DATA_COMPONENT_TYPE, Object.class);
+    static final MethodHandle CRAFT_ITEMSTACK_NMS_COPY = findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asNMSCopy", CLASS_MC_ITEMSTACK, ItemStack.class);
+    static final MethodHandle CRAFT_ITEMSTACK_CRAFT_MIRROR = findStaticMethod(CLASS_CRAFT_ITEMSTACK, "asCraftMirror", CLASS_CRAFT_ITEMSTACK, CLASS_MC_ITEMSTACK);
+    static final Object WRITTEN_BOOK_COMPONENT_TYPE;
+    static final Class<?> PACKET_OPEN_BOOK = findClass(
+            findMcClassName("network.protocol.game.PacketPlayOutOpenBook"),
+            findMcClassName("network.protocol.game.ClientboundOpenBookPacket")
+    );
+    static final MethodHandle NEW_PACKET_OPEN_BOOK = findConstructor(PACKET_OPEN_BOOK, CLASS_ENUM_HAND);
+
+    static {
+      Object componentTypeRegistry = null;
+      Object componentType = null;
+      try {
+        if (GET_REGISTRY != null && CREATE_REGISTRY_KEY != null && NEW_RESOURCE_LOCATION != null && REGISTRY_GET_OPTIONAL != null) {
+          final Object registryKey = CREATE_REGISTRY_KEY.invoke(NEW_RESOURCE_LOCATION.invoke("minecraft", "data_component_type"));
+          try {
+            componentTypeRegistry = GET_REGISTRY.invoke(registryKey);
+          } catch (final Exception ignored) {
+          }
+          if (componentTypeRegistry != null) {
+            componentType = ((Optional<?>) REGISTRY_GET_OPTIONAL.invoke(componentTypeRegistry, NEW_RESOURCE_LOCATION.invoke("minecraft", "written_book_content"))).orElse(null);
+          }
+        }
+      } catch (final Throwable error) {
+        logError(error, "Failed to initialize Book_1_20_5 CraftBukkit facet");
+      }
+      WRITTEN_BOOK_COMPONENT_TYPE = componentType;
+    }
+
+    static boolean isSupported() {
+      return WRITTEN_BOOK_COMPONENT_TYPE != null && CREATE_FILTERABLE != null && NEW_BOOK_CONTENT != null && CRAFT_ITEMSTACK_NMS_COPY != null && MC_ITEMSTACK_SET != null && CRAFT_ITEMSTACK_CRAFT_MIRROR != null && NEW_PACKET_OPEN_BOOK != null && HAND_MAIN != null;
     }
   }
 }

@@ -785,6 +785,45 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     }
   }
 
+  static final class Book_1_20_5 extends PacketFacet<Player> implements Facet.Book<Player, Object, ItemStack> {
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && CraftBukkitAccess.Book_1_20_5.isSupported();
+    }
+
+    @Override
+    public @Nullable ItemStack createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<Object> pages) {
+      try {
+        final ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
+        final List<Object> pageList = new ArrayList<>();
+        for (final Object page : pages) {
+          pageList.add(CraftBukkitAccess.Book_1_20_5.CREATE_FILTERABLE.invoke(page));
+        }
+        final Object bookContent = CraftBukkitAccess.Book_1_20_5.NEW_BOOK_CONTENT.invoke(CraftBukkitAccess.Book_1_20_5.CREATE_FILTERABLE.invoke(title), author, 0, pageList, true);
+        final Object stack = CraftBukkitAccess.Book_1_20_5.CRAFT_ITEMSTACK_NMS_COPY.invoke(item);
+        CraftBukkitAccess.Book_1_20_5.MC_ITEMSTACK_SET.invoke(stack, CraftBukkitAccess.Book_1_20_5.WRITTEN_BOOK_COMPONENT_TYPE, bookContent);
+        return (ItemStack) CraftBukkitAccess.Book_1_20_5.CRAFT_ITEMSTACK_CRAFT_MIRROR.invoke(stack);
+      } catch (final Throwable error) {
+        logError(error, "Failed to apply written_book_content component to ItemStack");
+      }
+      return null;
+    }
+
+    @Override
+    public void openBook(final @NotNull Player viewer, final @NotNull ItemStack book) {
+      final PlayerInventory inventory = viewer.getInventory();
+      final ItemStack current = inventory.getItemInHand();
+      try {
+        inventory.setItemInHand(book);
+        this.sendMessage(viewer, CraftBukkitAccess.Book_1_20_5.NEW_PACKET_OPEN_BOOK.invoke(CraftBukkitAccess.Book_1_20_5.HAND_MAIN));
+      } catch (final Throwable error) {
+        logError(error, "Failed to send openBook packet: %s", book);
+      } finally {
+        inventory.setItemInHand(current);
+      }
+    }
+  }
+
   protected static abstract class AbstractBook extends PacketFacet<Player> implements Facet.Book<Player, Object, ItemStack> {
     protected static final int HAND_MAIN = 0;
     private static final Material BOOK_TYPE = (Material) findEnum(Material.class, "WRITTEN_BOOK");
