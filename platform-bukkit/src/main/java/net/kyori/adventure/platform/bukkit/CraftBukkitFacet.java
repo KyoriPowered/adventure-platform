@@ -316,17 +316,23 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       } else {
         final ChatType.Bound bound = (ChatType.Bound) type;
         try {
+          final Object nameComponent = this.createMessage(viewer, bound.name());
+          final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
           final Object registryAccess = CraftBukkitAccess.Chat1_19_3.ACTUAL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
           final Object chatTypeRegistry = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
           final Object typeResourceLocation = CraftBukkitAccess.Chat1_19_3.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
-          final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
-          final int networkId = (int) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
-          if (networkId < 0) {
-            throw new IllegalArgumentException("Could not get a valid network id from " + type);
+          final Object boundNetwork;
+          if (CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null) {
+            final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
+            final int networkId = (int) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
+            if (networkId < 0) {
+              throw new IllegalArgumentException("Could not get a valid network id from " + type);
+            }
+            boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
+          } else {
+            final Object chatTypeHolder = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_HOLDER.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
+            boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_CONSTRUCTOR.invoke(chatTypeHolder, nameComponent, Optional.ofNullable(targetComponent));
           }
-          final Object nameComponent = this.createMessage(viewer, bound.name());
-          final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
-          final Object boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
 
           this.sendMessage(viewer, CraftBukkitAccess.Chat1_19_3.DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
         } catch (final Throwable error) {

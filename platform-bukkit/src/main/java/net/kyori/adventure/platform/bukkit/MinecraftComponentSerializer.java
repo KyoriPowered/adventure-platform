@@ -40,11 +40,14 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static java.lang.invoke.MethodHandles.insertArguments;
 import static net.kyori.adventure.platform.bukkit.BukkitComponentSerializer.gson;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findCraftClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMcClassName;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClass;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findNmsClassName;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findStaticMethod;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.lookup;
 
 /**
@@ -89,6 +92,12 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
     findMcClassName("network.chat.IChatBaseComponent"),
     findMcClassName("network.chat.Component")
   );
+  private static final @Nullable Class<?> CLASS_CRAFT_REGISTRY = findCraftClass("CraftRegistry");
+  private static final @Nullable Class<?> CLASS_REGISTRY_ACCESS = findClass(
+    findMcClassName("core.IRegistryCustom"),
+    findMcClassName("core.RegistryAccess")
+  );
+  private static final @Nullable MethodHandle GET_REGISTRY = findStaticMethod(CLASS_CRAFT_REGISTRY, "getMinecraftRegistry", CLASS_REGISTRY_ACCESS);
   private static final AtomicReference<RuntimeException> INITIALIZATION_ERROR = new AtomicReference<>(new UnsupportedOperationException());
 
   private static final Object MC_TEXT_GSON;
@@ -106,6 +115,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
 
     try {
       if (CLASS_CHAT_COMPONENT != null) {
+        final Object registryAccess = GET_REGISTRY != null ? GET_REGISTRY.invoke() : null;
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
           .filter(c -> {
@@ -164,6 +174,22 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
             .filter(m -> m.getParameterCount() == 1 && CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
             .findFirst()
             .orElse(null);
+          final Method deserializeTreeWithRegistryAccess = Arrays.stream(declaredMethods)
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> CLASS_CHAT_COMPONENT.isAssignableFrom(m.getReturnType()))
+            .filter(m -> m.getParameterCount() == 2)
+            .filter(m -> m.getParameterTypes()[0].equals(JsonElement.class))
+            .filter(m -> m.getParameterTypes()[1].isInstance(registryAccess))
+            .findFirst()
+            .orElse(null);
+          final Method serializeTreeWithRegistryAccess = Arrays.stream(declaredMethods)
+            .filter(m -> Modifier.isStatic(m.getModifiers()))
+            .filter(m -> m.getReturnType().equals(JsonElement.class))
+            .filter(m -> m.getParameterCount() == 2)
+            .filter(m -> CLASS_CHAT_COMPONENT.isAssignableFrom(m.getParameterTypes()[0]))
+            .filter(m -> m.getParameterTypes()[1].isInstance(registryAccess))
+            .findFirst()
+            .orElse(null);
           if (deserialize != null) {
             textSerializerDeserialize = lookup().unreflect(deserialize);
           }
@@ -172,9 +198,15 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
           }
           if (deserializeTree != null) {
             textSerializerDeserializeTree = lookup().unreflect(deserializeTree);
+          } else if (deserializeTreeWithRegistryAccess != null) {
+            deserializeTreeWithRegistryAccess.setAccessible(true);
+            textSerializerDeserializeTree = insertArguments(lookup().unreflect(deserializeTreeWithRegistryAccess), 1, registryAccess);
           }
           if (serializeTree != null) {
             textSerializerSerializeTree = lookup().unreflect(serializeTree);
+          } else if (serializeTreeWithRegistryAccess != null) {
+            serializeTreeWithRegistryAccess.setAccessible(true);
+            textSerializerSerializeTree = insertArguments(lookup().unreflect(serializeTreeWithRegistryAccess), 1, registryAccess);
           }
         }
       }
