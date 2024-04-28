@@ -316,17 +316,23 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
       } else {
         final ChatType.Bound bound = (ChatType.Bound) type;
         try {
+          final Object nameComponent = this.createMessage(viewer, bound.name());
+          final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
           final Object registryAccess = CraftBukkitAccess.Chat1_19_3.ACTUAL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
           final Object chatTypeRegistry = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
           final Object typeResourceLocation = CraftBukkitAccess.Chat1_19_3.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
-          final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
-          final int networkId = (int) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
-          if (networkId < 0) {
-            throw new IllegalArgumentException("Could not get a valid network id from " + type);
+          final Object boundNetwork;
+          if (CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null) {
+            final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
+            final int networkId = (int) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_ID.invoke(chatTypeRegistry, chatTypeObject);
+            if (networkId < 0) {
+              throw new IllegalArgumentException("Could not get a valid network id from " + type);
+            }
+            boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
+          } else {
+            final Object chatTypeHolder = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_HOLDER.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
+            boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_CONSTRUCTOR.invoke(chatTypeHolder, nameComponent, Optional.ofNullable(targetComponent));
           }
-          final Object nameComponent = this.createMessage(viewer, bound.name());
-          final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
-          final Object boundNetwork = CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR.invoke(networkId, nameComponent, targetComponent);
 
           this.sendMessage(viewer, CraftBukkitAccess.Chat1_19_3.DISGUISED_CHAT_PACKET_CONSTRUCTOR.invoke(message, boundNetwork));
         } catch (final Throwable error) {
@@ -775,6 +781,45 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
         }
       } catch (final Throwable error) {
         logError(error, "Failed to clear title");
+      }
+    }
+  }
+
+  static final class Book_1_20_5 extends PacketFacet<Player> implements Facet.Book<Player, Object, ItemStack> {
+    @Override
+    public boolean isSupported() {
+      return super.isSupported() && CraftBukkitAccess.Book_1_20_5.isSupported();
+    }
+
+    @Override
+    public @Nullable ItemStack createBook(final @NotNull String title, final @NotNull String author, final @NotNull Iterable<Object> pages) {
+      try {
+        final ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
+        final List<Object> pageList = new ArrayList<>();
+        for (final Object page : pages) {
+          pageList.add(CraftBukkitAccess.Book_1_20_5.CREATE_FILTERABLE.invoke(page));
+        }
+        final Object bookContent = CraftBukkitAccess.Book_1_20_5.NEW_BOOK_CONTENT.invoke(CraftBukkitAccess.Book_1_20_5.CREATE_FILTERABLE.invoke(title), author, 0, pageList, true);
+        final Object stack = CraftBukkitAccess.Book_1_20_5.CRAFT_ITEMSTACK_NMS_COPY.invoke(item);
+        CraftBukkitAccess.Book_1_20_5.MC_ITEMSTACK_SET.invoke(stack, CraftBukkitAccess.Book_1_20_5.WRITTEN_BOOK_COMPONENT_TYPE, bookContent);
+        return (ItemStack) CraftBukkitAccess.Book_1_20_5.CRAFT_ITEMSTACK_CRAFT_MIRROR.invoke(stack);
+      } catch (final Throwable error) {
+        logError(error, "Failed to apply written_book_content component to ItemStack");
+      }
+      return null;
+    }
+
+    @Override
+    public void openBook(final @NotNull Player viewer, final @NotNull ItemStack book) {
+      final PlayerInventory inventory = viewer.getInventory();
+      final ItemStack current = inventory.getItemInHand();
+      try {
+        inventory.setItemInHand(book);
+        this.sendMessage(viewer, CraftBukkitAccess.Book_1_20_5.NEW_PACKET_OPEN_BOOK.invoke(CraftBukkitAccess.Book_1_20_5.HAND_MAIN));
+      } catch (final Throwable error) {
+        logError(error, "Failed to send openBook packet: %s", book);
+      } finally {
+        inventory.setItemInHand(current);
       }
     }
   }
@@ -1412,7 +1457,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public boolean isSupported() {
-      return (CLIENTBOUND_TAB_LIST_PACKET_CTOR != null || CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17 != null) && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null && super.isSupported();
+      return (CLIENTBOUND_TAB_LIST_PACKET_CTOR != null || (CLIENTBOUND_TAB_LIST_PACKET_CTOR_PRE_1_17 != null && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null)) && super.isSupported();
     }
 
     protected Object create117Packet(final Player viewer, final @Nullable Object header, final @Nullable Object footer) throws Throwable {
