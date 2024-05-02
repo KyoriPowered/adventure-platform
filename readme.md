@@ -1,6 +1,6 @@
 # adventure-platform
 
-![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/KyoriPowered/adventure-platform/build.yml?branch=master) [![MIT License](https://img.shields.io/badge/license-MIT-blue)](license.txt) [![Maven Central](https://img.shields.io/maven-central/v/net.kyori/adventure-platform-api?label=stable)](https://search.maven.org/search?q=g:net.kyori%20AND%20a:adventure*) ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/net.kyori/adventure-platform-api?label=dev&server=https%3A%2F%2Foss.sonatype.org)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/KyoriPowered/adventure-platform/build.yml?branch=master) [![MIT License](https://img.shields.io/badge/license-MIT-blue)](license.txt) [![Maven Central](https://img.shields.io/maven-central/v/net.kyori/adventure-platform-api?label=stable)](https://search.maven.org/search?q=g:net.kyori%20AND%20a:adventure*) ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/net.kyori/adventure-platform-api?label=dev&server=https%3A%2F%2Fs01.oss.sonatype.org)
 
 Adventure platform implementations, for servers and proxies including [Paper](https://papermc.io)/Spigot/Bukkit, [BungeeCord](https://www.spigotmc.org/go/bungeecord), and [SpongeAPI 7](https://spongepowered.org). Other platforms may be supported through native integration, or other libraries.
 
