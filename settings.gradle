@@ -33,6 +33,13 @@ dependencyResolutionManagement {
         includeGroup "com.destroystokyo.paper"
       }
     }
+    maven {
+      name "minecraft-libraries"
+      url "https://libraries.minecraft.net"
+      mavenContent {
+        includeGroup "com.mojang"
+      }
+    }
   }
 }
 
