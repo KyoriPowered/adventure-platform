@@ -46,10 +46,21 @@ import static net.kyori.adventure.platform.facet.Knob.logError;
 class PaperFacet<V extends CommandSender> extends FacetBase<V> {
   private static final boolean SUPPORTED = isEnabled("paper", true);
   static final Class<?> NATIVE_COMPONENT_CLASS = findClass(String.join(".", "net", "kyori", "adventure", "text", "Component"));
+  private static final MethodHandle PAPER_ADVENTURE_AS_VANILLA = findAsVanillaMethod();
   private static final Class<?> NATIVE_GSON_COMPONENT_SERIALIZER_CLASS = findClass(String.join(".", "net", "kyori", "adventure", "text", "serializer", "gson", "GsonComponentSerializer"));
   private static final Class<?> NATIVE_GSON_COMPONENT_SERIALIZER_IMPL_CLASS = findClass(String.join(".", "net", "kyori", "adventure", "text", "serializer", "gson", "GsonComponentSerializerImpl"));
   private static final MethodHandle NATIVE_GSON_COMPONENT_SERIALIZER_GSON_GETTER = findStaticMethod(NATIVE_GSON_COMPONENT_SERIALIZER_CLASS, "gson", NATIVE_GSON_COMPONENT_SERIALIZER_CLASS);
   private static final MethodHandle NATIVE_GSON_COMPONENT_SERIALIZER_DESERIALIZE_METHOD = findNativeDeserializeMethod();
+
+  private static @Nullable MethodHandle findAsVanillaMethod() {
+    try {
+      final Class<?> paperAdventure = findClass("io.papermc.paper.adventure.PaperAdventure");
+      final Method method = paperAdventure.getDeclaredMethod("asVanilla", NATIVE_COMPONENT_CLASS);
+      return lookup().unreflect(method);
+    } catch (final NoSuchMethodException | IllegalAccessException | NullPointerException e) {
+      return null;
+    }
+  }
 
   private static @Nullable MethodHandle findNativeDeserializeMethod() {
     try {
@@ -145,15 +156,24 @@ class PaperFacet<V extends CommandSender> extends FacetBase<V> {
 
     @Override
     public boolean isSupported() {
-      return SUPPORTED && super.isSupported() && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null;
+      return SUPPORTED && super.isSupported()
+              && ((CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER != null && CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER != null)
+              || PAPER_ADVENTURE_AS_VANILLA != null);
     }
 
     @Override
     protected Object create117Packet(final Player viewer, final @Nullable Object header, final @Nullable Object footer) throws Throwable {
-      final Object packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(null, null);
-      CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
-      CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER.invoke(packet, footer == null ? this.createMessage(viewer, Component.empty()) : footer);
-      return packet;
+      if (CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER == null && CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER == null) {
+        return CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(
+          PAPER_ADVENTURE_AS_VANILLA.invoke(header == null ? this.createMessage(viewer, Component.empty()) : header),
+          PAPER_ADVENTURE_AS_VANILLA.invoke(footer == null ? this.createMessage(viewer, Component.empty()) : footer)
+        );
+      } else {
+        final Object packet = CLIENTBOUND_TAB_LIST_PACKET_CTOR.invoke(null, null);
+        CLIENTBOUND_TAB_LIST_PACKET_SET_HEADER.invoke(packet, header == null ? this.createMessage(viewer, Component.empty()) : header);
+        CLIENTBOUND_TAB_LIST_PACKET_SET_FOOTER.invoke(packet, footer == null ? this.createMessage(viewer, Component.empty()) : footer);
+        return packet;
+      }
     }
 
     @Override
