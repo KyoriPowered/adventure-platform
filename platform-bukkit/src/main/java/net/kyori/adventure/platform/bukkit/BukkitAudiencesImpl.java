@@ -106,10 +106,6 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
       this.addViewer(event.getPlayer()));
     this.registerEvent(PlayerQuitEvent.class, EventPriority.MONITOR, event ->
       this.removeViewer(event.getPlayer()));
-    this.registerLocaleEvent(EventPriority.MONITOR, (viewer, locale) -> {
-      final @Nullable BukkitAudience audience = this.viewers.get(viewer);
-      if (audience != null) audience.locale(locale);
-    });
   }
 
   @Override
@@ -128,7 +124,7 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
 
   @Override
   public @NotNull Audience player(final @NotNull Player player) {
-    return this.player(player.getUniqueId());
+    return super.player(player.getUniqueId());
   }
 
   @Override
