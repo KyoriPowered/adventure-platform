@@ -68,7 +68,7 @@ final class BukkitAudience extends FacetAudience<CommandSender> {
     () -> new CraftBukkitFacet.EntitySound()
   );
   private static final Collection<Facet.Book<Player, ?, ?>> BOOK = Facet.of(
-    //    () -> new SpigotFacet.Book(),
+    () -> new SpigotFacet.Book(),
     () -> new CraftBukkitFacet.Book_1_20_5(),
     () -> new CraftBukkitFacet.BookPost1_13(),
     () -> new CraftBukkitFacet.Book1_13(),
