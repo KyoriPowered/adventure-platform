@@ -1,5 +1,5 @@
 dependencies {
-  compileOnlyApi 'com.viaversion:viaversion-api:4.3.0'
+  compileOnlyApi 'com.viaversion:viaversion-api:5.0.1'
   implementation project(':adventure-platform-facet')
   implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventure}") {
     exclude group: "com.google.code.gson"
