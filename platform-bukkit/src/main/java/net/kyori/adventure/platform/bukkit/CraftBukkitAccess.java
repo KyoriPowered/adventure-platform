@@ -85,12 +85,20 @@ final class CraftBukkitAccess {
     findMcClassName("core.IRegistryWritable"),
     findMcClassName("core.WritableRegistry")
   );
+  static final @Nullable MethodHandle NEW_RESOURCE_LOCATION;
+
+  static {
+    MethodHandle newResourceLocation = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
+    if (newResourceLocation == null) {
+      newResourceLocation = searchMethod(CLASS_RESOURCE_LOCATION, Modifier.PUBLIC | Modifier.STATIC, "fromNamespaceAndPath", CLASS_RESOURCE_LOCATION, String.class, String.class);
+    }
+    NEW_RESOURCE_LOCATION = newResourceLocation;
+  }
 
   private CraftBukkitAccess() {
   }
 
   static final class Chat1_19_3 {
-    static final @Nullable MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
     static final @Nullable MethodHandle RESOURCE_KEY_CREATE = searchMethod(CLASS_RESOURCE_KEY, Modifier.PUBLIC | Modifier.STATIC, "create", CLASS_RESOURCE_KEY, CLASS_RESOURCE_KEY, CLASS_RESOURCE_LOCATION);
     static final @Nullable MethodHandle SERVER_PLAYER_GET_LEVEL = searchMethod(CraftBukkitFacet.CRAFT_PLAYER_GET_HANDLE.type().returnType(), Modifier.PUBLIC, "getLevel", CLASS_SERVER_LEVEL);
     static final @Nullable MethodHandle SERVER_LEVEL_GET_REGISTRY_ACCESS = searchMethod(CLASS_SERVER_LEVEL, Modifier.PUBLIC, "registryAccess", CLASS_REGISTRY_ACCESS);
@@ -224,7 +232,6 @@ final class CraftBukkitAccess {
 
   static final class EntitySound_1_19_3 {
 
-    static final @Nullable MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
     static final @Nullable MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
     static final @Nullable MethodHandle REGISTRY_WRAP_AS_HOLDER = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "wrapAsHolder", CLASS_HOLDER, Object.class);
     static final @Nullable MethodHandle SOUND_EVENT_CREATE_VARIABLE_RANGE = searchMethod(EntitySound.CLASS_SOUND_EVENT, Modifier.PUBLIC | Modifier.STATIC, "createVariableRangeEvent", EntitySound.CLASS_SOUND_EVENT, CLASS_RESOURCE_LOCATION);
@@ -277,7 +284,6 @@ final class CraftBukkitAccess {
     static final MethodHandle CREATE_FILTERABLE = searchMethod(CLASS_MC_FILTERABLE, Modifier.PUBLIC | Modifier.STATIC, "passThrough", CLASS_MC_FILTERABLE, Object.class);
     static final MethodHandle GET_REGISTRY = findStaticMethod(CLASS_CRAFT_REGISTRY, "getMinecraftRegistry", CLASS_REGISTRY, CLASS_RESOURCE_KEY);
     static final MethodHandle CREATE_REGISTRY_KEY = searchMethod(CLASS_RESOURCE_KEY, Modifier.PUBLIC | Modifier.STATIC, "createRegistryKey", CLASS_RESOURCE_KEY, CLASS_RESOURCE_LOCATION);
-    static final MethodHandle NEW_RESOURCE_LOCATION = findConstructor(CLASS_RESOURCE_LOCATION, String.class, String.class);
     static final MethodHandle NEW_BOOK_CONTENT = findConstructor(CLASS_MC_BOOK_CONTENT, CLASS_MC_FILTERABLE, String.class, Integer.TYPE, List.class, Boolean.TYPE);
     static final MethodHandle REGISTRY_GET_OPTIONAL = searchMethod(CLASS_REGISTRY, Modifier.PUBLIC, "getOptional", Optional.class, CLASS_RESOURCE_LOCATION);
     static final Class<?> CLASS_ENUM_HAND = findClass(
