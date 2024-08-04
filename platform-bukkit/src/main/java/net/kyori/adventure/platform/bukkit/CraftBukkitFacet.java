@@ -320,7 +320,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
           final Object targetComponent = bound.target() != null ? this.createMessage(viewer, bound.target()) : null;
           final Object registryAccess = CraftBukkitAccess.Chat1_19_3.ACTUAL_GET_REGISTRY_ACCESS.invoke(CraftBukkitAccess.Chat1_19_3.SERVER_PLAYER_GET_LEVEL.invoke(CRAFT_PLAYER_GET_HANDLE.invoke(viewer)));
           final Object chatTypeRegistry = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_ACCESS_GET_REGISTRY_OPTIONAL.invoke(registryAccess, CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_RESOURCE_KEY)).orElseThrow(NoSuchElementException::new);
-          final Object typeResourceLocation = CraftBukkitAccess.Chat1_19_3.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
+          final Object typeResourceLocation = CraftBukkitAccess.NEW_RESOURCE_LOCATION.invoke(bound.type().key().namespace(), bound.type().key().value());
           final Object boundNetwork;
           if (CraftBukkitAccess.Chat1_19_3.CHAT_TYPE_BOUND_NETWORK_CONSTRUCTOR != null) {
             final Object chatTypeObject = ((Optional<?>) CraftBukkitAccess.Chat1_19_3.REGISTRY_GET_OPTIONAL.invoke(chatTypeRegistry, typeResourceLocation)).orElseThrow(NoSuchElementException::new);
@@ -485,7 +485,7 @@ class CraftBukkitFacet<V extends CommandSender> extends FacetBase<V> {
     @Override
     public Object createForEntity(final net.kyori.adventure.sound.Sound sound, final Entity entity) {
       try {
-        final Object resLoc = CraftBukkitAccess.EntitySound_1_19_3.NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
+        final Object resLoc = CraftBukkitAccess.NEW_RESOURCE_LOCATION.invoke(sound.name().namespace(), sound.name().value());
         final Optional<?> possibleSoundEvent = (Optional<?>) CraftBukkitAccess.EntitySound_1_19_3.REGISTRY_GET_OPTIONAL.invoke(CraftBukkitAccess.EntitySound_1_19_3.SOUND_EVENT_REGISTRY, resLoc);
         final Object soundEvent;
         if (possibleSoundEvent.isPresent()) {
