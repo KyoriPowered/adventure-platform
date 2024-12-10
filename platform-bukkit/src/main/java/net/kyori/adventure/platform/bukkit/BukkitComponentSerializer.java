@@ -32,11 +32,8 @@ import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Server;
 import org.jetbrains.annotations.NotNull;
-
-import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findEnum;
 
 /**
  * A pair of component serializers for {@link org.bukkit.Bukkit}.
@@ -47,9 +44,7 @@ public final class BukkitComponentSerializer {
   private BukkitComponentSerializer() {
   }
 
-  private static final boolean IS_1_16 = findEnum(Material.class, "NETHERITE_PICKAXE") != null;
-  private static final boolean IS_1_20_3 = findEnum(Material.class, "CRAFTER") != null;
-  private static final boolean IS_1_20_5 = findEnum(Material.class, "MACE") != null;
+  private static final int DATA_VERSION = Bukkit.getUnsafe().getDataVersion();
 
   private static final Collection<FacetComponentFlattener.Translator<Server>> TRANSLATORS = Facet.of(
     SpigotFacet.Translator::new,
@@ -61,47 +56,22 @@ public final class BukkitComponentSerializer {
 
   static {
     FLATTENER = FacetComponentFlattener.get(Bukkit.getServer(), TRANSLATORS);
-    if (IS_1_20_5) {
+    if (DATA_VERSION >= 2526) {
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
         .hexColors()
         .useUnusualXRepeatedCharacterHexFormat()
         .flattener(FLATTENER)
-        .build();
-      GSON_SERIALIZER = GsonComponentSerializer.builder()
-        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
-        .options(JSONOptions.byDataVersion().at(3819))
-        .build();
-    } else if (IS_1_20_3) {
-      LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
-        .hexColors()
-        .useUnusualXRepeatedCharacterHexFormat()
-        .flattener(FLATTENER)
-        .build();
-      GSON_SERIALIZER = GsonComponentSerializer.builder()
-        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
-        .options(JSONOptions.byDataVersion().at(3679))
-        .build();
-    } else if (IS_1_16) {
-      LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
-        .hexColors()
-        .useUnusualXRepeatedCharacterHexFormat()
-        .flattener(FLATTENER)
-        .build();
-      GSON_SERIALIZER = GsonComponentSerializer.builder()
-        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
-        .options(JSONOptions.byDataVersion().at(2526))
         .build();
     } else {
       LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
         .character(LegacyComponentSerializer.SECTION_CHAR)
         .flattener(FLATTENER)
         .build();
-      GSON_SERIALIZER = GsonComponentSerializer.builder()
-        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
-        .options(JSONOptions.byDataVersion().at(0))
-        .downsampleColors()
-        .build();
     }
+    GSON_SERIALIZER = GsonComponentSerializer.builder()
+      .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
+      .options(JSONOptions.byDataVersion().at(DATA_VERSION))
+      .build();
   }
 
   /**
