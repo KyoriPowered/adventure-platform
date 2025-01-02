@@ -9,7 +9,7 @@ dependencies {
   }
   implementation project(":adventure-platform-facet")
   // implementation project(":adventure-platform-viaversion")
-  compileOnly 'org.spongepowered:spongeapi:7.1.0'
+  compileOnly 'org.spongepowered:spongeapi:13.0.0'
 }
 
 javadoc {
