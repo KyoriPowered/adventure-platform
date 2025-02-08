@@ -27,7 +27,7 @@ dependencyResolutionManagement {
     }
     maven {
       name "papermc"
-      url 'https://papermc.io/repo/repository/maven-public/'
+      url 'https://repo.papermc.io/repository/maven-public/'
       mavenContent {
         includeGroup "io.papermc.paper"
         includeGroup "com.destroystokyo.paper"
