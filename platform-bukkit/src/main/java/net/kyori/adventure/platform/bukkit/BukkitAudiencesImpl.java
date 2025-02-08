@@ -25,15 +25,12 @@ package net.kyori.adventure.platform.bukkit;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.MutableGraph;
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -45,7 +42,6 @@ import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.renderer.ComponentRenderer;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.Translator;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -56,18 +52,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
-import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
-import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findMethod;
 import static net.kyori.adventure.platform.bukkit.MinecraftReflection.needField;
 import static net.kyori.adventure.platform.facet.Knob.logError;
 
@@ -224,59 +216,5 @@ final class BukkitAudiencesImpl extends FacetAudienceProvider<CommandSender, Buk
   private <T extends Event> void registerEvent(final @NotNull Class<T> type, final @NotNull EventPriority priority, final @NotNull Consumer<T> callback) {
     requireNonNull(callback, "callback");
     this.plugin.getServer().getPluginManager().registerEvent(type, this, priority, (listener, event) -> callback.accept((T) event), this.plugin, true);
-  }
-
-  /**
-   * Registers a callback to listen for {@code PlayerLocaleChangeEvent}.
-   *
-   * <p>Bukkit has history of multiple versions of this event, so some
-   * reflection work is needed to detect the right one.</p>
-   *
-   * @param priority a priority
-   * @param callback a callback
-   */
-  private void registerLocaleEvent(final EventPriority priority, final @NotNull BiConsumer<Player, Locale> callback) {
-    Class<?> eventClass = findClass("org.bukkit.event.player.PlayerLocaleChangeEvent");
-    if (eventClass == null) {
-      eventClass = findClass("com.destroystokyo.paper.event.player.PlayerLocaleChangeEvent");
-    }
-
-    MethodHandle getMethod = findMethod(eventClass, "getLocale", String.class);
-    if (getMethod == null) {
-      getMethod = findMethod(eventClass, "getNewLocale", String.class);
-    }
-
-    if (getMethod != null && PlayerEvent.class.isAssignableFrom(eventClass)) {
-      final Class<? extends PlayerEvent> localeEvent = (Class<? extends PlayerEvent>) eventClass;
-      final MethodHandle getLocale = getMethod;
-
-      this.registerEvent(localeEvent, priority, event -> {
-        final Player player = event.getPlayer();
-        final String locale;
-        try {
-          locale = (String) getLocale.invoke(event);
-        } catch (final Throwable error) {
-          logError(error, "Failed to accept %s: %s", localeEvent.getName(), player);
-          return;
-        }
-        callback.accept(player, BukkitAudiencesImpl.toLocale(locale));
-      });
-    }
-  }
-
-  /**
-   * Converts a raw locale given by the client to a nicer Locale object.
-   *
-   * @param string a raw locale
-   * @return a parsed locale
-   */
-  private static @NotNull Locale toLocale(final @Nullable String string) {
-    if (string != null) {
-      final Locale locale = Translator.parseLocale(string);
-      if (locale != null) {
-        return locale;
-      }
-    }
-    return Locale.US;
   }
 }
