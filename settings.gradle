@@ -11,31 +11,31 @@ dependencyResolutionManagement {
   repositories {
     mavenCentral()
     maven {
-      name "sonatypeSnapshots"
-      url "https://oss.sonatype.org/content/repositories/snapshots/"
+      name = "sonatypeSnapshots"
+      url = "https://oss.sonatype.org/content/repositories/snapshots/"
       mavenContent { snapshotsOnly() }
     }
     maven {
-      name "sponge"
-      url 'https://repo.spongepowered.org/repository/maven-public/'
+      name = "sponge"
+      url = 'https://repo.spongepowered.org/repository/maven-public/'
       mavenContent { includeGroup "org.spongepowered" }
     }
     maven {
-      name 'viaversion'
-      url 'https://repo.viaversion.com'
+      name = 'viaversion'
+      url = 'https://repo.viaversion.com'
       mavenContent { includeGroup "com.viaversion" }
     }
     maven {
-      name "papermc"
-      url 'https://repo.papermc.io/repository/maven-public/'
+      name = "papermc"
+      url = 'https://repo.papermc.io/repository/maven-public/'
       mavenContent {
         includeGroup "io.papermc.paper"
         includeGroup "com.destroystokyo.paper"
       }
     }
     maven {
-      name "minecraft-libraries"
-      url "https://libraries.minecraft.net"
+      name = "minecraft-libraries"
+      url = "https://libraries.minecraft.net"
       mavenContent {
         includeGroup "com.mojang"
       }
