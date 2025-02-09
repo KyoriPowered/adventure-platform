@@ -35,6 +35,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.jetbrains.annotations.NotNull;
 
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.findClass;
+import static net.kyori.adventure.platform.bukkit.MinecraftReflection.hasMethod;
+
 /**
  * A pair of component serializers for {@link org.bukkit.Bukkit}.
  *
@@ -44,7 +47,8 @@ public final class BukkitComponentSerializer {
   private BukkitComponentSerializer() {
   }
 
-  private static final int DATA_VERSION = Bukkit.getUnsafe().getDataVersion();
+  private static final Class<?> UNSAFE_VALUES_CLASS = findClass("org.bukkit.UnsafeValues");
+  private static final int DATA_VERSION = hasMethod(UNSAFE_VALUES_CLASS, "getDataVersion") ? Bukkit.getUnsafe().getDataVersion() : 0;
 
   private static final Collection<FacetComponentFlattener.Translator<Server>> TRANSLATORS = Facet.of(
     SpigotFacet.Translator::new,
