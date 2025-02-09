@@ -18,6 +18,6 @@ dependencies {
 
 javadoc {
   options.links(
-    "https://jd.papermc.io/paper/1.15"
+    "https://jd.papermc.io/paper/1.15.2/"
   )
 }
