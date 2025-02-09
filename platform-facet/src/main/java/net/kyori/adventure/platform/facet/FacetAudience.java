@@ -49,6 +49,7 @@ import net.kyori.adventure.title.TitlePart;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import static java.util.Objects.requireNonNull;
 
@@ -434,6 +435,23 @@ public class FacetAudience<V> implements Audience, Closeable {
       bar.removeListener(listener);
       listener.close();
     }
+  }
+
+  /**
+   * Check if this audience has been shown this BossBar
+   * @since 4.1.3
+   */
+  public boolean hasBossBar(final @NotNull BossBar bar) {
+    return this.bossBars != null && this.bossBars.containsKey(bar);
+  }
+
+  /**
+   * Returns a set containing all BossBars this Audience has been shown
+   * @since 4.1.3
+   */
+  public @NotNull @UnmodifiableView Set<BossBar> getBossBars() {
+    if (this.bossBars == null) return Collections.emptySet();
+    return Collections.unmodifiableSet(this.bossBars.keySet());
   }
 
   @Override
