@@ -420,7 +420,13 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
   static final class PlayerPointers extends BukkitFacet<Player> implements Facet.Pointers<Player> {
 
-    private static final MethodHandle LOCALE_SUPPORTED = findMethod(Player.class, "getLocale", String.class);
+    private static final MethodHandle LOCALE_SUPPORTED;
+
+    static {
+      final MethodHandle asLocale = findMethod(Player.class, "getLocale", Locale.class);
+      final MethodHandle asString = findMethod(Player.class, "getLocale", String.class);
+      LOCALE_SUPPORTED = asLocale != null ? asLocale : asString;
+    }
 
     PlayerPointers() {
       super(Player.class);
@@ -433,7 +439,8 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
       builder.withDynamic(Identity.LOCALE, () -> {
         if (LOCALE_SUPPORTED != null) {
           try {
-            return Translator.parseLocale((String) LOCALE_SUPPORTED.invoke(viewer));
+            final Object result = LOCALE_SUPPORTED.invoke(viewer);
+            return result instanceof Locale ? (Locale) result : Translator.parseLocale((String) result);
           } catch (final Throwable error) {
             logError(error, "Failed to call getLocale() for %s", viewer);
           }

@@ -5,6 +5,7 @@
   ],
   "ignoreDeps": [
     "io.netty:netty-all",
-    "net.md-5:bungeecord-chat"
+    "net.md-5:bungeecord-chat",
+    "org.spongepowered:spongeapi"
   ]
 }
