@@ -16,7 +16,7 @@ plugins {
 ext.adventure = "4.13.1"
 
 group = 'net.kyori'
-version = '4.3.5-SNAPSHOT'
+version = '4.4.0-SNAPSHOT'
 description = 'Legacy platform integrations for the adventure UI library'
 
 indraSonatype {
