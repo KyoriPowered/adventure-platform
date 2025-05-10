@@ -39,6 +39,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.legacyimpl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.ChatMessageType;
@@ -74,7 +75,7 @@ class BungeeFacet<V extends CommandSender> extends FacetBase<V> {
       .build()
   );
   static final BungeeComponentSerializer LEGACY = BungeeComponentSerializer.of(
-    GsonComponentSerializer.builder().downsampleColors().emitLegacyHoverEvent().build(),
+    GsonComponentSerializer.builder().downsampleColors().legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get()).emitLegacyHoverEvent().build(),
     LegacyComponentSerializer.builder().flattener(FLATTENER).build()
   );
 
