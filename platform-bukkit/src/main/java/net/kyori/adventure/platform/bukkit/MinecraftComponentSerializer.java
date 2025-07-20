@@ -89,13 +89,19 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
 
   private static final @Nullable Class<?> CLASS_JSON_DESERIALIZER = findClass("com.goo".concat("gle.gson.JsonDeserializer")); // Hide from relocation checkers
   private static final @Nullable Class<?> CLASS_JSON_ELEMENT = findClass("com.goo".concat("gle.gson.JsonElement"));
+  private static final @Nullable Class<?> CLASS_JSON_OPS = findClass("com.mo".concat("jang.serialization.JsonOps"));
   private static final @Nullable Class<?> CLASS_JSON_PARSER = findClass("com.goo".concat("gle.gson.JsonParser"));
   private static final @Nullable Class<?> CLASS_CHAT_COMPONENT = findClass(
     findNmsClassName("IChatBaseComponent"),
     findMcClassName("network.chat.IChatBaseComponent"),
     findMcClassName("network.chat.Component")
   );
+  private static final @Nullable Class<?> CLASS_COMPONENT_SERIALIZATION = findClass(findMcClassName("network.chat.ComponentSerialization"));
   private static final @Nullable Class<?> CLASS_CRAFT_REGISTRY = findCraftClass("CraftRegistry");
+  private static final @Nullable Class<?> CLASS_HOLDERLOOKUP_PROVIDER = findClass(
+    findMcClassName("core.HolderLookup$Provider"), // Paper mapping
+    findMcClassName("core.HolderLookup$a") // Spigot mapping
+  );
   private static final @Nullable Class<?> CLASS_REGISTRY_ACCESS = findClass(
     findMcClassName("core.IRegistryCustom"),
     findMcClassName("core.RegistryAccess")
@@ -103,27 +109,43 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
   private static final @Nullable MethodHandle PARSE_JSON = findMethod(CLASS_JSON_PARSER, "parse", CLASS_JSON_ELEMENT, String.class);
   private static final @Nullable MethodHandle GET_REGISTRY = findStaticMethod(CLASS_CRAFT_REGISTRY, "getMinecraftRegistry", CLASS_REGISTRY_ACCESS);
   private static final AtomicReference<RuntimeException> INITIALIZATION_ERROR = new AtomicReference<>(new UnsupportedOperationException());
+  private static final Object JSON_OPS_INSTANCE;
   private static final Object JSON_PARSER_INSTANCE;
   private static final Object MC_TEXT_GSON;
+  private static final Object REGISTRY_ACCESS;
   private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE;
   private static final MethodHandle TEXT_SERIALIZER_SERIALIZE;
   private static final MethodHandle TEXT_SERIALIZER_DESERIALIZE_TREE;
   private static final MethodHandle TEXT_SERIALIZER_SERIALIZE_TREE;
+  private static final MethodHandle COMPONENTSERIALIZATION_CODEC_ENCODE;
+  private static final MethodHandle COMPONENTSERIALIZATION_CODEC_DECODE;
+  private static final MethodHandle CREATE_SERIALIZATION_CONTEXT;
 
   static {
     Object gson = null;
+    Object jsonOpsInstance = null;
     Object jsonParserInstance = null;
+    Object registryAccessInstance = null;
     MethodHandle textSerializerDeserialize = null;
     MethodHandle textSerializerSerialize = null;
     MethodHandle textSerializerDeserializeTree = null;
     MethodHandle textSerializerSerializeTree = null;
+    MethodHandle codecEncode = null;
+    MethodHandle codecDecode = null;
+    MethodHandle createContext = null;
 
     try {
+      if (CLASS_JSON_OPS != null) {
+        final Field instanceField = CLASS_JSON_OPS.getField("INSTANCE");
+        instanceField.setAccessible(true);
+        jsonOpsInstance = instanceField.get(null);
+      }
       if (CLASS_JSON_PARSER != null) {
         jsonParserInstance = CLASS_JSON_PARSER.getDeclaredConstructor().newInstance();
       }
       if (CLASS_CHAT_COMPONENT != null) {
         final Object registryAccess = GET_REGISTRY != null ? GET_REGISTRY.invoke() : null;
+        registryAccessInstance = registryAccess;
         // Chat serializer //
         final Class<?> chatSerializerClass = Arrays.stream(CLASS_CHAT_COMPONENT.getClasses())
           .filter(c -> {
@@ -217,20 +239,51 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
             textSerializerSerializeTree = insertArguments(lookup().unreflect(serializeTreeWithRegistryAccess), 1, registryAccess);
           }
         }
+        if (registryAccess != null && CLASS_HOLDERLOOKUP_PROVIDER != null) {
+          for (final Method m : CLASS_HOLDERLOOKUP_PROVIDER.getDeclaredMethods()) {
+            m.setAccessible(true);
+            if (m.getParameterCount() == 1 && m.getParameterTypes()[0].getSimpleName().equals("DynamicOps") && m.getReturnType().getSimpleName().contains("RegistryOps")) {
+              createContext = lookup().unreflect(m);
+              break;
+            }
+          }
+        }
+        if (CLASS_COMPONENT_SERIALIZATION != null) {
+          for (final Field f : CLASS_COMPONENT_SERIALIZATION.getDeclaredFields()) {
+            if (Modifier.isStatic(f.getModifiers()) && f.getType().getSimpleName().equals("Codec")) {
+              f.setAccessible(true);
+              final Object codecInstance = f.get(null);
+              final Class<?> codecClass = codecInstance.getClass();
+              for (final Method m : codecClass.getDeclaredMethods()) {
+                if (m.getName().equals("decode")) {
+                  codecDecode = lookup().unreflect(m).bindTo(codecInstance);
+                } else if (m.getName().equals("encode")) {
+                  codecEncode = lookup().unreflect(m).bindTo(codecInstance);
+                }
+              }
+              break;
+            }
+          }
+        }
       }
     } catch (final Throwable error) {
       INITIALIZATION_ERROR.set(new UnsupportedOperationException("Error occurred during initialization", error));
     }
 
     MC_TEXT_GSON = gson;
+    JSON_OPS_INSTANCE = jsonOpsInstance;
     JSON_PARSER_INSTANCE = jsonParserInstance;
     TEXT_SERIALIZER_DESERIALIZE = textSerializerDeserialize;
     TEXT_SERIALIZER_SERIALIZE = textSerializerSerialize;
     TEXT_SERIALIZER_DESERIALIZE_TREE = textSerializerDeserializeTree;
     TEXT_SERIALIZER_SERIALIZE_TREE = textSerializerSerializeTree;
+    COMPONENTSERIALIZATION_CODEC_ENCODE = codecEncode;
+    COMPONENTSERIALIZATION_CODEC_DECODE = codecDecode;
+    CREATE_SERIALIZATION_CONTEXT = createContext;
+    REGISTRY_ACCESS = registryAccessInstance;
   }
 
-  private static final boolean SUPPORTED = MC_TEXT_GSON != null || (TEXT_SERIALIZER_DESERIALIZE != null && TEXT_SERIALIZER_SERIALIZE != null) || (TEXT_SERIALIZER_DESERIALIZE_TREE != null && TEXT_SERIALIZER_SERIALIZE_TREE != null);
+  private static final boolean SUPPORTED = MC_TEXT_GSON != null || (TEXT_SERIALIZER_DESERIALIZE != null && TEXT_SERIALIZER_SERIALIZE != null) || (TEXT_SERIALIZER_DESERIALIZE_TREE != null && TEXT_SERIALIZER_SERIALIZE_TREE != null) || (COMPONENTSERIALIZATION_CODEC_ENCODE != null && COMPONENTSERIALIZATION_CODEC_DECODE != null && CREATE_SERIALIZATION_CONTEXT != null && JSON_OPS_INSTANCE != null);
 
   @Override
   public @NotNull Component deserialize(final @NotNull Object input) {
@@ -242,6 +295,12 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
         element = TEXT_SERIALIZER_SERIALIZE_TREE.invoke(input);
       } else if (MC_TEXT_GSON != null) {
         element = ((Gson) MC_TEXT_GSON).toJsonTree(input);
+      } else if (COMPONENTSERIALIZATION_CODEC_ENCODE != null && CREATE_SERIALIZATION_CONTEXT != null) {
+        final Object serializationContext = CREATE_SERIALIZATION_CONTEXT.bindTo(REGISTRY_ACCESS).invoke(JSON_OPS_INSTANCE);
+        final Object result = COMPONENTSERIALIZATION_CODEC_ENCODE.invoke(input, serializationContext, null);
+        final Method getOrThrow = result.getClass().getMethod("getOrThrow", java.util.function.Function.class);
+        final Object jsonElement = getOrThrow.invoke(result, (java.util.function.Function<Throwable, RuntimeException>) RuntimeException::new);
+        return gson().serializer().fromJson(jsonElement.toString(), Component.class);
       } else {
         return gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
       }
@@ -268,6 +327,14 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
       }
     } else {
       try {
+        if (COMPONENTSERIALIZATION_CODEC_DECODE != null && CREATE_SERIALIZATION_CONTEXT != null) {
+          final Object serializationContext = CREATE_SERIALIZATION_CONTEXT.bindTo(REGISTRY_ACCESS).invoke(JSON_OPS_INSTANCE);
+          final Object result = COMPONENTSERIALIZATION_CODEC_DECODE.invoke(serializationContext, gson().serializeToTree(component));
+          final Method getOrThrow = result.getClass().getMethod("getOrThrow", java.util.function.Function.class);
+          final Object pair = getOrThrow.invoke(result, (java.util.function.Function<Throwable, RuntimeException>) RuntimeException::new);
+          final Method getFirst = pair.getClass().getMethod("getFirst");
+          return getFirst.invoke(pair);
+        }
         return TEXT_SERIALIZER_DESERIALIZE.invoke(gson().serialize(component));
       } catch (final Throwable error) {
         throw new UnsupportedOperationException(error);
