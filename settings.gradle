@@ -1,5 +1,19 @@
 import org.gradle.api.initialization.resolve.RepositoriesMode
 
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral {
+          mavenContent { releasesOnly() }
+        }
+        maven {
+          name = "papermcSnapshots"
+          url = 'https://repo.papermc.io/repository/maven-snapshots/'
+          mavenContent { snapshotsOnly() }
+        }
+    }
+}
+
 plugins {
   id "org.gradle.toolchains.foojay-resolver-convention" version "0.10.0"
 }
@@ -9,7 +23,9 @@ rootProject.name = 'adventure-platform-parent'
 dependencyResolutionManagement {
   repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
   repositories {
-    mavenCentral()
+    mavenCentral {
+      mavenContent { releasesOnly() }
+    }
     maven {
       name = "sonatypeSnapshots"
       url = "https://oss.sonatype.org/content/repositories/snapshots/"
