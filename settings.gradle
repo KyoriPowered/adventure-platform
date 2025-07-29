@@ -6,11 +6,6 @@ pluginManagement {
         mavenCentral {
           mavenContent { releasesOnly() }
         }
-        maven {
-          name = "papermcSnapshots"
-          url = 'https://repo.papermc.io/repository/maven-snapshots/'
-          mavenContent { snapshotsOnly() }
-        }
     }
 }
 
