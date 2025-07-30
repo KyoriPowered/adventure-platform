@@ -22,8 +22,8 @@ dependencyResolutionManagement {
       mavenContent { releasesOnly() }
     }
     maven {
-      name = "sonatypeSnapshots"
-      url = "https://oss.sonatype.org/content/repositories/snapshots/"
+      name = "stellardriftSnapshots"
+      url = "https://repo.stellardrift.ca/maven/snapshots/"
       mavenContent { snapshotsOnly() }
     }
     maven {
