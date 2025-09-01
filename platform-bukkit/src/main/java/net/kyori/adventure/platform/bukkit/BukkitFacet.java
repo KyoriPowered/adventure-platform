@@ -425,10 +425,9 @@ class BukkitFacet<V extends CommandSender> extends FacetBase<V> {
 
     static {
       boolean legacy = false;
-      MethodHandle handle = null;
-      final MethodHandle asLocale = findMethod(Player.class, "getLocale", Locale.class);
+      MethodHandle handle = findMethod(Player.class, "getLocale", Locale.class);
 
-      if (asLocale == null) {
+      if (handle == null) {
         handle = findMethod(Player.class, "getLocale", String.class);
         if (handle == null) {
           handle = findMethod(Player.Spigot.class, "getLocale", String.class);
