@@ -47,12 +47,13 @@ import net.kyori.adventure.platform.facet.Facet;
 import net.kyori.adventure.platform.facet.FacetBase;
 import net.kyori.adventure.platform.facet.Knob;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.json.JSONOptions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static net.kyori.adventure.platform.facet.Knob.logError;
 import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.colorDownsamplingGson;
-import static net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson;
 
 // Non-API
 @SuppressWarnings({"checkstyle:FilteringWriteTag", "checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})
@@ -60,6 +61,12 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   private static final String PACKAGE = "com.viaversion.viaversion";
   private static final int SUPPORTED_VIA_MAJOR_VERSION = 5;
   private static final boolean SUPPORTED;
+
+  // The component will go through the ViaVersion pipeline starting from Minecraft 1.16
+  private static final int VERSION_1_16 = 2526; // 20w16a
+  private static final GsonComponentSerializer GSON_SERIALIZER_1_16 = GsonComponentSerializer.builder()
+          .options(JSONOptions.byDataVersion().at(VERSION_1_16))
+          .build();
 
   static {
     boolean supported = false;
@@ -116,7 +123,7 @@ public class ViaFacet<V> extends FacetBase<V> implements Facet.Message<V, String
   public String createMessage(final @NotNull V viewer, final @NotNull Component message) {
     final ProtocolVersion protocol = this.findProtocol(viewer);
     if (protocol.newerThanOrEqualTo(this.hexColorProtocol)) {
-      return gson().serialize(message);
+      return GSON_SERIALIZER_1_16.serialize(message);
     } else {
       return colorDownsamplingGson().serialize(message);
     }
