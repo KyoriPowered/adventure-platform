@@ -1,6 +1,6 @@
 buildscript {
   ext {
-    indraVersion = '3.2.0'
+    indraVersion = '4.0.0'
   }
 }
 
