@@ -10,7 +10,7 @@ on:
 
 jobs:
   call-build:
-    uses: "KyoriPowered/ci-cookbook/.github/workflows/java-ci.yaml@2025.10.17"
+    uses: "KyoriPowered/ci-cookbook/.github/workflows/java-ci.yaml@e77e68e0bee07333adf9ea66f8da5fa1e1363003" # 2025.10.17
     with:
       publish_releases: true
       publish_release_javadoc: true
