@@ -72,7 +72,7 @@ subprojects {
       testWith(8, 11, 17)
     }
 
-    github("KyoriPowered", "adventure-platform") {
+    github("PaperMC", "adventure-platform") {
       ci(true)
     }
     mitLicense()
