@@ -302,7 +302,7 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
         final Object jsonElement = getOrThrow.invoke(result, (java.util.function.Function<Throwable, RuntimeException>) RuntimeException::new);
         return gson().serializer().fromJson(jsonElement.toString(), Component.class);
       } else {
-        return gson().deserialize((String) TEXT_SERIALIZER_SERIALIZE.invoke(input));
+        return gson().serializer().fromJson((String) TEXT_SERIALIZER_SERIALIZE.invoke(input), Component.class);
       }
       return gson().serializer().fromJson(element.toString(), Component.class);
     } catch (final Throwable error) {
@@ -326,10 +326,12 @@ public final class MinecraftComponentSerializer implements ComponentSerializer<C
         throw new UnsupportedOperationException(error);
       }
     } else {
+      final JsonElement json = gson().serializer().toJsonTree(component);
       try {
         if (COMPONENTSERIALIZATION_CODEC_DECODE != null && CREATE_SERIALIZATION_CONTEXT != null) {
           final Object serializationContext = CREATE_SERIALIZATION_CONTEXT.bindTo(REGISTRY_ACCESS).invoke(JSON_OPS_INSTANCE);
-          final Object result = COMPONENTSERIALIZATION_CODEC_DECODE.invoke(serializationContext, gson().serializeToTree(component));
+          final Object unRelocatedJsonElement = PARSE_JSON.invoke(JSON_PARSER_INSTANCE, json.toString());
+          final Object result = COMPONENTSERIALIZATION_CODEC_DECODE.invoke(serializationContext, unRelocatedJsonElement);
           final Method getOrThrow = result.getClass().getMethod("getOrThrow", java.util.function.Function.class);
           final Object pair = getOrThrow.invoke(result, (java.util.function.Function<Throwable, RuntimeException>) RuntimeException::new);
           final Method getFirst = pair.getClass().getMethod("getFirst");
