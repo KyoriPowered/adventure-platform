@@ -1,0 +1,26 @@
+name: "build"
+
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["**"]
+  pull_request:
+  release:
+    types: [released]
+
+jobs:
+  call-build:
+    uses: "KyoriPowered/ci-cookbook/.github/workflows/java-ci.yaml@2025.10.17"
+    with:
+      publish_releases: true
+      publish_release_javadoc: true
+      javadoc_deploy_prefix: "platform/"
+    secrets:
+      DEPLOYMENT_APP_ID: "${{ secrets.DEPLOYMENT_APP_ID }}"
+      DEPLOYMENT_APP_SECRET: "${{ secrets.DEPLOYMENT_APP_SECRET }}"
+      publishing_env_vars: |
+          ORG_GRADLE_PROJECT_sonatypeUsername="${{ secrets.SONATYPE_USERNAME }}"
+          ORG_GRADLE_PROJECT_sonatypePassword="${{ secrets.SONATYPE_PASSWORD }}"
+          ORG_GRADLE_PROJECT_kyoriSigningKey="${{ secrets.KYORI_GPG_KEY }}"
+          ORG_GRADLE_PROJECT_kyoriSigningPassword="${{ secrets.KYORI_GPG_PASSWORD }}"
+

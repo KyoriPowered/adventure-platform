@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "local>KyoriPowered/.github:renovate-config"
+    "local>KyoriPowered/ci-cookbook:renovate-config#2025.10.17"
   ],
   "ignoreDeps": [
     "io.netty:netty-all",
