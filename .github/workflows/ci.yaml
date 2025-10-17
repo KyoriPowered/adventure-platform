@@ -8,6 +8,11 @@ on:
   release:
     types: [released]
 
+permissions:
+  actions: "write"
+  contents: "write"
+  id-token: "write"
+
 jobs:
   call-build:
     uses: "KyoriPowered/ci-cookbook/.github/workflows/java-ci.yaml@2025.10.17"
